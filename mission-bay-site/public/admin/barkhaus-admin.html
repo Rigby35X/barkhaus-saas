@@ -6580,6 +6580,265 @@
         // Website Content Management Functions
         let websiteContent = {};
 
+        function normalizeFaqContent(rawFaq) {
+            if (!rawFaq || typeof rawFaq !== 'object') {
+                return {};
+            }
+
+            const nestedContent = typeof rawFaq.content === 'object' && rawFaq.content !== null
+                ? rawFaq.content
+                : {};
+
+            const merged = {
+                ...nestedContent,
+                ...rawFaq
+            };
+
+            if (Array.isArray(merged.faqs)) {
+                merged.faqs.forEach((item, index) => {
+                    const question = item?.question ?? item?.headline ?? '';
+                    const answer = item?.answer ?? item?.body ?? item?.body_text ?? '';
+                    const slot = index + 1;
+                    merged[`faq_question_${slot}`] = question;
+                    merged[`faq_answer_${slot}`] = answer;
+                    merged[`faq_${slot}_question`] = merged[`faq_${slot}_question`] || question;
+                    merged[`faq_${slot}_answer`] = merged[`faq_${slot}_answer`] || answer;
+                });
+            }
+
+            const extractedFaqs = [];
+            for (let i = 1; i <= 10; i++) {
+                const question =
+                    merged[`faq_question_${i}`] ??
+                    merged[`faq_${i}_question`] ??
+                    null;
+                const answer =
+                    merged[`faq_answer_${i}`] ??
+                    merged[`faq_${i}_answer`] ??
+                    null;
+
+                if (question || answer) {
+                    merged[`faq_question_${i}`] = question || '';
+                    merged[`faq_answer_${i}`] = answer || '';
+                    extractedFaqs.push({
+                        question: question || '',
+                        answer: answer || ''
+                    });
+                }
+            }
+
+            if (!Array.isArray(merged.faqs) || !merged.faqs.length) {
+                merged.faqs = extractedFaqs;
+            }
+
+            return merged;
+        }
+
+        function normalizeSectionContent(sectionKey, sectionData) {
+            if (!sectionData || typeof sectionData !== 'object') {
+                return {};
+            }
+
+            if (sectionKey === 'faq_section') {
+                const normalizedFaq = normalizeFaqContent(sectionData);
+                const baseContent = {};
+                Object.entries(normalizedFaq).forEach(([key, value]) => {
+                    if (key !== 'content') {
+                        baseContent[key] = value;
+                    }
+                });
+                normalizedFaq.content = {
+                    ...(sectionData.content || {}),
+                    ...baseContent
+                };
+                return normalizedFaq;
+            }
+
+            const nestedContent = typeof sectionData.content === 'object' && sectionData.content !== null
+                ? sectionData.content
+                : {};
+
+            const baseSection = {};
+            Object.entries(sectionData).forEach(([key, value]) => {
+                if (key !== 'content') {
+                    baseSection[key] = value;
+                }
+            });
+
+            const merged = {
+                ...nestedContent,
+                ...baseSection
+            };
+
+            merged.content = {
+                ...nestedContent,
+                ...baseSection
+            };
+
+            return merged;
+        }
+
+        function normalizeAllSections(rawContent) {
+            const normalized = {};
+            Object.entries(rawContent || {}).forEach(([key, value]) => {
+                normalized[key] = normalizeSectionContent(key, value);
+            });
+            return normalized;
+        }
+
+        function updateHomepageCache(sectionKey, content) {
+            const existing = websiteContent[sectionKey] || {};
+            const mergedSection = {
+                ...existing,
+                ...content,
+                content: {
+                    ...(existing.content || {}),
+                    ...content
+                }
+            };
+
+            websiteContent[sectionKey] = normalizeSectionContent(sectionKey, mergedSection);
+            displayWebsiteContent();
+        }
+
+        const HOMEPAGE_SECTION_LABELS = {
+            hero: 'Hero Section',
+            services_header: 'Services Section',
+            about_us: 'About Section',
+            what_we_do: 'What We Do Section',
+            success_stories: 'Success Stories Section',
+            faq_section: 'FAQ Section',
+            reviews_header: 'Reviews Section',
+            cta: 'Call to Action',
+            footer: 'Footer'
+        };
+
+        async function persistWebsiteContent({
+            sectionKey,
+            content,
+            sectionName = 'Section',
+            pageSlug = 'homepage',
+            updateCache = (pageSlug === 'homepage' || sectionKey === 'footer')
+        }) {
+            const orgId = currentOrgId || '9';
+
+            const response = await fetch('/api/website-content', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    orgId,
+                    pageSlug,
+                    sectionKey,
+                    content
+                })
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok || result.success === false) {
+                const errorMessage = result?.error || `Failed to save ${sectionName}`;
+                throw new Error(errorMessage);
+            }
+
+            if (updateCache) {
+                updateHomepageCache(sectionKey, content);
+            }
+
+            return result;
+        }
+
+        function extractFaqItems(faqData) {
+            if (!faqData || typeof faqData !== 'object') {
+                return [];
+            }
+
+            const items = [];
+
+            if (Array.isArray(faqData.faqs) && faqData.faqs.length) {
+                faqData.faqs.forEach((entry) => {
+                    if (!entry) return;
+                    const question = entry.question ?? entry.headline ?? entry.title ?? '';
+                    const answer = entry.answer ?? entry.body ?? entry.description ?? entry.body_text ?? '';
+                    if (question || answer) {
+                        items.push({
+                            question: question || '',
+                            answer: answer || ''
+                        });
+                    }
+                });
+            }
+
+            const QUESTION_PATTERNS = [
+                (i) => `faq_question_${i}`,
+                (i) => `faq_${i}_question`,
+                (i) => `question_${i}`,
+                (i) => `faqQuestion${i}`
+            ];
+
+            const ANSWER_PATTERNS = [
+                (i) => `faq_answer_${i}`,
+                (i) => `faq_${i}_answer`,
+                (i) => `answer_${i}`,
+                (i) => `faqAnswer${i}`
+            ];
+
+            for (let i = 1; i <= 10; i++) {
+                let questionValue = '';
+                let answerValue = '';
+
+                for (const pattern of QUESTION_PATTERNS) {
+                    const key = pattern(i);
+                    if (faqData[key]) {
+                        questionValue = faqData[key];
+                        break;
+                    }
+                }
+
+                for (const pattern of ANSWER_PATTERNS) {
+                    const key = pattern(i);
+                    if (faqData[key]) {
+                        answerValue = faqData[key];
+                        break;
+                    }
+                }
+
+                if (questionValue || answerValue) {
+                    items.push({
+                        question: questionValue || '',
+                        answer: answerValue || ''
+                    });
+                }
+            }
+
+            if (!items.length && Array.isArray(faqData.items)) {
+                faqData.items.forEach((item) => {
+                    if (!item) return;
+                    const question = item.question ?? item.title ?? '';
+                    const answer = item.answer ?? item.description ?? '';
+                    if (question || answer) {
+                        items.push({
+                            question: question || '',
+                            answer: answer || ''
+                        });
+                    }
+                });
+            }
+
+            const uniqueItems = [];
+            const seen = new Set();
+            items.forEach((entry) => {
+                const key = `${entry.question || ''}|||${entry.answer || ''}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueItems.push(entry);
+                }
+            });
+
+            return uniqueItems;
+        }
+
         // Load website content from API
         async function loadWebsiteContent() {
             console.log('🎨 Loading website content for tab...');
@@ -6604,7 +6863,10 @@
             ];
 
             container.innerHTML = sections.map(section => {
-                const content = websiteContent[section.key] || {};
+                const rawSection = websiteContent[section.key] || {};
+                const content = section.key === 'faq_section'
+                    ? normalizeFaqContent(rawSection)
+                    : rawSection;
                 return `
                     <div class="border border-gray-200 rounded-lg p-6">
                         <div class="flex justify-between items-start mb-4">
@@ -6906,7 +7168,7 @@
 
                         <div class="flex justify-end space-x-3 pt-4 border-t">
                             <button type="button" onclick="closeContentModal()" class="btn-secondary">Cancel</button>
-                            <button type="button" onclick="saveContentSection('${sectionKey}')" class="btn-primary">Save Changes</button>
+                            <button type="button" onclick="saveHomepageContentSection('${sectionKey}')" class="btn-primary">Save Changes</button>
                         </div>
                     </form>
                 </div>
@@ -6924,7 +7186,7 @@
         }
 
         // Save content section
-        async function saveContentSection(sectionKey) {
+        async function saveHomepageContentSection(sectionKey) {
             // Get common fields
             const headline = document.getElementById('edit-headline')?.value || '';
             const subheadline = document.getElementById('edit-subheadline')?.value || '';
@@ -6986,32 +7248,16 @@
             }
 
             try {
-                // Update Xano database
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orgId: currentOrgId,
-                        sectionKey,
-                        content: updatedContent
-                    })
+                const label = HOMEPAGE_SECTION_LABELS[sectionKey] || 'Homepage Section';
+
+                await persistWebsiteContent({
+                    sectionKey,
+                    content: updatedContent,
+                    sectionName: label
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-
-                    // Update local data
-                    websiteContent[sectionKey] = { ...websiteContent[sectionKey], ...updatedContent };
-
-                    // Refresh display
-                    displayWebsiteContent();
-                    closeContentModal();
-
-                    alert('✅ Content updated successfully! Go to your website and refresh to see the changes.\n\n📝 Note: To make changes permanent, we need to create an UPDATE endpoint in Xano.');
-                } else {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to save content');
-                }
+                closeContentModal();
+                alert(`✅ ${label} updated successfully! Refresh the website to see the changes.`);
             } catch (error) {
                 console.error('Error saving content:', error);
                 alert('❌ Failed to save content. Please try again.');
@@ -7096,7 +7342,8 @@
                 console.log('API response status:', response.status);
 
                 if (response.ok) {
-                    websiteContent = await response.json();
+                    const rawContent = await response.json();
+                    websiteContent = normalizeAllSections(rawContent);
                     console.log('✅ Loaded website content:', websiteContent);
 
                     const content = websiteContent;
@@ -7180,45 +7427,56 @@
                     loadServicesFromContent(content.services_header);
 
                     // Populate FAQ Section
-                    console.log('Populating FAQ section with:', content.faq_section);
+                    const rawFaqSection = content.faq_section || content.faq || {};
+                    const normalizedFaq = normalizeFaqContent(rawFaqSection);
+                    console.log('Populating FAQ section with:', normalizedFaq);
                     const faqListEl = document.getElementById('faq-list');
                     const faqTitleInput = document.getElementById('faq-title');
 
-                    if (content.faq_section) {
+                    if (Object.keys(normalizedFaq).length) {
+                        websiteContent.faq_section = {
+                            ...rawFaqSection,
+                            ...normalizedFaq,
+                            content: {
+                                ...(rawFaqSection.content || {}),
+                                ...normalizedFaq
+                            }
+                        };
+
                         if (faqListEl) {
                             faqListEl.innerHTML = ''; // Clear any existing FAQ items
 
                             if (faqTitleInput) {
-                                faqTitleInput.value = content.faq_section.headline || 'Frequently Asked Questions';
+                                faqTitleInput.value = normalizedFaq.headline || 'Frequently Asked Questions';
                             }
 
-                            // Loop through Xano data fields like faq_question_1, faq_answer_1, etc.
-                            Object.keys(content.faq_section)
-                                .filter(k => k.startsWith('faq_question_'))
-                                .forEach((key) => {
-                                    const qNum = key.split('_').pop();
-                                    const question = content.faq_section[`faq_question_${qNum}`] || '';
-                                    const answer = content.faq_section[`faq_answer_${qNum}`] || '';
+                            const faqItems = extractFaqItems(normalizedFaq);
 
-                                    // Create dynamic FAQ form group
+                            if (faqItems.length) {
+                                faqItems.forEach((entry, index) => {
+                                    const qNum = index + 1;
                                     const faqItem = document.createElement('div');
                                     faqItem.classList.add('faq-item', 'p-3', 'border', 'rounded', 'bg-white');
 
                                     faqItem.innerHTML = `
                                         <div class="form-group">
                                             <label class="form-label">Question ${qNum}</label>
-                                            <input type="text" class="form-input" id="faq-question-${qNum}" value="${question}">
+                                            <input type="text" class="form-input" id="faq-question-${qNum}" value="${entry.question || ''}">
                                         </div>
                                         <div class="form-group">
                                             <label class="form-label">Answer ${qNum}</label>
-                                            <textarea class="form-input" id="faq-answer-${qNum}">${answer}</textarea>
+                                            <textarea class="form-input" id="faq-answer-${qNum}">${entry.answer || ''}</textarea>
                                         </div>
                                     `;
 
                                     faqListEl.appendChild(faqItem);
                                 });
 
-                            console.log('✅ Populated FAQ section with', Object.keys(content.faq_section).length / 2, 'FAQs');
+                                console.log('✅ Populated FAQ section with', faqItems.length, 'FAQs');
+                            } else {
+                                console.log('⚠️ Normalized FAQ data did not include question/answer pairs, falling back to defaults.');
+                                loadFAQs();
+                            }
                         } else {
                             console.warn('⚠️ FAQ list element not found in DOM when populating FAQ section');
                         }
@@ -7267,12 +7525,17 @@
                 // Load website content from the API - footer is now included in homepage response
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=homepage`);
                 if (response.ok) {
-                    const websiteContent = await response.json();
-                    console.log('✅ Loaded website content for footer:', websiteContent);
+                    const rawContent = await response.json();
+                    const normalizedContent = normalizeAllSections(rawContent);
+                    console.log('✅ Loaded website content for footer:', normalizedContent);
+
+                    if (normalizedContent.footer) {
+                        websiteContent.footer = normalizedContent.footer;
+                    }
 
                     // Extract footer data from website content
-                    const footerSection = websiteContent.footer || {};
-                    const footerData = footerSection.content || {};
+                    const footerSection = normalizedContent.footer || {};
+                    const footerData = footerSection.content || footerSection || {};
 
                     console.log('Footer section:', footerSection);
                     console.log('Footer content:', footerData);
@@ -7392,19 +7655,9 @@
             const faqList = document.getElementById('faq-list');
 
             if (faqContent) {
-                // Set FAQ title
                 document.getElementById('faq-title').value = faqContent.headline || 'Frequently Asked Questions';
 
-                // Extract FAQs from content
-                const faqs = [];
-                for (let i = 1; i <= 5; i++) {
-                    if (faqContent[`faq_${i}_question`]) {
-                        faqs.push({
-                            question: faqContent[`faq_${i}_question`] || '',
-                            answer: faqContent[`faq_${i}_answer`] || ''
-                        });
-                    }
-                }
+                const faqs = extractFaqItems(faqContent);
 
                 if (faqs.length > 0) {
                     renderFAQs(faqs);
@@ -7412,16 +7665,20 @@
                 }
             }
 
-            // Load default FAQs if no content
             loadFAQs();
         }
 
         function loadFAQs() {
-            const faqs = [
-                { question: 'How do I adopt a dog?', answer: 'Start by browsing our available dogs online, then fill out an adoption application. We\'ll schedule a meet-and-greet to ensure it\'s a perfect match.' },
-                { question: 'What is the adoption fee?', answer: 'Adoption fees vary by dog and help cover medical care, vaccinations, spaying/neutering, and shelter costs. Fees typically range from $200-$500.' },
-                { question: 'Can I visit the dogs before adopting?', answer: 'Absolutely! We encourage meet-and-greets with potential adopters. Contact us to schedule a visit with any dog you\'re interested in.' }
-            ];
+            const normalizedFaq = normalizeFaqContent(websiteContent.faq_section || {});
+            let faqs = extractFaqItems(normalizedFaq);
+
+            if (!faqs.length) {
+                faqs = [
+                    { question: 'How do I adopt a dog?', answer: 'Start by browsing our available dogs online, then fill out an adoption application. We\'ll schedule a meet-and-greet to ensure it\'s a perfect match.' },
+                    { question: 'What is the adoption fee?', answer: 'Adoption fees vary by dog and help cover medical care, vaccinations, spaying/neutering, and shelter costs. Fees typically range from $200-$500.' },
+                    { question: 'Can I visit the dogs before adopting?', answer: 'Absolutely! We encourage meet-and-greets with potential adopters. Contact us to schedule a visit with any dog you\'re interested in.' }
+                ];
+            }
 
             renderFAQs(faqs);
         }
@@ -7458,36 +7715,56 @@
             console.log('Saving hero section:', heroData);
 
             try {
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        orgId: currentOrgId,
-                        sectionKey: 'hero',
-                        content: heroData
-                    })
+                await persistWebsiteContent({
+                    sectionKey: 'hero',
+                    content: heroData,
+                    sectionName: HOMEPAGE_SECTION_LABELS.hero
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('Hero section saved successfully!');
-                    console.log('✅ Hero section saved:', result);
-                } else {
-                    alert('Failed to save hero section: ' + result.error);
-                    console.error('❌ Save failed:', result);
-                }
+                await loadHomepageContent();
+                alert('Hero section saved successfully!');
+                console.log('✅ Hero section saved');
             } catch (error) {
                 console.error('Error saving hero section:', error);
                 alert('Error saving hero section. Please try again.');
             }
         }
 
-        function saveServicesSection() {
-            console.log('Saving services section...');
-            alert('Services section saved successfully!');
+        async function saveServicesSection() {
+            const servicesTitle = document.getElementById('services-title').value;
+            const serviceItems = Array.from(document.querySelectorAll('#services-list [data-service-index]'));
+            const existingServices = websiteContent.services_header || {};
+
+            const servicesData = {
+                headline: servicesTitle || existingServices.headline || 'Our Services',
+                subheadline: existingServices.subheadline || 'Our Services',
+                body_text: existingServices.body_text || ''
+            };
+
+            for (let i = 1; i <= 3; i++) {
+                const item = serviceItems[i - 1];
+                const title = item?.querySelector('.service-title')?.value?.trim() ?? existingServices[`service_${i}`] ?? '';
+                const description = item?.querySelector('.service-description')?.value?.trim() ?? existingServices[`service_${i}_description`] ?? '';
+                const icon = item?.querySelector('.service-icon')?.value ?? existingServices[`service_${i}_icon`] ?? 'heart';
+
+                servicesData[`service_${i}`] = title;
+                servicesData[`service_${i}_description`] = description;
+                servicesData[`service_${i}_icon`] = icon;
+            }
+
+            try {
+                await persistWebsiteContent({
+                    sectionKey: 'services_header',
+                    content: servicesData,
+                    sectionName: HOMEPAGE_SECTION_LABELS.services_header
+                });
+
+                await loadHomepageContent();
+                alert('Services section saved successfully!');
+            } catch (error) {
+                console.error('Error saving services section:', error);
+                alert(`Error saving services section: ${error.message}`);
+            }
         }
 
         async function saveAboutSection() {
@@ -7501,27 +7778,15 @@
             console.log('Saving about section:', aboutData);
 
             try {
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        orgId: currentOrgId,
-                        sectionKey: 'about_us',
-                        content: aboutData
-                    })
+                await persistWebsiteContent({
+                    sectionKey: 'about_us',
+                    content: aboutData,
+                    sectionName: HOMEPAGE_SECTION_LABELS.about_us
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('About section saved successfully!');
-                    console.log('✅ About section saved:', result);
-                } else {
-                    alert('Failed to save about section: ' + result.error);
-                    console.error('❌ Save failed:', result);
-                }
+                await loadHomepageContent();
+                alert('About section saved successfully!');
+                console.log('✅ About section saved');
             } catch (error) {
                 console.error('Error saving about section:', error);
                 alert('Error saving about section. Please try again.');
@@ -7529,7 +7794,6 @@
         }
 
         async function saveFAQSection() {
-            const orgId = currentOrgId || '9';
             const faqList = document.getElementById('faq-list');
 
             if (!faqList) {
@@ -7544,8 +7808,10 @@
 
                 // Reset existing question/answer pairs so removed FAQs are cleared
                 Object.keys(baseContent)
-                    .filter((key) => /^faq_(question|answer)_\d+$/.test(key))
+                    .filter((key) => /^faq_(question|answer)_\d+$/i.test(key))
                     .forEach((key) => delete baseContent[key]);
+
+                const faqsArray = [];
 
                 faqItems.forEach((item, index) => {
                     const questionInput = item.querySelector('input');
@@ -7557,35 +7823,27 @@
 
                     baseContent[`faq_question_${qNum}`] = qValue;
                     baseContent[`faq_answer_${qNum}`] = aValue;
+
+                    if (qValue || aValue) {
+                        faqsArray.push({
+                            question: qValue,
+                            answer: aValue
+                        });
+                    }
                 });
 
                 baseContent.headline = document.getElementById('faq-title')?.value.trim() || baseContent.headline || 'Frequently Asked Questions';
                 baseContent.subheadline = baseContent.subheadline || 'FAQ';
                 baseContent.body_text = baseContent.body_text || '';
+                baseContent.faqs = faqsArray;
 
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orgId,
-                        sectionKey: 'faq_section',
-                        content: baseContent
-                    })
+                await persistWebsiteContent({
+                    sectionKey: 'faq_section',
+                    content: baseContent,
+                    sectionName: HOMEPAGE_SECTION_LABELS.faq_section
                 });
 
-                const result = await response.json().catch(() => ({}));
-
-                if (!response.ok || result.success === false) {
-                    const message = result?.error || 'Failed to save FAQ section';
-                    throw new Error(message);
-                }
-
-                websiteContent.faq_section = {
-                    ...existingSection,
-                    ...baseContent,
-                    content: baseContent
-                };
-                displayWebsiteContent();
+                await loadHomepageContent();
                 showSuccessMessage('✅ FAQ section saved successfully!');
             } catch (error) {
                 console.error('Error saving FAQ section:', error);
@@ -7611,32 +7869,19 @@
             console.log('Saving footer section to website content:', footerData);
 
             try {
-                // Save to Xano website_content table via the website-content API
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        orgId: currentOrgId || '9',
-                        sectionKey: 'footer',
-                        content: footerData
-                    })
+                await persistWebsiteContent({
+                    sectionKey: 'footer',
+                    content: footerData,
+                    sectionName: HOMEPAGE_SECTION_LABELS.footer,
+                    pageSlug: 'global'
                 });
 
-                const result = await response.json();
+                await loadFooterContent();
+                alert('Footer section saved successfully!\n\nChanges will be visible immediately on the website.');
 
-                if (result.success || response.ok) {
-                    alert('Footer section saved successfully!\n\nChanges will be visible immediately on the website.');
-                    console.log('✅ Footer section saved to website content:', result);
-
-                    // Reload footer content to show updated data
-                    setTimeout(() => {
-                        loadFooterContent();
-                    }, 1000);
-                } else {
-                    throw new Error(result.error || 'Failed to save footer data');
-                }
+                setTimeout(() => {
+                    loadFooterContent();
+                }, 500);
             } catch (error) {
                 console.error('Error saving footer section:', error);
                 alert('Error saving footer section: ' + error.message);
@@ -7650,6 +7895,7 @@
 
             const newService = document.createElement('div');
             newService.className = 'border border-gray-200 rounded-lg p-4';
+            newService.setAttribute('data-service-index', newIndex);
             newService.innerHTML = `
                 <div class="flex justify-between items-start mb-2">
                     <h5 class="font-medium">Service ${newIndex + 1}</h5>
@@ -7729,25 +7975,14 @@
             console.log('Saving what we do section:', whatWeDoData);
 
             try {
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        orgId: currentOrgId,
-                        sectionKey: 'what_we_do',
-                        content: whatWeDoData
-                    })
+                await persistWebsiteContent({
+                    sectionKey: 'what_we_do',
+                    content: whatWeDoData,
+                    sectionName: HOMEPAGE_SECTION_LABELS.what_we_do
                 });
 
-                if (response.ok) {
-                    alert('What We Do section saved successfully!');
-                    // Refresh the content to show updated data
-                    loadWebsiteContent();
-                } else {
-                    throw new Error('Failed to save what we do section');
-                }
+                await loadHomepageContent();
+                alert('What We Do section saved successfully!');
             } catch (error) {
                 console.error('Error saving what we do section:', error);
                 alert('Error saving what we do section. Please try again.');
@@ -7948,6 +8183,7 @@
         window.showDashboardTab = showDashboardTab;
         window.editContentSection = editContentSection;
         window.closeContentModal = closeContentModal;
+        window.saveHomepageContentSection = saveHomepageContentSection;
         window.saveContentSection = saveContentSection;
         window.showSettingsSection = showSettingsSection;
         window.handleCSVUpload = handleCSVUpload;
@@ -8740,7 +8976,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=about`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -8787,7 +9023,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=contact`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -8821,7 +9057,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=animals`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -8860,7 +9096,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=donate`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -8888,7 +9124,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=events`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -8913,7 +9149,7 @@
             try {
                 const response = await fetch(`/api/website-content?orgId=${orgId}&page=applications`);
                 if (response.ok) {
-                    const content = await response.json();
+                    const content = normalizeAllSections(await response.json());
 
                     // Load Hero Section
                     if (content.hero) {
@@ -9170,27 +9406,16 @@
             try {
                 console.log(`Saving ${sectionName}:`, contentData);
 
-                const response = await fetch('/api/website-content', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        orgId: currentOrgId || '9',
-                        pageSlug: pageSlug,
-                        sectionKey: sectionKey,
-                        content: contentData
-                    })
+                await persistWebsiteContent({
+                    sectionKey,
+                    content: contentData,
+                    sectionName,
+                    pageSlug,
+                    updateCache: false
                 });
 
-                const result = await response.json();
-
-                if (result.success || response.ok) {
-                    alert(`${sectionName} saved successfully!\n\nChanges will be visible immediately on the website.`);
-                    console.log(`✅ ${sectionName} saved:`, result);
-                } else {
-                    throw new Error(result.error || `Failed to save ${sectionName}`);
-                }
+                alert(`${sectionName} saved successfully!\n\nChanges will be visible immediately on the website.`);
+                console.log(`✅ ${sectionName} saved`);
             } catch (error) {
                 console.error(`Error saving ${sectionName}:`, error);
                 alert(`Error saving ${sectionName}: ` + error.message);

@@ -158,6 +158,60 @@ const DEFAULT_CONTENT = {
   }
 };
 
+function normalizeFaqSection(faqSection) {
+  if (!faqSection || typeof faqSection !== 'object') {
+    return {};
+  }
+
+  const nestedContent = typeof faqSection.content === 'object' && faqSection.content !== null
+    ? faqSection.content
+    : {};
+
+  const merged = {
+    ...nestedContent,
+    ...faqSection
+  };
+
+  if (Array.isArray(merged.faqs)) {
+    merged.faqs.forEach((item, index) => {
+      const question = item?.question ?? item?.headline ?? '';
+      const answer = item?.answer ?? item?.body ?? item?.body_text ?? '';
+      const slot = index + 1;
+      merged[`faq_question_${slot}`] = question;
+      merged[`faq_answer_${slot}`] = answer;
+      merged[`faq_${slot}_question`] = merged[`faq_${slot}_question`] || question;
+      merged[`faq_${slot}_answer`] = merged[`faq_${slot}_answer`] || answer;
+    });
+  }
+
+  const extractedFaqs = [];
+  for (let i = 1; i <= 10; i++) {
+    const question =
+      merged[`faq_question_${i}`] ??
+      merged[`faq_${i}_question`] ??
+      null;
+    const answer =
+      merged[`faq_answer_${i}`] ??
+      merged[`faq_${i}_answer`] ??
+      null;
+
+    if (question || answer) {
+      merged[`faq_question_${i}`] = question || '';
+      merged[`faq_answer_${i}`] = answer || '';
+      extractedFaqs.push({
+        question: question || '',
+        answer: answer || ''
+      });
+    }
+  }
+
+  if (!Array.isArray(merged.faqs) || !merged.faqs.length) {
+    merged.faqs = extractedFaqs;
+  }
+
+  return merged;
+}
+
 /**
  * Fetch dynamic website content from Xano
  * @param {string} pageSlug - The page slug (homepage, about, contact, etc.)
@@ -181,6 +235,11 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
     }
   } catch (error) {
     console.error(`❌ Error fetching content for ${pageSlug}:`, error);
+  }
+
+  if (websiteContent.faq_section || websiteContent.faq) {
+    websiteContent.faq_section = normalizeFaqSection(websiteContent.faq_section || websiteContent.faq);
+    delete websiteContent.faq;
   }
 
   // Merge with default content, prioritizing Xano content

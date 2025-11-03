@@ -55,6 +55,62 @@ function parseSectionContent(rawContent) {
     return {};
 }
 
+function normalizeFaqSectionData(section = {}, parsedContent = {}) {
+    const mergedContent = {
+        ...(typeof parsedContent === 'object' && parsedContent !== null ? parsedContent : {})
+    };
+
+    if (typeof mergedContent.content === 'object' && mergedContent.content !== null) {
+        Object.assign(mergedContent, mergedContent.content);
+    }
+
+    const fieldFallbacks = ['headline', 'subheadline', 'body_text', 'button_text', 'button_link'];
+    fieldFallbacks.forEach((key) => {
+        if (!mergedContent[key] && section[key]) {
+            mergedContent[key] = section[key];
+        }
+    });
+
+    if (Array.isArray(mergedContent.faqs)) {
+        mergedContent.faqs.forEach((item, index) => {
+            const slot = index + 1;
+            const question = item?.question ?? item?.headline ?? '';
+            const answer = item?.answer ?? item?.body ?? item?.body_text ?? '';
+            mergedContent[`faq_question_${slot}`] = question;
+            mergedContent[`faq_answer_${slot}`] = answer;
+            mergedContent[`faq_${slot}_question`] = mergedContent[`faq_${slot}_question`] || question;
+            mergedContent[`faq_${slot}_answer`] = mergedContent[`faq_${slot}_answer`] || answer;
+        });
+    }
+
+    const extractedFaqs = [];
+    for (let i = 1; i <= 10; i++) {
+        const question =
+            mergedContent[`faq_question_${i}`] ??
+            mergedContent[`faq_${i}_question`] ??
+            null;
+        const answer =
+            mergedContent[`faq_answer_${i}`] ??
+            mergedContent[`faq_${i}_answer`] ??
+            null;
+
+        if (question || answer) {
+            mergedContent[`faq_question_${i}`] = question || '';
+            mergedContent[`faq_answer_${i}`] = answer || '';
+            extractedFaqs.push({
+                question: question || '',
+                answer: answer || ''
+            });
+        }
+    }
+
+    if (!Array.isArray(mergedContent.faqs) || !mergedContent.faqs.length) {
+        mergedContent.faqs = extractedFaqs;
+    }
+
+    return mergedContent;
+}
+
 // Helper function to get fallback content for different pages
 function getFallbackContentForPage(pageSlug) {
     const commonFooter = {
@@ -356,6 +412,18 @@ export async function GET({ request }) {
                             content: parsedContent
                         };
 
+                        const isFaqSection = section.section_key === 'faq' || section.section_key === 'faq_section';
+                        const targetKey = isFaqSection ? 'faq_section' : section.section_key;
+
+                        if (isFaqSection) {
+                            const normalizedFaq = normalizeFaqSectionData(section, parsedContent);
+                            Object.assign(combinedSection, normalizedFaq);
+                            combinedSection.content = {
+                                ...(combinedSection.content || {}),
+                                ...normalizedFaq
+                            };
+                        }
+
                         // Ensure FAQ question/answer pairs remain available at the top level
                         Object.keys(parsedContent)
                             .filter(key => key.startsWith('faq_question_') || key.startsWith('faq_answer_'))
@@ -364,7 +432,7 @@ export async function GET({ request }) {
                             });
 
                         // Include all section properties for flexible content structure
-                        organizedContent[section.section_key] = combinedSection;
+                        organizedContent[targetKey] = combinedSection;
                     }
                 }
             });
@@ -414,11 +482,42 @@ export async function PUT({ request }) {
         const requestBody = await request.text();
         console.log('📝 Raw request body:', requestBody);
 
-        if (!requestBody) {
-            throw new Error('Request body is empty');
+        if (!requestBody || requestBody.trim() === '') {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'Request body is required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
-        const { orgId, sectionKey, content, pageSlug } = JSON.parse(requestBody);
+        let parsedData;
+        try {
+            parsedData = JSON.parse(requestBody);
+        } catch (parseError) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: `Invalid JSON: ${parseError.message}`
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const { orgId, sectionKey, content, pageSlug } = parsedData;
+
+        // Validate required fields
+        if (!orgId || !sectionKey) {
+            return new Response(JSON.stringify({
+                success: false,
+                error: 'orgId and sectionKey are required'
+            }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         console.log(`🎨 Updating website content for org ${orgId}, section ${sectionKey}, page ${pageSlug}`, content);
 
         try {
@@ -467,10 +566,9 @@ export async function PUT({ request }) {
 
             console.log('📝 Found record to update:', recordToUpdate.id);
 
-            // Prepare update data with only the fields that were provided
+            // Prepare update data - store content as JSON string if it's an object
             const updateData = {
-                content,
-                ...content,
+                content: typeof content === 'string' ? content : JSON.stringify(content),
                 updated_at: new Date().toISOString()
             };
 

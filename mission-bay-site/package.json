@@ -21,6 +21,7 @@
     "astro": "^5.14.1",
     "astro-icon": "^1.1.5",
     "auth0": "^4.32.0",
+    "googleapis": "^164.1.0",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
     "less": "^4.4.1"

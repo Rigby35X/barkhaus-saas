@@ -4,7 +4,7 @@ import IntegrationCard from "../components/integrations/IntegrationCard";
 
 function GmailIntegrationSection() {
   const handleConnect = () => {
-    window.location.href = "/api/integrations/google/start";
+    window.location.href = "src/pages/api/gmail/auth.js";
   };
 
   const handleDisconnect = async () => {
