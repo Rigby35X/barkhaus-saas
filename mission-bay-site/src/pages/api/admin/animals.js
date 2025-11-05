@@ -26,10 +26,25 @@ async function makeXanoRequest(endpoint, options = {}) {
     });
 
     if (!response.ok) {
-        throw new Error(`Xano API error: ${response.status} ${response.statusText}`);
+        let errorDetails = '';
+        try {
+            const errorBody = await response.json();
+            errorDetails = JSON.stringify(errorBody);
+        } catch (e) {
+            errorDetails = await response.text();
+        }
+        const errorMsg = `Xano API error: ${response.status} ${response.statusText}. Details: ${errorDetails}`;
+        console.error(`❌ ${errorMsg}`);
+        throw new Error(errorMsg);
     }
 
-    return await response.json();
+    try {
+        return await response.json();
+    } catch (e) {
+        const responseText = await response.text();
+        console.error('❌ Failed to parse Xano response as JSON:', responseText);
+        throw new Error(`Failed to parse Xano response: ${e.message}`);
+    }
 }
 
 // Helper function to normalize status values
@@ -75,7 +90,8 @@ export async function GET({ request }) {
             if (orgId === '9') {
                 const dogsData = await makeXanoRequest(`/dogs`);
                 console.log('✅ Dogs fetched from Xano:', dogsData);
-                
+                console.log(`📊 Fetched ${dogsData.length} dogs from Xano`);
+
                 // Map dogs data to animals format
                 animals = dogsData.map(dog => ({
                     id: dog.id,
@@ -137,9 +153,18 @@ export async function GET({ request }) {
                 animals = await makeXanoRequest(`/orgs/${orgId}/animals`);
                 console.log('✅ Animals fetched from Xano:', animals);
             }
+
+            // Populate shared storage as backup for fallback operations
+            animals.forEach(animal => {
+                sharedStorage.animals.set(animal.id, animal);
+            });
+            console.log(`💾 Cached ${animals.length} animals in shared storage for org ${orgId}`);
         } catch (xanoError) {
             console.warn('⚠️ Xano fetch failed, using shared storage:', xanoError.message);
             animals = getAnimals(orgId);
+            if (animals.length === 0) {
+                console.warn('⚠️ No animals found in shared storage for org:', orgId);
+            }
         }
         
         return new Response(JSON.stringify(animals), {
@@ -179,6 +204,18 @@ export async function POST({ request }) {
         try {
             // For org 9 (Mission Bay), create in dogs table with different schema
             if (orgId === '9') {
+                // Helper function to map size to Xano format
+                // Note: Xano only has 2 valid size options: "Medium: 25-50 lbs" and "Large: 50-80 lbs"
+                const mapSizeToXanoFormat = (size) => {
+                    const sizeMap = {
+                        'Small': 'Medium: 25-50 lbs',        // Map Small to Medium since no Small option exists
+                        'Medium': 'Medium: 25-50 lbs',
+                        'Large': 'Large: 50-80 lbs',
+                        'Extra Large': 'Large: 50-80 lbs'    // Map Extra Large to Large since no XL option exists
+                    };
+                    return sizeMap[size] || 'Medium: 25-50 lbs'; // Default to Medium if unknown
+                };
+
                 // Map admin data to dogs table schema
                 const dogData = {
                     org: orgId,
@@ -189,11 +226,13 @@ export async function POST({ request }) {
                     Code: animalData.status || 'Available',
                     Intake_Date: animalData.intake_date || null,
                     Gender: animalData.gender || '',
-                    Estimated_Size_When_Grown: animalData.weight || animalData.size || '',
+                    Estimated_Size_When_Grown: mapSizeToXanoFormat(animalData.weight || animalData.size || ''),
                     Markings: animalData.color || '',
                     Vaccinations: animalData.vaccinated ? 'Yes' : 'No',
                     Is_Dog_Fixed: animalData.spayed_neutered || false,
                     Microchip_Number: animalData.microchip ? 'Yes' : '',
+                    // Handle image URL - this is the missing piece!
+                    main_image: animalData.image_url || '',
                     // Handle age conversion (convert years to weeks if needed)
                     Pup_is_currently_this_many_weeks_old: animalData.age ?
                         (typeof animalData.age === 'string' ?
@@ -257,14 +296,18 @@ export async function POST({ request }) {
         } catch (xanoError) {
             console.warn('⚠️ Xano create failed, using shared storage:', xanoError.message);
             // Create animal in shared storage as fallback
+            const newId = Date.now();
             newAnimal = {
-                id: Date.now(),
+                id: newId,
                 org: orgId,
                 created_at: Date.now(),
                 updated_at: Date.now(),
                 ...animalData
             };
-            sharedStorage.animals.set(newAnimal.id, newAnimal);
+            // Store with both numeric and string keys for consistency
+            sharedStorage.animals.set(newId, newAnimal);
+            sharedStorage.animals.set(newId.toString(), newAnimal);
+            console.log(`💾 Created animal in shared storage with ID: ${newId}`);
         }
 
         return new Response(JSON.stringify(newAnimal), {
@@ -275,8 +318,9 @@ export async function POST({ request }) {
             }
         });
     } catch (error) {
-        console.error('Error creating animal:', error);
-        return new Response(JSON.stringify({ error: 'Failed to create animal' }), {
+        console.error('💥 Error creating animal:', error);
+        const errorMsg = error.message || 'Failed to create animal';
+        return new Response(JSON.stringify({ error: errorMsg }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
@@ -296,10 +340,26 @@ export async function PUT({ request }) {
             });
         }
 
-        let updatedAnimal;
+        console.log(`📝 PUT request received for animal ID: ${id}, orgId: ${orgId}`);
+        console.log(`📦 Animal data to update:`, animalData);
+
+        let updatedAnimal = null;
         try {
             // For org 9 (Mission Bay), update in dogs table with different schema
             if (orgId === '9') {
+                console.log(`🐕 Updating dog with ID ${id} in Xano dogs table`);
+                // Helper function to map size to Xano format
+                // Note: Xano only has 2 valid size options: "Medium: 25-50 lbs" and "Large: 50-80 lbs"
+                const mapSizeToXanoFormat = (size) => {
+                    const sizeMap = {
+                        'Small': 'Medium: 25-50 lbs',        // Map Small to Medium since no Small option exists
+                        'Medium': 'Medium: 25-50 lbs',
+                        'Large': 'Large: 50-80 lbs',
+                        'Extra Large': 'Large: 50-80 lbs'    // Map Extra Large to Large since no XL option exists
+                    };
+                    return sizeMap[size] || 'Medium: 25-50 lbs'; // Default to Medium if unknown
+                };
+
                 // Map admin data back to dogs table schema
                 const dogData = {
                     Dog_Name: animalData.name,
@@ -309,11 +369,13 @@ export async function PUT({ request }) {
                     Code: animalData.status || 'Available',
                     Intake_Date: animalData.intake_date || null,
                     Gender: animalData.gender || '',
-                    Estimated_Size_When_Grown: animalData.weight || animalData.size || '',
+                    Estimated_Size_When_Grown: mapSizeToXanoFormat(animalData.weight || animalData.size || ''),
                     Markings: animalData.color || '',
                     Vaccinations: animalData.vaccinated ? 'Yes' : 'No',
                     Is_Dog_Fixed: animalData.spayed_neutered || false,
                     Microchip_Number: animalData.microchip ? 'Yes' : '',
+                    // Handle image URL - this is the missing piece for updates too!
+                    main_image: animalData.image_url || '',
                     // Handle age conversion (convert years back to weeks if needed)
                     Pup_is_currently_this_many_weeks_old: animalData.age ?
                         (typeof animalData.age === 'string' ?
@@ -328,14 +390,15 @@ export async function PUT({ request }) {
                     }
                 });
 
-                console.log('Updating dog with data:', dogData);
+                console.log('🔄 Cleaned dog data for update:', dogData);
+                console.log(`🔗 Making PATCH request to /dogs/${id}`);
 
                 const updatedDog = await makeXanoRequest(`/dogs/${id}`, {
                     method: 'PATCH',
                     body: JSON.stringify(dogData)
                 });
 
-                console.log('✅ Dog updated in Xano:', updatedDog);
+                console.log('✅ Dog updated successfully in Xano:', updatedDog);
 
                 // Map back to animals format for response
                 updatedAnimal = {
@@ -370,19 +433,36 @@ export async function PUT({ request }) {
                 console.log('✅ Animal updated in Xano:', updatedAnimal);
             }
         } catch (xanoError) {
-            console.warn('⚠️ Xano update failed, using shared storage:', xanoError.message);
-            // Update animal in shared storage as fallback
-            const existingAnimal = sharedStorage.animals.get(parseInt(id));
+            console.warn('⚠️ Xano update failed:', xanoError.message);
+            console.warn(`🔍 Attempting fallback: looking for animal ${id} in shared storage`);
+
+            // Try to update animal in shared storage as fallback
+            // Support both numeric and string IDs
+            let existingAnimal = sharedStorage.animals.get(parseInt(id));
+            if (!existingAnimal) {
+                existingAnimal = sharedStorage.animals.get(id.toString());
+            }
+
             if (existingAnimal) {
+                console.log(`✅ Found animal in shared storage, updating it`);
                 updatedAnimal = {
                     ...existingAnimal,
                     ...animalData,
                     updated_at: Date.now()
                 };
+                // Store with both numeric and string keys for consistency
                 sharedStorage.animals.set(parseInt(id), updatedAnimal);
+                sharedStorage.animals.set(id.toString(), updatedAnimal);
             } else {
-                throw new Error('Animal not found');
+                const storageKeys = Array.from(sharedStorage.animals.keys());
+                console.error(`❌ Animal not found in shared storage. Looking for ID: ${id}. Available IDs:`, storageKeys);
+                throw new Error(`Animal not found in Xano (${xanoError.message}) and not available in fallback storage. ID: ${id}`);
             }
+        }
+
+        if (!updatedAnimal) {
+            console.error('❌ updatedAnimal is null after update attempt');
+            throw new Error('Failed to update animal - no data returned');
         }
 
         return new Response(JSON.stringify(updatedAnimal), {
@@ -393,8 +473,9 @@ export async function PUT({ request }) {
             }
         });
     } catch (error) {
-        console.error('Error updating animal:', error);
-        return new Response(JSON.stringify({ error: 'Failed to update animal' }), {
+        console.error('💥 Error updating animal:', error);
+        const errorMsg = error.message || 'Failed to update animal';
+        return new Response(JSON.stringify({ error: errorMsg }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
@@ -433,6 +514,7 @@ export async function DELETE({ request }) {
             console.warn('⚠️ Xano delete failed, using shared storage:', xanoError.message);
             // Delete from shared storage as fallback
             sharedStorage.animals.delete(parseInt(id));
+            sharedStorage.animals.delete(id.toString());
         }
 
         return new Response(JSON.stringify({ success: true }), {
@@ -443,8 +525,9 @@ export async function DELETE({ request }) {
             }
         });
     } catch (error) {
-        console.error('Error deleting animal:', error);
-        return new Response(JSON.stringify({ error: 'Failed to delete animal' }), {
+        console.error('💥 Error deleting animal:', error);
+        const errorMsg = error.message || 'Failed to delete animal';
+        return new Response(JSON.stringify({ error: errorMsg }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });

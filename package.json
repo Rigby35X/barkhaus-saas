@@ -16,6 +16,7 @@
 	},
 	"dependencies": {
 		"@astrojs/sitemap": "^3.6.0",
+		"@astrojs/vercel": "^9.0.0",
 		"@auth0/nextjs-auth0": "^4.10.0",
 		"@useparagon/connect": "^2.1.1",
 		"astro": "^5.14.1",

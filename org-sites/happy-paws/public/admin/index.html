@@ -2532,13 +2532,22 @@
             // Handle existing images
             uploadedImages = [];
             if (animal.image_url) {
-                uploadedImages.push(animal.image_url);
+                // For existing images, store as URL-only objects (no file to upload)
+                uploadedImages.push({
+                    name: 'Existing image',
+                    url: animal.image_url,
+                    file: null  // No file object for existing images
+                });
             }
             // Handle additional images if they exist
             if (animal.images && Array.isArray(animal.images)) {
                 animal.images.forEach(img => {
-                    if (img && !uploadedImages.includes(img)) {
-                        uploadedImages.push(img);
+                    if (img && !uploadedImages.find(i => i.url === img)) {
+                        uploadedImages.push({
+                            name: 'Existing image',
+                            url: img,
+                            file: null
+                        });
                     }
                 });
             }
@@ -2550,45 +2559,78 @@
             console.log('Saving animal, editingAnimalId:', editingAnimalId);
             console.log('Uploaded images:', uploadedImages);
 
-            // For now, use URL field instead of large base64 data to avoid API issues
-            const imageUrl = document.getElementById('animalImageUrl').value ||
-                           (uploadedImages.length > 0 ? 'https://via.placeholder.com/400x300?text=Uploaded+Image' : '');
-
-            console.log('Image URL being saved:', imageUrl);
-            console.log('Uploaded images count:', uploadedImages.length);
-
-            const formData = {
-                name: document.getElementById('animalName').value,
-                species: document.getElementById('animalSpecies').value,
-                breed: document.getElementById('animalBreed').value,
-                age: parseInt(document.getElementById('animalAge').value) || null,
-                gender: document.getElementById('animalGender').value,
-                size: document.getElementById('animalSize').value,
-                weight: document.getElementById('animalWeight').value,
-                status: document.getElementById('animalStatus').value,
-                intake_date: document.getElementById('animalIntakeDate').value,
-                adoption_fee: parseFloat(document.getElementById('animalAdoptionFee').value) || null,
-                image_url: imageUrl,
-                description: document.getElementById('animalDescription').value,
-                special_needs: document.getElementById('animalSpecialNeeds').checked,
-                good_with_kids: document.getElementById('animalGoodWithKids').checked,
-                good_with_cats: document.getElementById('animalGoodWithCats').checked,
-                good_with_dogs: document.getElementById('animalGoodWithDogs').checked,
-                spayed_neutered: document.getElementById('animalSpayedNeutered').checked,
-                vaccinated: document.getElementById('animalVaccinated').checked,
-                microchip: document.getElementById('animalMicrochip').checked,
-                orgId: currentOrgId
-            };
-
-            // For editing, add the ID to the data
-            if (editingAnimalId) {
-                formData.id = editingAnimalId;
-            }
-
             try {
                 saveBtn.classList.add('loading');
                 formError.classList.add('hidden');
                 formSuccess.classList.add('hidden');
+
+                // Upload images first if there are any new ones
+                let imageUrl = document.getElementById('animalImageUrl').value || '';
+
+                // Check if we have a new image to upload (has a file object)
+                const newImage = uploadedImages.find(img => img.file !== null && img.file !== undefined);
+
+                if (newImage) {
+                    console.log('Uploading new image to server...');
+                    formSuccess.textContent = 'Uploading images...';
+                    formSuccess.classList.remove('hidden');
+
+                    // Upload the new image
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('image', newImage.file);
+                    uploadFormData.append('section', 'animals');
+                    uploadFormData.append('orgId', currentOrgId);
+
+                    const uploadResponse = await fetch('/api/admin/upload-image', {
+                        method: 'POST',
+                        body: uploadFormData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        throw new Error('Failed to upload image');
+                    }
+
+                    const uploadResult = await uploadResponse.json();
+                    if (uploadResult.success) {
+                        imageUrl = uploadResult.imageUrl;
+                        console.log('Image uploaded successfully:', imageUrl);
+                    } else {
+                        throw new Error(uploadResult.error || 'Image upload failed');
+                    }
+                } else if (uploadedImages.length > 0 && !imageUrl) {
+                    // Use existing image URL if no new image was uploaded
+                    imageUrl = uploadedImages[0].url;
+                }
+
+                console.log('Image URL being saved:', imageUrl);
+
+                const formData = {
+                    name: document.getElementById('animalName').value,
+                    species: document.getElementById('animalSpecies').value,
+                    breed: document.getElementById('animalBreed').value,
+                    age: parseInt(document.getElementById('animalAge').value) || null,
+                    gender: document.getElementById('animalGender').value,
+                    size: document.getElementById('animalSize').value,
+                    weight: document.getElementById('animalWeight').value,
+                    status: document.getElementById('animalStatus').value,
+                    intake_date: document.getElementById('animalIntakeDate').value,
+                    adoption_fee: parseFloat(document.getElementById('animalAdoptionFee').value) || null,
+                    image_url: imageUrl,
+                    description: document.getElementById('animalDescription').value,
+                    special_needs: document.getElementById('animalSpecialNeeds').checked,
+                    good_with_kids: document.getElementById('animalGoodWithKids').checked,
+                    good_with_cats: document.getElementById('animalGoodWithCats').checked,
+                    good_with_dogs: document.getElementById('animalGoodWithDogs').checked,
+                    spayed_neutered: document.getElementById('animalSpayedNeutered').checked,
+                    vaccinated: document.getElementById('animalVaccinated').checked,
+                    microchip: document.getElementById('animalMicrochip').checked,
+                    orgId: currentOrgId
+                };
+
+                // For editing, add the ID to the data
+                if (editingAnimalId) {
+                    formData.id = editingAnimalId;
+                }
 
                 const url = editingAnimalId
                     ? `/api/admin/animals`
@@ -2598,6 +2640,8 @@
                 console.log('Sending request to:', url);
                 console.log('Method:', method);
                 console.log('Form data:', formData);
+
+                formSuccess.textContent = editingAnimalId ? 'Updating animal...' : 'Creating animal...';
 
                 const response = await fetch(url, {
                     method: method,
@@ -2708,21 +2752,21 @@
                 const originalText = uploadArea.innerHTML;
                 uploadArea.innerHTML = `<div class="text-center"><div class="text-blue-600">Processing ${file.name}...</div></div>`;
 
-                // Convert image to base64 data URL for storage
+                // Convert image to base64 data URL for preview
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const dataUrl = e.target.result;
-                    uploadedImages.push(dataUrl);
+                    // Store both the file object and preview URL
+                    uploadedImages.push({
+                        name: file.name,
+                        url: dataUrl,
+                        file: file  // Store the actual file for upload
+                    });
                     updateImagePreview();
-
-                    // Also set the main image URL field if it's the first image
-                    if (uploadedImages.length === 1) {
-                        document.getElementById('animalImageUrl').value = dataUrl;
-                    }
 
                     // Restore upload area
                     uploadArea.innerHTML = originalText;
-                    console.log('Image uploaded successfully:', file.name);
+                    console.log('Image ready for upload:', file.name);
                 };
                 reader.onerror = function() {
                     uploadArea.innerHTML = originalText;
@@ -2745,19 +2789,22 @@
                 uploadArea.style.opacity = uploadedImages.length >= 5 ? '0.5' : '1';
                 uploadArea.style.pointerEvents = uploadedImages.length >= 5 ? 'none' : 'auto';
 
-                previewContainer.innerHTML = uploadedImages.map((image, index) => `
-                    <div class="relative group">
-                        <img src="${image}" alt="Preview ${index + 1}"
-                             class="w-full h-20 object-cover rounded border-2 border-transparent hover:border-blue-300 transition-colors">
-                        ${index === 0 ? '<div class="absolute top-1 left-1 bg-green-500 text-white text-xs px-1 rounded">Main</div>' : ''}
-                        <button onclick="removeImage(${index})"
-                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('');
+                previewContainer.innerHTML = uploadedImages.map((image, index) => {
+                    const imageUrl = typeof image === 'string' ? image : image.url;
+                    return `
+                        <div class="relative group">
+                            <img src="${imageUrl}" alt="Preview ${index + 1}"
+                                 class="w-full h-20 object-cover rounded border-2 border-transparent hover:border-blue-300 transition-colors">
+                            ${index === 0 ? '<div class="absolute top-1 left-1 bg-green-500 text-white text-xs px-1 rounded">Main</div>' : ''}
+                            <button onclick="removeImage(${index})"
+                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
             } else {
                 previewGrid.classList.add('hidden');
                 uploadArea.style.opacity = '1';

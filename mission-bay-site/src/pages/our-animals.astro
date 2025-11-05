@@ -201,13 +201,13 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
     .cs-title {
       font-size: clamp(2.5rem, 5vw, 4rem);
       margin-bottom: 1rem;
-      color: #6cb3eb; /* Change this to your desired color */
+      color: white;
     }
-    
+
     .cs-text {
       font-size: 1.125rem;
       line-height: 1.6;
-      color: #6cb3eb;
+      color: rgba(255, 255, 255, 0.9);
     }
   }
 
@@ -402,7 +402,8 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
     }
     
     .cs-detail {
-      background: var(--accent);
+      background: white;
+      border: 1px solid var(--accent);
       padding: 0.25rem 0.75rem;
       border-radius: 15px;
       font-size: 0.875rem;

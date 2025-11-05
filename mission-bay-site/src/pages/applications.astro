@@ -32,122 +32,114 @@ const ctaContent = content.cta || {};
   </section>
 
   <!-- ============================================ -->
-  <!--              Application Types               -->
-  <!-- ============================================ -->
-  
-  <section id="application-types">
-    <div class="cs-container">
-      <div class="cs-card-group">
-        
-        <!-- Adoption Application -->
-        <div class="cs-application-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/adoption.svg" alt="Adoption icon" width="60" height="60" />
-          </div>
-          <h2>{adoptionContent.headline || "Adoption Application"}</h2>
-          <p class="cs-description">
-            {adoptionContent.body_text || "Ready to welcome a new family member? Our adoption process ensures the perfect match between you and your future pet. We'll guide you through every step to make sure both you and your new companion are set up for success."}
-          </p>
+<!--              Application Types               -->
+<!-- ============================================ -->
+<section id="application-types">
+  <div class="cs-container">
+    <div class="cs-card-group">
 
-          <div class="cs-requirements">
-            <h3>Requirements:</h3>
-            <div class="cs-requirements-text" set:html={adoptionContent.requirements?.replace(/\n/g, '<br>') || `
-              <ul>
-                <li>Must be 21 years or older</li>
-                <li>Valid government-issued ID</li>
-                <li>Proof of residence</li>
-                <li>Landlord approval (if renting)</li>
-                <li>Veterinary references (if you've had pets)</li>
-              </ul>
-            `}>
-            </div>
-          </div>
-          
-          <div class="cs-process">
-            <h3>Process:</h3>
-            <ol>
-              <li>Submit online application</li>
-              <li>Application review (24-48 hours)</li>
-              <li>Meet and greet with your chosen pet</li>
-              <li>Home visit (if required)</li>
-              <li>Finalize adoption</li>
-            </ol>
-          </div>
-          
-          <div class="cs-fees">
-            <h3>Adoption Fees:</h3>
-            <div class="cs-fee-list">
-              <div class="cs-fee-item">
-                <span>Dogs:</span>
-                <span>$150 - $300</span>
-              </div>
-              <div class="cs-fee-item">
-                <span>Cats:</span>
-                <span>$75 - $150</span>
-              </div>
-              <div class="cs-fee-item">
-                <span>Small Animals:</span>
-                <span>$25 - $75</span>
-              </div>
-            </div>
-            <p class="cs-fee-note">
-              Adoption fees include spay/neuter, vaccinations, microchip, and health check.
-            </p>
-          </div>
-          
-          <a href="/forms/adoption-application" class="cs-button-solid">{adoptionContent.button_text || "Start Adoption Application"}</a>
+      <!-- Adoption Application -->
+      <div class="cs-application-card">
+        <div class="cs-icon">
+          <img src="/assets/svgs/adoption.svg" alt="Adoption icon" width="60" height="60" />
+        </div>
+        <h2>{adoptionContent.headline || "Adoption Application"}</h2>
+        <p class="cs-description">
+          {adoptionContent.body_text || "Ready to welcome a new family member? Our adoption process ensures the perfect match between you and your future pet. We'll guide you through every step to make sure both you and your new companion are set up for success."}
+        </p>
+
+        <div class="cs-requirements">
+          <h3>Requirements:</h3>
+          <div class="cs-requirements-text" set:html={adoptionContent.requirements?.replace(/\n/g, '<br>') || `
+            <ul>
+              <li>Must be 21 years or older</li>
+              <li>Valid government-issued ID</li>
+              <li>Proof of residence</li>
+              <li>Landlord approval (if renting)</li>
+              <li>Veterinary references (if you've had pets)</li>
+            </ul>
+          `}></div>
         </div>
 
-        <!-- Foster Application -->
-        <div class="cs-application-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/foster.svg" alt="Foster icon" width="60" height="60" />
-          </div>
-          <h2>{fosterContent.headline || "Foster Application"}</h2>
-          <p class="cs-description">
-            {fosterContent.body_text || "Foster families provide temporary care for animals who need extra time before adoption. This might include young animals, those recovering from medical procedures, or pets who need behavioral support. We provide all supplies and medical care."}
-          </p>
-
-          <div class="cs-requirements">
-            <h3>Requirements:</h3>
-            <div class="cs-requirements-text" set:html={fosterContent.requirements?.replace(/\n/g, '<br>') || `
-              <ul>
-                <li>Must be 18 years or older</li>
-                <li>Stable living situation</li>
-                <li>Time to dedicate to foster care</li>
-                <li>Transportation to vet appointments</li>
-                <li>Current pets must be up-to-date on vaccinations</li>
-              </ul>
-            `}>
-            </div>
-          </div>
-          
-          <div class="cs-foster-types">
-            <h3>Foster Opportunities:</h3>
-            <ul>
-              <li><strong>Bottle babies:</strong> Orphaned kittens/puppies needing round-the-clock care</li>
-              <li><strong>Medical foster:</strong> Animals recovering from surgery or illness</li>
-              <li><strong>Behavioral foster:</strong> Shy or fearful animals needing socialization</li>
-              <li><strong>Maternity foster:</strong> Pregnant animals and their babies</li>
-              <li><strong>Respite foster:</strong> Short-term care (weekends, vacations)</li>
-            </ul>
-          </div>
-          
-          <div class="cs-support">
-            <h3>We Provide:</h3>
-            <ul>
-              <li>All food, supplies, and equipment</li>
-              <li>Complete medical care</li>
-              <li>24/7 support hotline</li>
-              <li>Training and guidance</li>
-              <li>Transportation assistance when needed</li>
-            </ul>
-          </div>
-          
-          <a href="/forms/foster-application" class="cs-button-solid">{fosterContent.button_text || "Start Foster Application"}</a>
+        <div class="cs-process">
+          <h3>Process:</h3>
+          <ol>
+            <li>Submit online application</li>
+            <li>Application review (24–48 hours)</li>
+            <li>Meet and greet with your chosen pet</li>
+            <li>Home visit (if required)</li>
+            <li>Finalize adoption</li>
+          </ol>
         </div>
 
+        <div class="cs-fees">
+          <h3>Adoption Fees:</h3>
+          <div class="cs-fee-list">
+            <div class="cs-fee-item"><span>Dogs:</span><span>$150–$300</span></div>
+            <div class="cs-fee-item"><span>Cats:</span><span>$75–$150</span></div>
+            <div class="cs-fee-item"><span>Small Animals:</span><span>$25–$75</span></div>
+          </div>
+          <p class="cs-fee-note">Adoption fees include spay/neuter, vaccinations, microchip, and health check.</p>
+        </div>
+
+        <a href="/forms/adoption-application" class="cs-button-solid">
+          {adoptionContent.button_text || "Start Adoption Application"}
+        </a>
+      </div>
+
+      <!-- Foster Application -->
+      <div class="cs-application-card">
+        <div class="cs-icon">
+          <img src="/assets/svgs/foster.svg" alt="Foster icon" width="60" height="60" />
+        </div>
+        <h2>{fosterContent.headline || "Foster Application"}</h2>
+        <p class="cs-description">
+          {fosterContent.body_text || "Foster families provide temporary care for animals until they are ready for adoption. We provide supplies & medical care — you provide love & time."}
+        </p>
+
+        <div class="cs-requirements">
+          <h3>Requirements:</h3>
+          <div class="cs-requirements-text" set:html={fosterContent.requirements?.replace(/\n/g, '<br>') || `
+            <ul>
+              <li>Must be 18 years or older</li>
+              <li>Stable living situation</li>
+              <li>Transportation to vet appointments</li>
+              <li>Time to provide care & attention</li>
+              <li>Current pets UTD on vaccinations</li>
+            </ul>
+          `}></div>
+        </div>
+
+        <div class="cs-foster-types">
+          <h3>Foster Opportunities:</h3>
+          <ul>
+            <li><strong>Bottle babies:</strong> Orphaned kittens/puppies</li>
+            <li><strong>Medical foster:</strong> Recovering animals</li>
+            <li><strong>Behavioral foster:</strong> Shy or fearful pets</li>
+            <li><strong>Maternity foster:</strong> Pregnant pets & babies</li>
+            <li><strong>Respite foster:</strong> Short-term support</li>
+          </ul>
+        </div>
+
+        <div class="cs-support">
+          <h3>We Provide:</h3>
+          <ul>
+            <li>Food & supplies</li>
+            <li>Medical care</li>
+            <li>Training & support</li>
+            <li>24/7 assistance</li>
+          </ul>
+        </div>
+
+        <a href="/forms/foster-application" class="cs-button-solid">
+          {fosterContent.button_text || "Start Foster Application"}
+        </a>
+      </div>
+        <!-- ========================== -->
+<!--  VOLUNTEER APPLICATION OFF -->
+<!-- ========================== -->
         <!-- Volunteer Application -->
+         <!--
         <div class="cs-application-card">
           <div class="cs-icon">
             <img src="/assets/svgs/volunteer.svg" alt="Volunteer icon" width="60" height="60" />
@@ -222,6 +214,31 @@ const ctaContent = content.cta || {};
       </div>
     </div>
   </section>
+  -->
+          <!-- Relinquishment Application -->
+      <div class="cs-application-card">
+        <div class="cs-icon">
+          <img src="/assets/svgs/relinquish.svg" alt="Relinquish pet icon" width="60" height="60" />
+        </div>
+        <h2>Relinquishment Request</h2>
+        <p class="cs-description">
+          If you need to surrender a pet, we're here to help. Please complete our intake form so we can learn about your pet & find the best placement option.
+        </p>
+
+        <ul>
+          <li>Complete the online form</li>
+          <li>Provide vet & behavior history</li>
+          <li>We’ll respond within 48 hours</li>
+        </ul>
+
+        <a href="/forms/relinquishment-application" class="cs-button-solid">
+          Start Relinquishment Request
+        </a>
+      </div>
+
+    </div> <!-- /cs-card-group -->
+  </div> <!-- /cs-container -->
+</section>
 
   <!-- ============================================ -->
   <!--              Additional Info                 -->
@@ -266,7 +283,7 @@ const ctaContent = content.cta || {};
   <CTA />
 </BaseLayout>
 
-<style lang="less">
+    <style lang="less">
   /* Page Header */
   #page-header {
     padding: var(--sectionPadding);
@@ -297,58 +314,66 @@ const ctaContent = content.cta || {};
     padding: var(--sectionPadding);
 
     .cs-card-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 3rem;
-      max-width: 1400px;
-      margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.cs-application-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #f0f0f0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .cs-button-solid {
+    margin-top: auto;
+    align-self: center;
+  }
+
+  .cs-icon {
+    text-align: center;
+    margin-bottom: 1.5rem;
+
+    img {
+      filter: brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1237%) hue-rotate(14deg) brightness(94%) contrast(91%);
     }
+  }
 
-    .cs-application-card {
-      background: white;
-      border-radius: 16px;
-      padding: 2.5rem;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-      border: 1px solid #f0f0f0;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--headerColor);
+  }
 
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-      }
+  .cs-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    color: var(--bodyTextColor);
+  }
 
-      .cs-icon {
-        text-align: center;
-        margin-bottom: 1.5rem;
-
-        img {
-          filter: brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1237%) hue-rotate(14deg) brightness(94%) contrast(91%);
-        }
-      }
-
-      h2 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        color: var(--headerColor);
-      }
-
-      .cs-description {
-        font-size: 1rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-        color: var(--bodyTextColor);
-      }
-
-      h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: var(--headerColor);
-        border-bottom: 2px solid var(--primary);
-        padding-bottom: 0.5rem;
-      }
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--headerColor);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+  }
 
       ul, ol {
         margin-bottom: 2rem;
@@ -373,7 +398,8 @@ const ctaContent = content.cta || {};
         margin-bottom: 2rem;
 
         .cs-fee-list {
-          background: var(--accent);
+          background: white;
+          border: 2px solid var(--accent);
           padding: 1.5rem;
           border-radius: 8px;
           margin-bottom: 1rem;
@@ -415,14 +441,21 @@ const ctaContent = content.cta || {};
       }
 
       .cs-opportunity {
-        background: var(--accent);
+        background: white;
+        border: 2px solid var(--accent);
         padding: 1rem;
         border-radius: 8px;
+        transition: border-color 0.3s ease;
+
+        &:hover {
+          border-color: var(--primary);
+        }
 
         strong {
           display: block;
           margin-bottom: 0.5rem;
-          color: var(--headerColor);
+          color: var(--primary);
+          font-weight: 600;
         }
 
         p {
@@ -449,30 +482,6 @@ const ctaContent = content.cta || {};
       gap: 2rem;
       max-width: 1200px;
       margin: 0 auto;
-    }
-
-    .cs-info-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-
-      h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-        color: var(--bodyTextColor);
-      }
-
-      .cs-button-transparent {
-        align-self: flex-start;
-      }
     }
   }
 

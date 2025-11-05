@@ -3919,16 +3919,24 @@
             document.getElementById('animalVaccinated').checked = animal.vaccinated || false;
             document.getElementById('animalMicrochip').checked = animal.microchip || false;
 
-            // Handle existing images
+            // Handle existing images - store as objects with null file property
             uploadedImages = [];
             if (animal.image_url) {
-                uploadedImages.push(animal.image_url);
+                uploadedImages.push({
+                    name: 'Existing image',
+                    url: animal.image_url,
+                    file: null  // No file object for existing images
+                });
             }
             // Handle additional images if they exist
             if (animal.images && Array.isArray(animal.images)) {
                 animal.images.forEach(img => {
-                    if (img && !uploadedImages.includes(img)) {
-                        uploadedImages.push(img);
+                    if (img && !uploadedImages.find(i => i.url === img)) {
+                        uploadedImages.push({
+                            name: 'Existing image',
+                            url: img,
+                            file: null
+                        });
                     }
                 });
             }
@@ -3940,9 +3948,48 @@
             console.log('Saving animal, editingAnimalId:', editingAnimalId);
             console.log('Uploaded images:', uploadedImages);
 
-            // For now, use URL field instead of large base64 data to avoid API issues
-            const imageUrl = document.getElementById('animalImageUrl').value ||
-                           (uploadedImages.length > 0 ? 'https://via.placeholder.com/400x300?text=Uploaded+Image' : '');
+            // Check if we have a new image to upload (has a file object)
+            let imageUrl = document.getElementById('animalImageUrl').value;
+
+            const newImage = uploadedImages.find(img => img.file !== null && img.file !== undefined);
+
+            if (newImage) {
+                try {
+                    console.log('Uploading new image to server:', newImage.name);
+
+                    // Upload the image to the server
+                    const uploadFormData = new FormData();
+                    uploadFormData.append('image', newImage.file);
+                    uploadFormData.append('section', 'animals');
+                    uploadFormData.append('orgId', currentOrgId || '9');
+
+                    const uploadResponse = await fetch('/api/upload-image', {
+                        method: 'POST',
+                        body: uploadFormData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        throw new Error('Failed to upload image');
+                    }
+
+                    const uploadResult = await uploadResponse.json();
+
+                    if (uploadResult.success) {
+                        imageUrl = uploadResult.imageUrl;
+                        console.log('Image uploaded successfully, URL:', imageUrl);
+                    } else {
+                        throw new Error(uploadResult.error || 'Upload failed');
+                    }
+                } catch (uploadError) {
+                    console.error('Image upload error:', uploadError);
+                    formError.textContent = 'Failed to upload image: ' + uploadError.message;
+                    formError.classList.remove('hidden');
+                    return;
+                }
+            } else if (uploadedImages.length > 0) {
+                // Use existing image URL
+                imageUrl = uploadedImages[0].url;
+            }
 
             console.log('Image URL being saved:', imageUrl);
             console.log('Uploaded images count:', uploadedImages.length);
@@ -4073,7 +4120,7 @@
             });
         }
 
-        function handleFiles(files) {
+        async function handleFiles(files) {
             const fileArray = Array.from(files);
 
             // Check limit
@@ -4082,44 +4129,35 @@
                 return;
             }
 
-            fileArray.forEach(file => {
+            for (const file of fileArray) {
                 if (!file.type.startsWith('image/')) {
                     alert(`${file.name} is not a valid image file.`);
-                    return;
+                    continue;
                 }
 
                 if (file.size > 5 * 1024 * 1024) {
                     alert(`${file.name} is too large. Please choose an image under 5MB.`);
-                    return;
+                    continue;
                 }
 
-                // Show loading indicator
-                const uploadArea = document.getElementById('imageUploadArea');
-                const originalText = uploadArea.innerHTML;
-                uploadArea.innerHTML = `<div class="text-center"><div class="text-blue-600">Processing ${file.name}...</div></div>`;
-
-                // Convert image to base64 data URL for storage
+                // Create preview URL for immediate display
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const dataUrl = e.target.result;
-                    uploadedImages.push(dataUrl);
+                    // Store both the file object and preview URL
+                    uploadedImages.push({
+                        name: file.name,
+                        url: e.target.result,
+                        file: file  // Store the actual file for upload
+                    });
                     updateImagePreview();
 
                     // Also set the main image URL field if it's the first image
                     if (uploadedImages.length === 1) {
-                        document.getElementById('animalImageUrl').value = dataUrl;
+                        document.getElementById('animalImageUrl').value = e.target.result;
                     }
-
-                    // Restore upload area
-                    uploadArea.innerHTML = originalText;
-                    console.log('Image uploaded successfully:', file.name);
-                };
-                reader.onerror = function() {
-                    uploadArea.innerHTML = originalText;
-                    alert(`Failed to read ${file.name}. Please try again.`);
                 };
                 reader.readAsDataURL(file);
-            });
+            }
         }
 
         function updateImagePreview() {
@@ -4135,19 +4173,23 @@
                 uploadArea.style.opacity = uploadedImages.length >= 5 ? '0.5' : '1';
                 uploadArea.style.pointerEvents = uploadedImages.length >= 5 ? 'none' : 'auto';
 
-                previewContainer.innerHTML = uploadedImages.map((image, index) => `
-                    <div class="relative group">
-                        <img src="${image}" alt="Preview ${index + 1}"
-                             class="w-full h-20 object-cover rounded border-2 border-transparent hover:border-blue-300 transition-colors">
-                        ${index === 0 ? '<div class="absolute top-1 left-1 bg-green-500 text-white text-xs px-1 rounded">Main</div>' : ''}
-                        <button onclick="removeImage(${index})"
-                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `).join('');
+                previewContainer.innerHTML = uploadedImages.map((image, index) => {
+                    // Handle both string URLs (legacy) and object format (new)
+                    const imageUrl = typeof image === 'string' ? image : image.url;
+                    return `
+                        <div class="relative group">
+                            <img src="${imageUrl}" alt="Preview ${index + 1}"
+                                 class="w-full h-20 object-cover rounded border-2 border-transparent hover:border-blue-300 transition-colors">
+                            ${index === 0 ? '<div class="absolute top-1 left-1 bg-green-500 text-white text-xs px-1 rounded">Main</div>' : ''}
+                            <button onclick="removeImage(${index})"
+                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
             } else {
                 previewGrid.classList.add('hidden');
                 uploadArea.style.opacity = '1';
@@ -4158,6 +4200,15 @@
         function removeImage(index) {
             uploadedImages.splice(index, 1);
             updateImagePreview();
+
+            // Update the main image URL field if we removed the first image
+            if (uploadedImages.length > 0) {
+                const firstImage = uploadedImages[0];
+                const imageUrl = typeof firstImage === 'string' ? firstImage : firstImage.url;
+                document.getElementById('animalImageUrl').value = imageUrl;
+            } else {
+                document.getElementById('animalImageUrl').value = '';
+            }
         }
 
         function clearImages() {
@@ -4185,7 +4236,7 @@
             }
 
             try {
-                const response = await fetch(`/api/admin/animals/${animalId}`, {
+                const response = await fetch(`/api/admin/animals?id=${animalId}&orgId=${currentOrgId || '9'}`, {
                     method: 'DELETE'
                 });
 
@@ -4232,6 +4283,9 @@
 
             // Initialize image upload functionality
             setupImageUploads();
+
+            // Initialize animal modal image upload functionality
+            initializeImageUpload();
 
             // Set up all event listeners with null checks
             if (loginForm) loginForm.addEventListener('submit', handleLogin);

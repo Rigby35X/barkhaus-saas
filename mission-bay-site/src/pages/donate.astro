@@ -347,7 +347,8 @@ const impactContent = content.impact || {};
     .cs-stat {
       text-align: center;
       padding: 1.5rem;
-      background: var(--accent);
+      background: white;
+      border: 2px solid var(--accent);
       border-radius: 12px;
 
       .cs-number {
@@ -379,116 +380,9 @@ const impactContent = content.impact || {};
     padding: var(--sectionPadding);
     background: #f8f9fa;
 
-    .cs-section-title {
-      font-size: 2.5rem;
-      text-align: center;
-      margin-bottom: 3rem;
-      color: var(--headerColor);
-    }
-
+    /* Donation grid spacing override */
     .cs-donation-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 2rem;
       margin-bottom: 4rem;
-      max-width: 1200px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .cs-donation-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      position: relative;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-      }
-
-      &.cs-featured {
-        border: 3px solid var(--primary);
-        transform: scale(1.05);
-
-        &:hover {
-          transform: scale(1.05) translateY(-5px);
-        }
-      }
-
-      .cs-popular-badge {
-        position: absolute;
-        top: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--primary);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.875rem;
-        font-weight: 600;
-      }
-
-      .cs-amount {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 1rem;
-      }
-
-      h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        margin-bottom: 1.5rem;
-        color: var(--bodyTextColor);
-      }
-
-      .cs-includes {
-        list-style: none;
-        padding: 0;
-        margin-bottom: 2rem;
-
-        li {
-          padding: 0.5rem 0;
-          border-bottom: 1px solid #eee;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          &:before {
-            content: "✓";
-            color: var(--primary);
-            font-weight: bold;
-            margin-right: 0.5rem;
-          }
-        }
-      }
-
-      .cs-donate-button {
-        width: 100%;
-        padding: 1rem 2rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: var(--primaryDark);
-          transform: translateY(-2px);
-        }
-      }
     }
 
     .cs-custom-donation {
@@ -644,58 +538,9 @@ const impactContent = content.impact || {};
       color: var(--headerColor);
     }
 
-    .cs-ways-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .cs-way-card {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      transition: transform 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px);
-      }
-
-      .cs-icon {
-        margin-bottom: 1.5rem;
-
-        img {
-          filter: brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1237%) hue-rotate(14deg) brightness(94%) contrast(91%);
-        }
-      }
-
-      h3 {
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        margin-bottom: 1.5rem;
-        color: var(--bodyTextColor);
-      }
-
-      .cs-way-button {
-        padding: 0.75rem 1.5rem;
-        background: var(--primary);
-        color: white;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: background 0.3s ease;
-
-        &:hover {
-          background: var(--primaryDark);
-        }
-      }
+    /* Way card icon filter override */
+    .cs-way-card .cs-icon img {
+      filter: brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1237%) hue-rotate(14deg) brightness(94%) contrast(91%);
     }
   }
 
@@ -722,38 +567,9 @@ const impactContent = content.impact || {};
       }
     }
 
+    /* Allocation chart spacing override */
     .cs-allocation-chart {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
       margin-bottom: 3rem;
-    }
-
-    .cs-allocation-item {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      text-align: center;
-
-      .cs-percentage {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 1rem;
-      }
-
-      .cs-category {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--headerColor);
-      }
-
-      .cs-description {
-        font-size: 0.875rem;
-        color: var(--bodyTextColor);
-      }
     }
 
     .cs-documents {
@@ -788,16 +604,12 @@ const impactContent = content.impact || {};
     }
   }
 
-  /* Mobile Responsive */
+  /* Page-specific mobile responsive */
   @media only screen and (max-width: 768px) {
     #donation-impact .cs-content,
     #monthly-giving .cs-monthly-content {
       grid-template-columns: 1fr;
       gap: 2rem;
-    }
-
-    .cs-donation-grid {
-      grid-template-columns: 1fr;
     }
 
     .cs-custom-form {
@@ -806,14 +618,6 @@ const impactContent = content.impact || {};
 
     .cs-monthly-options {
       justify-content: center;
-    }
-
-    .cs-ways-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .cs-allocation-chart {
-      grid-template-columns: 1fr;
     }
 
     .cs-document-links {
