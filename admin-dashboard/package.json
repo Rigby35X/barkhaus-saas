@@ -1,0 +1,9 @@
+{
+  "name": "barkhaus-admin",
+  "version": "1.0.0",
+  "description": "Barkhaus Admin Dashboard",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static HTML - no build needed'"
+  }
+}

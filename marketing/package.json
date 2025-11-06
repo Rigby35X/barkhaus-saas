@@ -1,0 +1,9 @@
+{
+  "name": "barkhaus-marketing",
+  "version": "1.0.0",
+  "description": "Barkhaus Marketing Site",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Static HTML - no build needed'"
+  }
+}
