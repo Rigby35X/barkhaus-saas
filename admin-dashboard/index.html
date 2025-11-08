@@ -3268,6 +3268,53 @@
     </div>
 
     <script>
+        // URL-based Tenant Detection
+(async function detectTenantFromURL() {
+    // Get the path from URL (e.g., /mbpr from app.barkhaus.io/mbpr)
+    const path = window.location.pathname;
+    const tenantSlug = path.split('/')[1]; // Extract first part after /
+    
+    if (tenantSlug && tenantSlug !== '') {
+        console.log('🔍 Detected tenant slug from URL:', tenantSlug);
+        
+        try {
+            // Look up organization by slug
+            const response = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations?slug=${tenantSlug}`);
+            
+            if (response.ok) {
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const org = data[0];
+                    console.log('✅ Found organization:', org.id, org.org);
+                    
+                    // Auto-fill the Organization ID field
+                    const orgIdField = document.querySelector('input[placeholder="Enter Organization ID"]') 
+                                    || document.getElementById('organizationId');
+                    
+                    if (orgIdField) {
+                        orgIdField.value = org.id;
+                        console.log('✅ Auto-filled Organization ID:', org.id);
+                    }
+                    
+                    // Store org data for later use
+                    window.currentTenant = {
+                        slug: tenantSlug,
+                        orgId: org.id,
+                        organization: org
+                    };
+                    
+                } else {
+                    console.warn('❌ No organization found for slug:', tenantSlug);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error loading tenant from URL:', error);
+        }
+    } else {
+        console.log('ℹ️ No tenant slug in URL - manual selection required');
+    }
+})();
         // Global variables
         let currentOrgId = null;
         let animals = [];
