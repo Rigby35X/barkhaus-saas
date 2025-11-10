@@ -1,9 +1,6 @@
 {
-  "public": true,
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/public/index.html"
-    }
-  ]
+  "buildCommand": "echo 'No build needed - static HTML'",
+  "outputDirectory": ".",
+  "framework": null,
+  "installCommand": "echo 'No dependencies to install'"
 }
