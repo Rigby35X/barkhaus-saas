@@ -1,0 +1,14 @@
+{
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin/barkhaus-admin.html"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/admin",
+      "dest": "/admin/barkhaus-admin.html"
+    }
+  ]
+}
