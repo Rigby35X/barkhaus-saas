@@ -443,15 +443,15 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
     
     .cs-button-group {
       display: flex;
+      flex-direction: column;
       gap: 1rem;
-      flex-wrap: wrap;
       margin-top: auto;
       padding-top: 1rem;
     }
 
     .cs-button-group .cs-button-solid,
     .cs-button-group .cs-button-transparent {
-      flex: 1 1 (200/16rem);
+      width: 100%;
     }
     
     .cs-more-info {
@@ -462,7 +462,9 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
       
       h2 {
         margin-bottom: 1rem;
-        color: var(--headerColor);
+        color: #ffffff;
+        font-size: clamp(2rem, 5vw, 3rem);  // Scales from 32px to 48px
+      font-weight: 700;  // Optional: make it bolder
       }
       
       p {
@@ -471,6 +473,7 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
         margin-left: auto;
         margin-right: auto;
         line-height: 1.6;
+        color: #ffffff;
       }
     }
   }
@@ -480,18 +483,23 @@ const availableAnimals = animals.filter((animal) => (animal.status || '').toLowe
     .cs-card-group {
       grid-template-columns: 1fr;
     }
-    
+
     .cs-filter-group {
       justify-content: center;
     }
-    
+
     .cs-filter-button {
       font-size: 0.875rem;
       padding: 0.5rem 1rem;
     }
-    
+
     .cs-button-group {
-      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .cs-button-group .cs-button-solid,
+    .cs-button-group .cs-button-transparent {
+      width: 100%;
     }
   }
 

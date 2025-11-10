@@ -238,10 +238,41 @@ export async function POST({ request }) {
                             animalData.age * 52) : null
                 };
 
-                // Only include main_image if it's an object (new upload) or if explicitly provided
-                // Don't send image_url string to Xano as it expects a file object with path property
-                if (animalData.main_image && typeof animalData.main_image === 'object') {
+                // Helper function to create image object from URL
+                const createImageObject = (url) => {
+                    if (!url) return null;
+                    // If it's already an object, return it
+                    if (typeof url === 'object') return url;
+                    // Create a simple image object with URL
+                    // Xano will accept this format for image fields
+                    return {
+                        url: url,
+                        path: url,  // Use URL as path for external images
+                        name: url.split('/').pop() || 'image',
+                        type: 'image',
+                        mime: 'image/jpeg'
+                    };
+                };
+
+                // Handle main image
+                if (animalData.image_url) {
+                    dogData.main_image = createImageObject(animalData.image_url);
+                } else if (animalData.main_image && typeof animalData.main_image === 'object') {
                     dogData.main_image = animalData.main_image;
+                }
+
+                // Handle additional images
+                if (animalData.additional_image_1) {
+                    dogData.additional_image_1 = createImageObject(animalData.additional_image_1);
+                }
+                if (animalData.additional_image_2) {
+                    dogData.additional_image_2 = createImageObject(animalData.additional_image_2);
+                }
+                if (animalData.additional_image_3) {
+                    dogData.additional_image_3 = createImageObject(animalData.additional_image_3);
+                }
+                if (animalData.additional_image_4) {
+                    dogData.additional_image_4 = createImageObject(animalData.additional_image_4);
                 }
 
                 // Remove null/undefined values
@@ -385,10 +416,41 @@ export async function PUT({ request }) {
                             animalData.age * 52) : null
                 };
 
-                // Only include main_image if it's an object (new upload) or if explicitly provided
-                // Don't send image_url string to Xano as it expects a file object with path property
-                if (animalData.main_image && typeof animalData.main_image === 'object') {
+                // Helper function to create image object from URL
+                const createImageObject = (url) => {
+                    if (!url) return null;
+                    // If it's already an object, return it
+                    if (typeof url === 'object') return url;
+                    // Create a simple image object with URL
+                    // Xano will accept this format for image fields
+                    return {
+                        url: url,
+                        path: url,  // Use URL as path for external images
+                        name: url.split('/').pop() || 'image',
+                        type: 'image',
+                        mime: 'image/jpeg'
+                    };
+                };
+
+                // Handle main image
+                if (animalData.image_url) {
+                    dogData.main_image = createImageObject(animalData.image_url);
+                } else if (animalData.main_image && typeof animalData.main_image === 'object') {
                     dogData.main_image = animalData.main_image;
+                }
+
+                // Handle additional images
+                if (animalData.additional_image_1) {
+                    dogData.additional_image_1 = createImageObject(animalData.additional_image_1);
+                }
+                if (animalData.additional_image_2) {
+                    dogData.additional_image_2 = createImageObject(animalData.additional_image_2);
+                }
+                if (animalData.additional_image_3) {
+                    dogData.additional_image_3 = createImageObject(animalData.additional_image_3);
+                }
+                if (animalData.additional_image_4) {
+                    dogData.additional_image_4 = createImageObject(animalData.additional_image_4);
                 }
 
                 // Remove null/undefined values
