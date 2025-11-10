@@ -412,6 +412,12 @@ export async function GET({ request }) {
                             content: parsedContent
                         };
 
+                        console.log(`📦 Section ${section.section_key} data:`, {
+                            headline: combinedSection.headline,
+                            body_text: combinedSection.body_text,
+                            button_text: combinedSection.button_text
+                        });
+
                         const isFaqSection = section.section_key === 'faq' || section.section_key === 'faq_section';
                         const targetKey = isFaqSection ? 'faq_section' : section.section_key;
 
@@ -537,12 +543,14 @@ export async function PUT({ request }) {
                 console.log(`📝 No existing record found for section '${sectionKey}', creating new record`);
 
                 // Create new record - footer should be global, others are page-specific
+                // Flatten the content object into individual fields for Xano
                 const newRecord = {
                     org_id: parseInt(orgId),
                     section_key: sectionKey,
                     page_slug: sectionKey === 'footer' ? 'global' : (pageSlug || 'homepage'),
                     is_visible: true,
-                    content: content
+                    // Flatten all content fields into the record
+                    ...(typeof content === 'object' ? content : {})
                 };
 
                 console.log('🚀 Creating new record with data:', JSON.stringify(newRecord, null, 2));
@@ -566,9 +574,10 @@ export async function PUT({ request }) {
 
             console.log('📝 Found record to update:', recordToUpdate.id);
 
-            // Prepare update data - store content as JSON string if it's an object
+            // Prepare update data - flatten the content object into individual fields
             const updateData = {
-                content: typeof content === 'string' ? content : JSON.stringify(content),
+                // Flatten all content fields
+                ...(typeof content === 'object' ? content : {}),
                 updated_at: new Date().toISOString()
             };
 

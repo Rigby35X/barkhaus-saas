@@ -1207,7 +1207,6 @@
                                                 </div>
                                                 <div class="flex space-x-2">
                                                     <button onclick="saveHeroSection()" class="btn-primary">Save Hero Section</button>
-                                                    <button onclick="previewHeroSection()" class="btn-secondary">Preview</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -3546,6 +3545,60 @@
             }
         }
 
+        // Check for existing session on page load
+        async function checkExistingSession() {
+            try {
+                const sessionData = localStorage.getItem('barkhausAdminSession');
+                if (sessionData) {
+                    const session = JSON.parse(sessionData);
+                    console.log('🔍 Found existing session for org', session.orgId);
+
+                    // Wait for organizations to be loaded
+                    await new Promise(resolve => {
+                        const checkOrgs = setInterval(() => {
+                            if (Object.keys(organizations).length > 0) {
+                                clearInterval(checkOrgs);
+                                resolve();
+                            }
+                        }, 100);
+                    });
+
+                    // Verify the session is still valid
+                    const org = organizations[session.orgId];
+                    if (org && session.accessCode === org.accessCode) {
+                        console.log('✅ Session valid - auto-logging in as org', session.orgId);
+
+                        currentOrg = org;
+                        currentOrgId = session.orgId;
+
+                        // Apply organization branding
+                        applyOrganizationBranding(session.orgId);
+
+                        // Update displays
+                        currentOrgIdSpan.textContent = session.orgId;
+
+                        // Show admin controls if Barkhaus admin
+                        if (org.isAdmin) {
+                            showAdminControls();
+                        }
+
+                        loginScreen.classList.add('hidden');
+                        dashboard.classList.remove('hidden');
+
+                        // Load animals preview for dashboard
+                        await loadAnimalsPreview();
+                        await loadWebsiteContent();
+                    } else {
+                        console.log('⚠️ Session invalid - clearing');
+                        localStorage.removeItem('barkhausAdminSession');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error checking session:', error);
+                localStorage.removeItem('barkhausAdminSession');
+            }
+        }
+
         // Login handling
         async function handleLogin(e) {
             e.preventDefault();
@@ -3558,6 +3611,15 @@
             if (org && accessCode === org.accessCode) {
                 currentOrg = org;
                 currentOrgId = orgId;
+
+                // Save session to localStorage for persistence across page refreshes
+                localStorage.setItem('barkhausAdminSession', JSON.stringify({
+                    orgId: orgId,
+                    accessCode: accessCode,
+                    loginTime: new Date().toISOString()
+                }));
+
+                console.log('✅ Logged in as org', orgId, '- Session saved to localStorage');
 
                 // Apply organization branding
                 applyOrganizationBranding(orgId);
@@ -3748,6 +3810,10 @@
             currentOrgId = null;
             animals = [];
             editingAnimalId = null;
+
+            // Clear session from localStorage
+            localStorage.removeItem('barkhausAdminSession');
+            console.log('🚪 Logged out - Session cleared');
 
             loginScreen.classList.remove('hidden');
             dashboard.classList.add('hidden');
@@ -4278,8 +4344,8 @@
             // Load organizations from Xano
             loadOrganizationsFromXano();
 
-            // Check if already logged in (for demo purposes)
-            // In a real app, you'd check for a valid session/token
+            // Check if already logged in - restore session from localStorage
+            checkExistingSession();
 
             // Initialize image upload functionality
             setupImageUploads();
@@ -6776,6 +6842,9 @@
         }) {
             const orgId = currentOrgId || '9';
 
+            console.log(`🎨 Updating website content for org ${orgId}, section ${sectionKey}, page ${pageSlug}`);
+            console.log('📝 Content being saved:', content);
+
             const response = await fetch('/api/website-content', {
                 method: 'PUT',
                 headers: {
@@ -6796,8 +6865,39 @@
                 throw new Error(errorMessage);
             }
 
+            console.log('✅ Content updated successfully in Xano:', result);
+
+            // Update the local websiteContent cache immediately with the saved content
+            if (!websiteContent[sectionKey]) {
+                websiteContent[sectionKey] = {};
+            }
+            websiteContent[sectionKey] = {
+                ...websiteContent[sectionKey],
+                ...content
+            };
+
+            // Also update the homepage cache if needed
             if (updateCache) {
                 updateHomepageCache(sectionKey, content);
+            }
+
+            console.log('🔄 Updated local cache with saved content');
+
+            // Reload content from API to verify it was saved correctly
+            console.log('🔄 Reloading content from API to verify persistence...');
+            try {
+                const verifyResponse = await fetch(`/api/website-content?orgId=${orgId}&page=${pageSlug}`);
+                if (verifyResponse.ok) {
+                    const verifiedContent = await verifyResponse.json();
+                    console.log('✅ Verified content from API:', verifiedContent[sectionKey]);
+
+                    // Update the cache with the verified content from the API
+                    if (verifiedContent[sectionKey]) {
+                        websiteContent[sectionKey] = verifiedContent[sectionKey];
+                    }
+                }
+            } catch (verifyError) {
+                console.warn('⚠️ Could not verify saved content:', verifyError);
             }
 
             return result;
@@ -6897,13 +6997,46 @@
         async function loadWebsiteContent() {
             console.log('🎨 Loading website content for tab...');
 
+            // Reload all content from API to ensure we have the latest data
+            try {
+                await loadHomepageContent();
+                await loadFooterContent();
+                console.log('✅ Website content reloaded from API');
+                console.log('📦 Current websiteContent cache:', websiteContent);
+            } catch (error) {
+                console.error('❌ Error loading website content:', error);
+            }
+
             // Initialize the homepage content section by default
-            showContentSection('homepage');
+            // Don't call showContentSection because it will reload the content again
+            // Just show the homepage section UI
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            document.querySelectorAll('.content-tab').forEach(tab => {
+                tab.classList.remove('active', 'bg-blue-100', 'text-blue-700');
+                tab.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            const homepageSection = document.getElementById('content-homepage');
+            if (homepageSection) {
+                homepageSection.classList.remove('hidden');
+            }
+            const homepageTab = document.getElementById('content-tab-homepage');
+            if (homepageTab) {
+                homepageTab.classList.add('active', 'bg-blue-100', 'text-blue-700');
+                homepageTab.classList.remove('bg-gray-100', 'text-gray-700');
+            }
         }
 
         // Display website content sections for editing
         function displayWebsiteContent() {
             const container = document.getElementById('websiteContentSections');
+
+            // This element doesn't exist in the current UI structure - skip if not found
+            if (!container) {
+                console.log('ℹ️ websiteContentSections element not found - skipping display update');
+                return;
+            }
 
             const sections = [
                 { key: 'hero', title: 'Hero Section', description: 'Main banner at the top of your homepage' },
@@ -7415,11 +7548,19 @@
                     });
 
                     if (content.hero) {
-                        if (heroHeadingEl) heroHeadingEl.value = content.hero.headline || '';
-                        if (heroSubheadingEl) heroSubheadingEl.value = content.hero.body_text || '';
-                        if (heroBgUrlEl) heroBgUrlEl.value = content.hero.background_image_url || '';
+                        if (heroHeadingEl) {
+                            heroHeadingEl.value = content.hero.headline || '';
+                            console.log('✏️ Set hero headline input to:', heroHeadingEl.value);
+                        }
+                        if (heroSubheadingEl) {
+                            heroSubheadingEl.value = content.hero.body_text || '';
+                            console.log('✏️ Set hero subheading input to:', heroSubheadingEl.value);
+                        }
+                        if (heroBgUrlEl) {
+                            heroBgUrlEl.value = content.hero.background_image_url || '';
+                        }
 
-                        console.log('Set hero values:', {
+                        console.log('Set hero values from API:', {
                             headline: content.hero.headline,
                             body_text: content.hero.body_text,
                             background_image_url: content.hero.background_image_url

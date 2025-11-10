@@ -1,0 +1,16 @@
+api_group live_site {
+  canonical = "nS8IsiFR"
+  cors = {
+    mode       : "custom"
+    origins    : [
+      "https://*.vercel.app"
+      "https://barkhaus-dash.vercel.app/"
+      "http://localhost:5173"
+      "https://localhost:5173"
+    ]
+    methods    : ["DELETE", "GET", "HEAD", "PATCH", "POST", "PUT"]
+    headers    : ["Content-Type", "Authorization"]
+    credentials: false
+    max_age    : 86400
+  }
+}

@@ -291,7 +291,7 @@
     "id": 102,
     "type": "api_endpoint",
     "path": "apis/website_content/102_website_content_org_id_POST.xs",
-    "status": "unchanged",
+    "status": "changed",
     "staged": false,
     "sha256": "7d302b6a5912984cf9d39a706ee613509af84d85994a4bb5c3b96942040f4194",
     "original": "Ly8gQWRkIHdlYnNpdGVfY29udGVudCByZWNvcmQKcXVlcnkgIndlYnNpdGVfY29udGVudC97b3JnX2lkfSIgdmVyYj1QT1NUIHsKICBpbnB1dCB7CiAgICBkYmxpbmsgewogICAgICB0YWJsZSA9ICJ3ZWJzaXRlX2NvbnRlbnQiCiAgICB9CiAgfQoKICBzdGFjayB7CiAgICBkYi5hZGQgd2Vic2l0ZV9jb250ZW50IHsKICAgICAgZGF0YSA9IHtjcmVhdGVkX2F0OiAibm93In0KICAgIH0gYXMgJHdlYnNpdGVfY29udGVudAogIH0KCiAgcmVzcG9uc2UgPSAkd2Vic2l0ZV9jb250ZW50Cn0="
@@ -1389,7 +1389,7 @@
     "id": 1,
     "type": "tool",
     "path": "tools/1_Provide_API_Info.xs",
-    "status": "unchanged",
+    "status": "notfound",
     "staged": false,
     "sha256": "5d37339d84fe6274ae67a2c257c61088571c16040c9d970712c3cff374f8878d",
     "original": "dG9vbCBQcm92aWRlX0FQSV9JbmZvIHsKICBpbnB1dCB7CiAgfQoKICBzdGFjayB7CiAgfQoKICByZXNwb25zZSA9IG51bGwKfQ=="
@@ -1398,9 +1398,16 @@
     "id": 1,
     "type": "agent",
     "path": "agents/1_agent_bark.xs",
-    "status": "unchanged",
+    "status": "notfound",
     "staged": false,
     "sha256": "f123b3b53eb88218ea35962f55fd20678e92d3f650e9418650fe456a838954d0",
     "original": "YWdlbnQgIkFnZW50IEJhcmsiIHsKICBjYW5vbmljYWwgPSAiMzAxRmJEVzAiCiAgbGxtID0gewogICAgdHlwZSAgICAgICAgIDogImFudGhyb3BpYyIKICAgIHN5c3RlbV9wcm9tcHQ6ICJZb3UgYXJlIGEgaGVscGZ1bCBBSSBBZ2VudCB0aGF0IGNvbXBsZXRlcyB0YXNrcyBhY2N1cmF0ZWx5LiBXaGVuIHlvdSBuZWVkIGFkZGl0aW9uYWwgaW5mb3JtYXRpb24gdG8gY29tcGxldGUgYSB0YXNrLCB1c2UgdGhlIGF2YWlsYWJsZSB0b29scy4gQWx3YXlzIGV4cGxhaW4geW91ciByZWFzb25pbmcgYW5kIHByb3ZpZGUgY2xlYXIgcmVzcG9uc2VzLiIKICAgIG1heF9zdGVwcyAgICA6IDUKICAgIHByb21wdCAgICAgICA6ICIiCiAgICBhcGlfa2V5ICAgICAgOiAiIgogICAgbW9kZWwgICAgICAgIDogImNsYXVkZS00LXNvbm5ldC0yMDI1MDUxNCIKICAgIHRlbXBlcmF0dXJlICA6IDEKICAgIHJlYXNvbmluZyAgICA6IHRydWUKICAgIGJhc2VVUkwgICAgICA6ICIiCiAgICBoZWFkZXJzICAgICAgOiAiIgogIH0KCiAgdG9vbHMgPSBbXQp9"
+  },
+  {
+    "id": 0,
+    "path": "apis/animals/150_upload_image_POST.xs",
+    "status": "new",
+    "type": "api_endpoint",
+    "staged": false
   }
 ]
