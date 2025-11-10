@@ -1,7 +1,9 @@
 {
-  "buildCommand": "echo 'Serving static HTML'",
+  "framework": null,
+  "buildCommand": null,
+  "devCommand": null,
+  "installCommand": null,
   "outputDirectory": ".",
-  "installCommand": "echo 'No dependencies to install'",
   "rewrites": [
     {
       "source": "/(.*)",
