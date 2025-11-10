@@ -231,14 +231,18 @@ export async function POST({ request }) {
                     Vaccinations: animalData.vaccinated ? 'Yes' : 'No',
                     Is_Dog_Fixed: animalData.spayed_neutered || false,
                     Microchip_Number: animalData.microchip ? 'Yes' : '',
-                    // Handle image URL - this is the missing piece!
-                    main_image: animalData.image_url || '',
                     // Handle age conversion (convert years to weeks if needed)
                     Pup_is_currently_this_many_weeks_old: animalData.age ?
                         (typeof animalData.age === 'string' ?
                             parseInt(animalData.age.replace(/[^\d]/g, '')) * 52 :
                             animalData.age * 52) : null
                 };
+
+                // Only include main_image if it's an object (new upload) or if explicitly provided
+                // Don't send image_url string to Xano as it expects a file object with path property
+                if (animalData.main_image && typeof animalData.main_image === 'object') {
+                    dogData.main_image = animalData.main_image;
+                }
 
                 // Remove null/undefined values
                 Object.keys(dogData).forEach(key => {
@@ -374,14 +378,18 @@ export async function PUT({ request }) {
                     Vaccinations: animalData.vaccinated ? 'Yes' : 'No',
                     Is_Dog_Fixed: animalData.spayed_neutered || false,
                     Microchip_Number: animalData.microchip ? 'Yes' : '',
-                    // Handle image URL - this is the missing piece for updates too!
-                    main_image: animalData.image_url || '',
                     // Handle age conversion (convert years back to weeks if needed)
                     Pup_is_currently_this_many_weeks_old: animalData.age ?
                         (typeof animalData.age === 'string' ?
                             parseInt(animalData.age.replace(/[^\d]/g, '')) * 52 :
                             animalData.age * 52) : null
                 };
+
+                // Only include main_image if it's an object (new upload) or if explicitly provided
+                // Don't send image_url string to Xano as it expects a file object with path property
+                if (animalData.main_image && typeof animalData.main_image === 'object') {
+                    dogData.main_image = animalData.main_image;
+                }
 
                 // Remove null/undefined values
                 Object.keys(dogData).forEach(key => {
