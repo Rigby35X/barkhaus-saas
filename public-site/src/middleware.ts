@@ -16,8 +16,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
       console.log('📍 Subdomain detected:', subdomain);
 
       // Fetch all organizations and filter by subdomain
-      // (Xano doesn't support query parameter filtering on this endpoint)
-      const xanoUrl = 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs';
+      // Use the bark_haus_backend API group which has the organizations list endpoint
+      const xanoUrl = 'https://xz6u-fpaz-praf.n7e.xano.io/api:wPrzs4Mr/organizations';
       const xanoToken = '165XkoniNXylFdNKgO_aCvmAIcQ';
 
       const response = await fetch(xanoUrl, {
@@ -58,7 +58,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           orgId = domainData[0].organization_id;
           
           // Fetch full organization data
-          const orgResponse = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs/${orgId}`);
+          const orgResponse = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations/${orgId}`);
           if (orgResponse.ok) {
             organizationData = await orgResponse.json();
             console.log('✅ Found organization via custom domain:', orgId, organizationData.name);
@@ -75,7 +75,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       orgId = 9; // Mission Bay Puppy Rescue as default for testing
 
       // Fetch organization data
-      const xanoUrl = `https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs/${orgId}`;
+      const xanoUrl = `https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations/${orgId}`;
       const response = await fetch(xanoUrl);
       if (response.ok) {
         organizationData = await response.json();
