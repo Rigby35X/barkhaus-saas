@@ -17,8 +17,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       // Fetch all organizations and filter by subdomain
       // (Xano doesn't support query parameter filtering on this endpoint)
-      const xanoUrl = `${import.meta.env.XANO_API_URL}/organizations`;
-      const xanoToken = import.meta.env.XANO_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
+      const xanoUrl = 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs';
+      const xanoToken = '165XkoniNXylFdNKgO_aCvmAIcQ';
 
       const response = await fetch(xanoUrl, {
         headers: {
@@ -46,9 +46,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Check if it's a custom domain (e.g., mbpups.org)
     else if (!host.includes('barkhaus.io') && !host.includes('localhost')) {
       console.log('🌐 Custom domain detected:', host);
-      
+
       // Look up tenant by custom domain in Xano
-      const xanoUrl = `${import.meta.env.XANO_API_URL}/domains`;
+      const xanoUrl = 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/domains';
       const response = await fetch(`${xanoUrl}?domain=${host}`);
       
       if (response.ok) {
@@ -58,7 +58,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           orgId = domainData[0].organization_id;
           
           // Fetch full organization data
-          const orgResponse = await fetch(`${import.meta.env.XANO_API_URL}/organizations/${orgId}`);
+          const orgResponse = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs/${orgId}`);
           if (orgResponse.ok) {
             organizationData = await orgResponse.json();
             console.log('✅ Found organization via custom domain:', orgId, organizationData.name);
@@ -73,9 +73,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       console.log('🏠 Localhost - using demo tenant');
       tenantSlug = 'demo';
       orgId = 9; // Mission Bay Puppy Rescue as default for testing
-      
+
       // Fetch organization data
-      const xanoUrl = `${import.meta.env.XANO_API_URL}/organizations/${orgId}`;
+      const xanoUrl = `https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/orgs/${orgId}`;
       const response = await fetch(xanoUrl);
       if (response.ok) {
         organizationData = await response.json();
