@@ -1,3 +1,11 @@
 {
-  "framework": null
+  "buildCommand": "echo 'Serving static HTML'",
+  "outputDirectory": "public",
+  "installCommand": "echo 'No dependencies needed'",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
