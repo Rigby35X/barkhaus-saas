@@ -10,8 +10,12 @@ const optimizedImage = await getImage({src: landingImage, format: 'avif'})
 // Fetch dynamic content for homepage
 import { fetchAllPageData } from "../utils/content-fetcher.js";
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 const origin = Astro.url?.origin ?? import.meta.env.PUBLIC_SITE_URL ?? '';
-const { content: fetchedContent, organization } = await fetchAllPageData('homepage', '9', origin);
+const { content: fetchedContent, organization } = await fetchAllPageData('homepage', orgId, origin);
 const websiteContent = fetchedContent || {};
 
 // Fallback content if API fails

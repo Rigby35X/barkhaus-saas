@@ -9,8 +9,12 @@ import landingImage from "@assets/images/landing.jpg" // <-- THE PATH TO THE ASS
 import { getImage } from "astro:assets";
 const optimizedImage = await getImage({src: landingImage, format: 'avif'})
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 // Fetch dynamic content for contact page
-const { content, organization } = await fetchAllPageData('contact', '9', Astro.url.origin);
+const { content, organization } = await fetchAllPageData('contact', orgId, Astro.url.origin);
 
 // Use dynamic content with fallbacks
 const heroContent = content.hero || {};

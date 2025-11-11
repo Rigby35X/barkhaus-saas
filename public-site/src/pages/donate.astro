@@ -3,8 +3,12 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import CTA from "@components/CTA.astro";
 import { fetchAllPageData } from "../utils/content-fetcher.js";
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 // Fetch dynamic content for donate page
-const { content, organization } = await fetchAllPageData('donate', '9', Astro.url.origin);
+const { content, organization } = await fetchAllPageData('donate', orgId, Astro.url.origin);
 
 // Use dynamic content with fallbacks
 const heroContent = content.hero || {};

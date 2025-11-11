@@ -3,8 +3,12 @@ import BaseLayout from "@layouts/BaseLayout.astro";
 import CTA from "@components/CTA.astro";
 import { fetchAllPageData } from "../utils/content-fetcher.js";
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 // Fetch dynamic content for animals page
-const { content, organization } = await fetchAllPageData('animals', '9', Astro.url.origin);
+const { content, organization } = await fetchAllPageData('animals', orgId, Astro.url.origin);
 
 // Use dynamic content with fallbacks
 const heroContent = content.hero || {};
@@ -17,8 +21,8 @@ let animals = [];
 let error = null;
 
 try {
-  // Use the same API endpoint that works
-  const response = await fetch(`${Astro.url.origin}/api/admin/animals?orgId=9`);
+  // Use the same API endpoint that works with dynamic orgId
+  const response = await fetch(`${Astro.url.origin}/api/admin/animals?orgId=${orgId}`);
   if (response.ok) {
     animals = await response.json();
     console.log('✅ Server-side fetch successful:', animals.length, 'animals');

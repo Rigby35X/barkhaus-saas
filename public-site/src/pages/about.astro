@@ -8,8 +8,12 @@ import landingImage from "@assets/images/about-hero.png"; // <-- THE PATH TO THE
 import { getImage } from "astro:assets";
 const optimizedImage = await getImage({src: landingImage, format: 'avif'});
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 // Fetch dynamic content for about page
-const { content, organization } = await fetchAllPageData('about', '9', Astro.url.origin);
+const { content, organization } = await fetchAllPageData('about', orgId, Astro.url.origin);
 
 // Use dynamic content with fallbacks
 const heroContent = content.hero || {};
