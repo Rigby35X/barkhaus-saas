@@ -48,23 +48,32 @@ export async function GET({ request }) {
             console.log('✅ Dynamic organization data fetched from Xano:', xanoData);
             
             // Map Xano fields to client data format
+            // Xano uses: name, slug, email, phone, address, city, state, zip_code, etc.
             dynamicData = {
+                id: xanoData.id || orgId,
+                org: xanoData.name || clientData.name, // Map 'name' to 'org'
                 name: xanoData.name || clientData.name,
+                slug: xanoData.slug || clientData.slug,
                 email: xanoData.email || clientData.email,
                 phone: xanoData.phone || clientData.phoneFormatted,
-                phoneForTel: xanoData.phone_tel || clientData.phoneForTel,
+                phoneForTel: xanoData.phone || clientData.phoneForTel,
                 phoneFormatted: xanoData.phone || clientData.phoneFormatted,
                 address: {
-                    lineOne: xanoData.address_line_1 || clientData.address?.lineOne,
-                    lineTwo: xanoData.address_line_2 || clientData.address?.lineTwo,
+                    lineOne: xanoData.address || clientData.address?.lineOne,
+                    lineTwo: '', // Xano doesn't have address_line_2
                     city: xanoData.city || clientData.address?.city,
                     state: xanoData.state || clientData.address?.state,
-                    zip: xanoData.zip || clientData.address?.zip,
-                    mapLink: xanoData.map_link || clientData.address?.mapLink
+                    zip: xanoData.zip_code || clientData.address?.zip,
+                    mapLink: clientData.address?.mapLink
                 },
-                domain: xanoData.domain || clientData.domain,
-                ein: xanoData.tax_id || clientData.ein, // Map tax_id to ein
+                domain: xanoData.custom_domain || xanoData.website || clientData.domain,
+                website: xanoData.website || clientData.domain,
+                ein: xanoData.ein || clientData.ein,
                 orgId: orgId,
+                logo_url: xanoData.logo_light_url || clientData.logo_url,
+                primary_color: xanoData.primary_color || clientData.primary_color,
+                secondary_color: xanoData.secondary_color || clientData.secondary_color,
+                accent_color: xanoData.accent_color || clientData.accent_color,
                 socialMedia: {
                     facebook: xanoData.facebook_url || '',
                     instagram: xanoData.instagram_url || '',
