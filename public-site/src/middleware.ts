@@ -14,23 +14,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (host.includes('.barkhaus.io') && !host.startsWith('app.')) {
       const subdomain = host.split('.')[0];
       tenantSlug = subdomain;
-      console.log('📍 Subdomain detected:', tenantSlug);
-      
-      // Look up tenant in Xano by slug
+      console.log('📍 Subdomain detected:', subdomain);
+
+      // Look up tenant in Xano by subdomain (not slug!)
       const xanoUrl = `${import.meta.env.XANO_API_URL}/organizations`;
-      const response = await fetch(`${xanoUrl}?slug=${tenantSlug}`);
-      
+      const response = await fetch(`${xanoUrl}?subdomain=${subdomain}`);
+
       if (response.ok) {
         const data = await response.json();
         if (data && data.length > 0) {
           organizationData = data[0];
           orgId = organizationData.id;
-          console.log('✅ Found organization:', orgId, organizationData.name);
+          tenantSlug = organizationData.slug; // Use the actual slug from Xano
+          console.log('✅ Found organization by subdomain:', subdomain, '-> orgId:', orgId, organizationData.name);
         } else {
-          console.log('❌ No organization found for slug:', tenantSlug);
+          console.log('❌ No organization found for subdomain:', subdomain);
         }
       }
-    } 
+    }
     // Check if it's a custom domain (e.g., mbpups.org)
     else if (!host.includes('barkhaus.io') && !host.includes('localhost')) {
       console.log('🌐 Custom domain detected:', host);
