@@ -35,10 +35,13 @@ async function makeXanoRequest(endpoint, options = {}) {
 }
 
 // GET - Fetch client data for frontend
-export async function GET({ request }) {
+export async function GET({ request, locals }) {
     try {
         const url = new URL(request.url);
-        const orgId = url.searchParams.get('orgId') || import.meta.env.PUBLIC_ORG_ID || '9';
+        // Priority: query param > tenant context > env var > default
+        const orgId = url.searchParams.get('orgId') || locals.tenant?.orgId?.toString() || import.meta.env.PUBLIC_ORG_ID || '9';
+
+        console.log('🔍 client-data API - orgId:', orgId, 'from tenant:', locals.tenant?.orgId);
         
         let dynamicData = {};
         

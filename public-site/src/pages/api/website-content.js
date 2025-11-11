@@ -355,13 +355,14 @@ function getFallbackContentForPage(pageSlug) {
 }
 
 // GET - Fetch website content for organization
-export async function GET({ request }) {
+export async function GET({ request, locals }) {
     try {
         const url = new URL(request.url);
-        const orgId = url.searchParams.get('orgId') || '9';
+        // Priority: query param > tenant context > default
+        const orgId = url.searchParams.get('orgId') || locals.tenant?.orgId?.toString() || '9';
         const pageSlug = url.searchParams.get('page') || 'homepage';
-        
-        console.log(`🎨 Fetching website content for org ${orgId}, page ${pageSlug}`);
+
+        console.log(`🎨 Fetching website content for org ${orgId}, page ${pageSlug} (tenant: ${locals.tenant?.orgId})`);
         
         let content;
         try {
