@@ -13,22 +13,33 @@ export const onRequest = defineMiddleware(async (context, next) => {
     // Check if it's a subdomain (e.g., mbpups.barkhaus.io)
     if (host.includes('.barkhaus.io') && !host.startsWith('app.')) {
       const subdomain = host.split('.')[0];
-      tenantSlug = subdomain;
       console.log('📍 Subdomain detected:', subdomain);
 
-      // Look up tenant in Xano by subdomain (not slug!)
+      // Fetch all organizations and filter by subdomain
+      // (Xano doesn't support query parameter filtering on this endpoint)
       const xanoUrl = `${import.meta.env.XANO_API_URL}/organizations`;
-      const response = await fetch(`${xanoUrl}?subdomain=${subdomain}`);
+      const xanoToken = import.meta.env.XANO_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
+
+      const response = await fetch(xanoUrl, {
+        headers: {
+          'Authorization': `Bearer ${xanoToken}`
+        }
+      });
 
       if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
-          organizationData = data[0];
+        const allOrgs = await response.json();
+        console.log('📋 Fetched all organizations:', allOrgs.length);
+
+        // Find organization by subdomain
+        organizationData = allOrgs.find((org: any) => org.subdomain === subdomain);
+
+        if (organizationData) {
           orgId = organizationData.id;
           tenantSlug = organizationData.slug; // Use the actual slug from Xano
           console.log('✅ Found organization by subdomain:', subdomain, '-> orgId:', orgId, organizationData.name);
         } else {
           console.log('❌ No organization found for subdomain:', subdomain);
+          console.log('Available subdomains:', allOrgs.map((org: any) => org.subdomain).join(', '));
         }
       }
     }
