@@ -1,4 +1,16 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/admin/barkhaus-admin.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.barkhaus.io"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/admin",
