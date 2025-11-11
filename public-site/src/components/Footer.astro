@@ -5,17 +5,33 @@ import { getCurrentYear } from "@js/utils"
 
 const currentYear = getCurrentYear()
 
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
 let websiteContent: any = {};
 try {
-  const response = await fetch(`${Astro.url.origin}/api/website-content?orgId=9`);
+  const response = await fetch(`${Astro.url.origin}/api/website-content?orgId=${orgId}`);
   if (response.ok) {
     websiteContent = await response.json();
-    console.log('✅ Fetched website content for homepage:', Object.keys(websiteContent));
+    console.log(`✅ Fetched website content for footer (org ${orgId}):`, Object.keys(websiteContent));
   } else {
     console.error('❌ Failed to fetch website content:', response.status);
   }
 } catch (error) {
   console.error('❌ Error fetching website content:', error);
+}
+
+// Fetch organization data
+let organizationData: any = {};
+try {
+  const response = await fetch(`${Astro.url.origin}/api/client-data?orgId=${orgId}`);
+  if (response.ok) {
+    organizationData = await response.json();
+    console.log(`✅ Fetched organization data for footer (org ${orgId}):`, organizationData.name);
+  }
+} catch (error) {
+  console.error('❌ Error fetching organization data:', error);
 }
 
 // Fallback content if API fails
@@ -37,17 +53,17 @@ const defaultFooterContent = {
 const footerSource = websiteContent.footer?.content || websiteContent.footer || {};
 const content = {
   footer: {
-    organization_name: footerSource.footer_organization_name || footerSource.organization_name || defaultFooterContent.organization_name,
-    address_line_one: footerSource.footer_address_line_one || footerSource.address_line_one || defaultFooterContent.address_line_one,
-    address_line_two: footerSource.footer_address_line_two || footerSource.address_line_two || defaultFooterContent.address_line_two,
-    address_city: footerSource.footer_address_city || footerSource.address_city || defaultFooterContent.address_city,
-    address_state: footerSource.footer_address_state || footerSource.address_state || defaultFooterContent.address_state,
-    address_zip: footerSource.footer_address_zip || footerSource.address_zip || defaultFooterContent.address_zip,
-    phone: footerSource.footer_phone || footerSource.phone || defaultFooterContent.phone,
-    phone_tel: (footerSource.footer_phone || footerSource.phone || defaultFooterContent.phone || '').replace(/[^\d]/g, '') || defaultFooterContent.phone_tel,
-    email: footerSource.footer_email || footerSource.email || defaultFooterContent.email,
-    ein: footerSource.footer_ein || footerSource.ein || defaultFooterContent.ein,
-    copyright: footerSource.footer_copyright || footerSource.copyright || defaultFooterContent.copyright
+    organization_name: footerSource.footer_organization_name || footerSource.organization_name || organizationData.name || organizationData.org || defaultFooterContent.organization_name,
+    address_line_one: footerSource.footer_address_line_one || footerSource.address_line_one || organizationData.address?.lineOne || defaultFooterContent.address_line_one,
+    address_line_two: footerSource.footer_address_line_two || footerSource.address_line_two || organizationData.address?.lineTwo || defaultFooterContent.address_line_two,
+    address_city: footerSource.footer_address_city || footerSource.address_city || organizationData.address?.city || defaultFooterContent.address_city,
+    address_state: footerSource.footer_address_state || footerSource.address_state || organizationData.address?.state || defaultFooterContent.address_state,
+    address_zip: footerSource.footer_address_zip || footerSource.address_zip || organizationData.address?.zip || defaultFooterContent.address_zip,
+    phone: footerSource.footer_phone || footerSource.phone || organizationData.phone || defaultFooterContent.phone,
+    phone_tel: (footerSource.footer_phone || footerSource.phone || organizationData.phone || defaultFooterContent.phone || '').replace(/[^\d]/g, '') || defaultFooterContent.phone_tel,
+    email: footerSource.footer_email || footerSource.email || organizationData.email || defaultFooterContent.email,
+    ein: footerSource.footer_ein || footerSource.ein || organizationData.ein || defaultFooterContent.ein,
+    copyright: footerSource.footer_copyright || footerSource.copyright || `© ${currentYear} ${organizationData.name || organizationData.org || defaultFooterContent.organization_name}. All rights reserved.`
   }
 };
 
@@ -72,14 +88,14 @@ console.log('🔍 Raw websiteContent for footer:', {
         ><img
           loading="lazy"
           decoding="async"
-          src="/assets/images/MBPR-White.png"
-          alt="Mission Bay Puppy Rescue"
+          src={organizationData.logo_url || "/assets/images/MBPR-White.png"}
+          alt={content.footer.organization_name}
           width="280"
           height="110"
         /></a
       >
       <p>
-        Bring Happiness Home. Mission Bay Puppy Rescue is a 501(c)(3) non-profit organization dedicated to finding loving homes for abandoned and homeless puppies in San Diego and beyond.
+        Bring Happiness Home. {content.footer.organization_name} is a 501(c)(3) non-profit organization dedicated to finding loving homes for abandoned and homeless puppies in San Diego and beyond.
       </p>
     </div>
     <div class="right-section">

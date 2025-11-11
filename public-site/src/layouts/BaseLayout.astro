@@ -28,6 +28,10 @@ interface Props {
 
 const { description, title, preloadedImage, organization } = Astro.props as Props;
 
+// Get tenant context from middleware for dynamic branding
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
+
 ---
 <!-- A fully fleshed-out <head>, dynamically changing based on client.json and the page front matter -->
 <html lang="en">
@@ -88,7 +92,7 @@ const { description, title, preloadedImage, organization } = Astro.props as Prop
             </title>
 
             <!-- Dynamic Organization Branding CSS -->
-            <link rel="stylesheet" href="/api/branding.css?orgId=9" />
+            <link rel="stylesheet" href={`/api/branding.css?orgId=${orgId}`} />
 
             <!-- Netlify Identity Widget for CMS Authentication -->
             <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
