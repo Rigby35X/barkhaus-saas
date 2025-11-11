@@ -1,1 +1,8 @@
-{}
+{
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin/barkhaus-admin.html"
+    }
+  ]
+}
