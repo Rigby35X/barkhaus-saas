@@ -1,41 +1,57 @@
-// GET /api/form_submissions
 // Get all form submissions for the admin dashboard
-// Filtered by organization
+query "" verb=GET {
+  input {
+    int org_id? {
+      description = "Organization ID to filter by"
+      table = "organizations"
+    }
+    text form_type? {
+      description = "Optional filter: contact or waitlist"
+    }
+    text status? {
+      description = "Optional filter: new, read, replied, archived"
+    }
+    int limit?=50 {
+      description = "Number of items per page"
+    }
+    int offset?=0 {
+      description = "Pagination offset"
+    }
+  }
 
-input {
-  org_id: int [required] // Organization ID to filter by
-  form_type: text // Optional filter: "contact" or "waitlist"
-  status: text // Optional filter: "new", "read", "replied", "archived"
-  limit: int [default: 50]
-  offset: int [default: 0]
+  stack {
+    // Build the where clause - MUST filter by org_id for security
+    var $where {
+      value = $db.form_submissions.org == $input.org_id
+    }
+
+    // Add optional filters
+    conditional {
+      if ($input.form_type != null) {
+        var.update $where {
+          value = $where && $db.form_submissions.form_type == $input.form_type
+        }
+      }
+    }
+
+    conditional {
+      if ($input.status != null) {
+        var.update $where {
+          value = $where && $db.form_submissions.status == $input.status
+        }
+      }
+    }
+
+    // Get submissions
+    db.query form_submissions {
+      where = $where
+      sort = {form_submissions.submission_date: "desc"}
+      return = {
+        type  : "list"
+        paging: {page: 1, per_page: $input.limit, metadata: true}
+      }
+    } as $result
+  }
+
+  response = $result
 }
-
-// Build the query - MUST filter by org_id for security
-var query = {
-  org_id: input.org_id
-}
-
-if (input.form_type != null) {
-  query.form_type = input.form_type
-}
-
-if (input.status != null) {
-  query.status = input.status
-}
-
-// Get submissions
-var submissions = db_query("form_submissions", query)
-  .sort("submission_date", "desc")
-  .limit(input.limit)
-  .offset(input.offset)
-
-// Get total count for pagination
-var total_count = db_count("form_submissions", query)
-
-// Return results with pagination info
-response({
-  submissions: submissions,
-  total: total_count,
-  limit: input.limit,
-  offset: input.offset
-}, 200)

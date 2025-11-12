@@ -12,4 +12,3 @@ query "upload-image" verb=POST {
 
   response = $input.image
 }
-

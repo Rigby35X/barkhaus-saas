@@ -1,3 +1,3 @@
-api_group "form_submissions" {
-  canonical = "form_submissions"
+api_group form_submissions {
+  canonical = "0Mx5oX0z"
 }

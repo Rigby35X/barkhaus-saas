@@ -1,46 +1,51 @@
 // Form Submissions Table for Marketing Site
-// Stores all form submissions from the marketing website (contact, waitlist, etc.)
+// Stores all form submissions from barkhaus.io marketing website
 
-table("form_submissions") {
-  id: int [pk, auto]
+table form_submissions {
+  auth = false
 
-  // Organization (which company/rescue this submission is for)
-  org_id: int [ref: organizations.id, required] // Should be 8 for Barkhaus marketing site
+  schema {
+    int id
 
-  // Form identification
-  form_type: text [required] // "contact" or "waitlist"
+    // Organization (which company this submission is for)
+    int org? {
+      table = "organizations"
+    }
 
-  // Common fields (present in both forms)
-  name: text [required]
-  email: text [required]
-  organization: text [required]
+    // Form identification
+    text form_type?
 
-  // Contact form specific
-  message: text // Only for contact form
+    // Common fields
+    text name?
+    text email?
+    text organization?
 
-  // Waitlist form specific
-  website: text // Optional for waitlist
-  how_heard: text // How they heard about us
-  animals_count: text // Number of animals per year
+    // Contact form specific
+    text message?
 
-  // Metadata
-  submission_date: timestamp [default: "NOW()"]
-  status: text [default: "new"] // "new", "read", "replied", "archived"
-  ip_address: text
-  user_agent: text
+    // Waitlist form specific
+    text website?
+    text how_heard?
+    text animals_count?
 
-  // Admin notes
-  admin_notes: text
-  replied_at: timestamp
-  replied_by: int [ref: user.id]
+    // Metadata
+    timestamp submission_date? default="NOW()"
+    text status? default="new"
+    text ip_address?
+    text user_agent?
 
-  created_at: timestamp [default: "NOW()"]
-  updated_at: timestamp [default: "NOW()"]
+    // Admin fields
+    text admin_notes?
+    timestamp replied_at?
+    int? replied_by? {
+      table = "user"
+    }
+
+    timestamp created_at? default="NOW()"
+    timestamp updated_at? default="NOW()"
+  }
 
   indexes {
-    (form_type)
-    (status)
-    (submission_date)
-    (email)
+    [org, form_type, status, submission_date]
   }
 }
