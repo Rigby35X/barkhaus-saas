@@ -558,14 +558,67 @@
             /* Header buttons - keep inline but smaller */
             header .btn-primary, header .btn-secondary {
                 width: auto;
-                padding: 8px 12px;
-                font-size: 12px;
+                padding: 6px 10px;
+                font-size: 11px;
             }
 
             header .btn-primary svg {
-                width: 14px;
-                height: 14px;
-                margin-right: 4px;
+                width: 12px;
+                height: 12px;
+                margin-right: 2px;
+            }
+
+            /* Make View Website button text hidden on small mobile */
+            header .btn-primary {
+                white-space: nowrap;
+            }
+
+            /* Larger logo on mobile */
+            #sidebar-drawer img[alt="Happy Paws"] {
+                width: 180px !important;
+                max-width: 180px !important;
+            }
+
+            /* Dashboard stat cards - smaller and more compact */
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-card p.text-3xl {
+                font-size: 1.5rem !important;
+            }
+
+            .stat-card svg {
+                width: 24px !important;
+                height: 24px !important;
+            }
+
+            .stat-card p.text-sm {
+                font-size: 0.75rem !important;
+            }
+
+            /* Animals tab header - make it mobile friendly */
+            #tab-content-animals h2 {
+                font-size: 1.25rem !important;
+                letter-spacing: 0.1em !important;
+            }
+
+            #tab-content-animals .text-2xl {
+                font-size: 1.25rem !important;
+            }
+
+            /* Animals tab stat cards */
+            #tab-content-animals .rounded-xl {
+                padding: 12px !important;
+            }
+
+            #tab-content-animals .text-2xl.font-bold {
+                font-size: 1.5rem !important;
+            }
+
+            #tab-content-animals .text-xs {
+                font-size: 0.65rem !important;
+                letter-spacing: 0.1em !important;
             }
 
             /* Stat cards stack on mobile */
@@ -700,12 +753,32 @@
 
             /* Header even more compact */
             header h1 {
-                font-size: 1rem !important;
+                font-size: 0.9rem !important;
             }
 
             header .btn-primary, header .btn-secondary {
-                padding: 6px 10px;
-                font-size: 11px;
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            header .btn-primary svg {
+                width: 10px;
+                height: 10px;
+                margin-right: 2px;
+            }
+
+            /* Even smaller stat cards */
+            .stat-card {
+                padding: 10px;
+            }
+
+            .stat-card p.text-3xl {
+                font-size: 1.25rem !important;
+            }
+
+            .stat-card svg {
+                width: 20px !important;
+                height: 20px !important;
             }
         }
 
@@ -4752,6 +4825,18 @@
         // Tab Management Functions
         function showDashboardTab(tabName) {
             console.log('showDashboardTab called with tabName:', tabName);
+
+            // Close mobile sidebar when clicking a tab
+            if (window.innerWidth < 1024) {
+                const sidebar = document.getElementById('sidebar-drawer');
+                const overlay = document.getElementById('sidebar-overlay');
+                if (sidebar) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+                if (overlay) {
+                    overlay.classList.add('hidden');
+                }
+            }
 
             // Hide all tab contents
             const tabContents = document.querySelectorAll('.tab-content');
