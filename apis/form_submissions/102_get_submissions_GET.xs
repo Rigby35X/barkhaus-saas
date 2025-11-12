@@ -5,7 +5,7 @@ query submissions verb=GET {
     text form_type?
     text status?
     int limit?=50
-    int offset?=0
+    int offset?
   }
 
   stack {
@@ -13,7 +13,7 @@ query submissions verb=GET {
     var $where {
       value = $db.form_submissions.org == $input.org_id
     }
-
+  
     // Add optional filters
     conditional {
       if ($input.form_type != null) {
@@ -22,7 +22,7 @@ query submissions verb=GET {
         }
       }
     }
-
+  
     conditional {
       if ($input.status != null) {
         var.update $where {
@@ -30,15 +30,12 @@ query submissions verb=GET {
         }
       }
     }
-
+  
     // Get submissions
     db.query form_submissions {
-      where = $where
+      where = `$where`
       sort = {form_submissions.submission_date: "desc"}
-      return = {
-        type  : "list"
-        paging: {page: 1, per_page: $input.limit, metadata: true}
-      }
+      return = {type: "list", paging: {page: 1, per_page: $input.limit}}
     } as $result
   }
 

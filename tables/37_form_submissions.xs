@@ -46,6 +46,7 @@ table form_submissions {
   }
 
   index = [
+    {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "org"}]}
     {type: "btree", field: [{name: "form_type"}]}
     {type: "btree", field: [{name: "status"}]}
