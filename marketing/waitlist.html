@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join the Beta - Barkhaus</title>
+    <meta name="description" content="Be among the first to try Barkhaus before our public launch.">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">🐾 Barkhaus</a>
+                <div class="nav-links">
+                    <a href="features.html">Features</a>
+                    <a href="pricing.html">Pricing</a>
+                    <a href="resources.html">Resources</a>
+                    <a href="solutions.html">Solutions</a>
+                    <a href="waitlist.html" class="btn btn-primary">Start</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Join the Barkhaus Beta</h1>
+                <p class="hero-subtitle">
+                    Be among the first to try Barkhaus before our public launch.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist Form -->
+    <section class="section">
+        <div class="container">
+            <div class="form-card">
+                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" id="waitlist-form">
+                    <div class="form-group">
+                        <label for="name">Name *</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="organization">Organization *</label>
+                        <input type="text" id="organization" name="organization" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="website">Website (optional)</label>
+                        <input type="url" id="website" name="website" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="how_heard">How did you hear about us? *</label>
+                        <select id="how_heard" name="how_heard" class="form-control" required>
+                            <option value="">Select an option</option>
+                            <option value="social_media">Social Media</option>
+                            <option value="search_engine">Search Engine</option>
+                            <option value="referral">Referral from another rescue</option>
+                            <option value="conference">Conference or Event</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="animals_count">Approximately how many animals does your rescue work with per year?</label>
+                        <select id="animals_count" name="animals_count" class="form-control">
+                            <option value="">Select a range</option>
+                            <option value="1-25">1-25</option>
+                            <option value="26-50">26-50</option>
+                            <option value="51-100">51-100</option>
+                            <option value="101-250">101-250</option>
+                            <option value="250+">250+</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Get Early Access</button>
+                    <p style="text-align: center; margin-top: 1.5rem; opacity: 0.7; font-size: 0.9rem;">
+                        We'll notify you as soon as early access is available.
+                    </p>
+                </form>
+                <div id="thank-you-message" style="display: none; text-align: center; padding: 3rem;">
+                    <h2 style="color: var(--color-warm-brown); margin-bottom: 1rem;">You're in!</h2>
+                    <p class="lead">We'll notify you as soon as early access is available.</p>
+                    <img src="images/barkhaus_dog_happy_family.png" alt="Thank you" style="max-width: 300px; margin-top: 2rem; border-radius: 1rem;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Join Beta -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Why join early access?</h2>
+                <p>Be part of transforming animal rescue technology</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎁</div>
+                    <h3>Free Access</h3>
+                    <p>Get full access to Barkhaus at no cost during the beta period</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🗣️</div>
+                    <h3>Shape the Future</h3>
+                    <p>Your feedback directly influences features and platform direction</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Join the Community</h3>
+                    <p>Connect with forward-thinking rescues pioneering new technology</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⭐</div>
+                    <h3>Early Adopter Benefits</h3>
+                    <p>Special perks and priority support as we grow</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>First to Launch</h3>
+                    <p>Be ready from day one with your rescue fully set up</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Exclusive Training</h3>
+                    <p>Personalized onboarding and dedicated support</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Simple form submission handler (you'll need to set up Formspree or another service)
+        document.getElementById('waitlist-form').addEventListener('submit', function(e) {
+            // Uncomment when you have a real form endpoint
+            // e.preventDefault();
+            // After successful submission, show thank you message
+            // document.getElementById('waitlist-form').style.display = 'none';
+            // document.getElementById('thank-you-message').style.display = 'block';
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Barkhaus</h4>
+                    <p>Technology with heart. Built by animal advocates for animal rescues.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <a href="features.html">Features</a>
+                    <a href="solutions.html">Solutions</a>
+                    <a href="pricing.html">Pricing</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <a href="about.html">About</a>
+                    <a href="partners.html">Partners</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="resources.html">Blog & Guides</a>
+                    <a href="waitlist.html">Join Waitlist</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Barkhaus. Building with love for animal rescues.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

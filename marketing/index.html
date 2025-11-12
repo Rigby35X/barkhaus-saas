@@ -3,89 +3,385 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barkhaus - Coming Soon</title>
+    <title>Barkhaus - Rescue tech simplified</title>
+    <meta name="description" content="Streamline your shelter's operations, boost marketing efforts, and connect more animals with loving homes through our comprehensive platform designed specifically for animal rescue organizations.">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-          --color-deep-taupe: #4d4c4c;
-          --color-warm-brown: #804e3f;
-          --color-sand: #cbb19d;
-          --color-stone: #bfae9b;
-          --color-dove: #e2d4c6;
-          --color-cloud: #e9e8e6;
-        }
-        
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
-        h1, h2 {
-            font-family: 'Noto Serif Display', serif;
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, var(--color-dove) 0%, var(--color-cloud) 100%);
-        }
-        
-        .brand-btn {
-            background: var(--color-warm-brown);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            font-weight: 600;
-            display: inline-block;
-            text-decoration: none;
-        }
-        
-        .brand-btn:hover {
-            background: var(--color-deep-taupe);
-        }
-        
-        .card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            padding: 2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="gradient-bg" style="min-height: 100vh; display: flex; align-items: center; justify-content: center;">
-    <div style="text-align: center; padding: 2rem; max-width: 800px;">
-        <div style="margin-bottom: 2rem;">
-            <h1 style="font-size: 4rem; color: var(--color-deep-taupe); margin-bottom: 1rem; font-weight: 700;">
-                🐾 Barkhaus
-            </h1>
-            <div style="display: inline-block; background: var(--color-warm-brown); color: white; padding: 0.5rem 1.5rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 2rem;">
-                Coming Soon
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-content">
+                <a href="index.html" class="logo">🐾 Barkhaus</a>
+                <div class="nav-links">
+                    <a href="features.html">Features</a>
+                    <a href="pricing.html">Pricing</a>
+                    <a href="resources.html">Resources</a>
+                    <a href="solutions.html">Solutions</a>
+                    <a href="waitlist.html" class="btn btn-primary">Start</a>
+                </div>
             </div>
         </div>
-        
-        <h2 style="font-size: 2.5rem; color: var(--color-deep-taupe); margin-bottom: 1rem; font-weight: 600;">
-            Beautiful Websites for Animal Rescues
-        </h2>
-        
-        <p style="font-size: 1.25rem; color: var(--color-deep-taupe); margin-bottom: 2rem; opacity: 0.8;">
-            We're building something special to help animal rescues create stunning websites 
-            and manage their operations with ease.
-        </p>
-        
-        <div class="card" style="max-width: 500px; margin: 0 auto;">
-            <p style="color: var(--color-deep-taupe); margin-bottom: 1rem; font-weight: 600; font-size: 1.1rem;">
-                Interested in early access?
-            </p>
-            <p style="color: var(--color-deep-taupe); margin-bottom: 1.5rem; opacity: 0.8;">
-                Email us at:
-            </p>
-            <a href="mailto:hello@barkhaus.io" style="color: var(--color-warm-brown); font-weight: 700; font-size: 1.25rem; text-decoration: none;">
-                hello@barkhaus.io
-            </a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Rescue tech simplified</h1>
+                <p class="hero-subtitle">
+                    Streamline your shelter's operations, boost marketing efforts, and connect more animals with
+                    loving homes through our comprehensive platform designed specifically for animal rescue
+                    organizations.
+                </p>
+                <div class="hero-buttons">
+                    <a href="waitlist.html" class="btn btn-primary btn-lg">Get started</a>
+                    <a href="#demo" class="btn btn-secondary btn-lg">Learn more</a>
+                </div>
+            </div>
         </div>
-        
-        <p style="color: var(--color-deep-taupe); margin-top: 3rem; font-size: 0.875rem; opacity: 0.6;">
-            © 2025 Barkhaus. Building with ❤️ for animal rescues.
-        </p>
-    </div>
+    </section>
+
+    <!-- Advanced Features -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Advanced features for modern shelters</h2>
+                <p>Comprehensive tools designed to simplify your rescue operations</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>Comprehensive reporting and analytics</h3>
+                    <p>Track performance and make data-driven decisions</p>
+                    <a href="features.html" class="btn btn-primary">Learn more</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Donor management system</h3>
+                    <p>Streamline fundraising and track donor contributions</p>
+                    <a href="features.html" class="btn btn-primary">Explore</a>
+                </div>
+                <div class="feature-card">
+                    <h3>Seamless platform integrations</h3>
+                    <p>Connect with your favorite tools and platforms</p>
+                    <a href="partners.html" class="btn btn-primary">Connect</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portal CTA -->
+    <section class="section section-dark">
+        <div class="container">
+            <div class="cta-content text-center">
+                <h2 class="text-white">Explore the barkhaus admin portal</h2>
+                <p class="text-white">Manage your shelter's entire workflow from a single, powerful dashboard designed for animal rescue professionals.</p>
+                <div class="hero-buttons" style="margin-top: 2rem;">
+                    <a href="#" class="btn btn-light">Explore</a>
+                    <a href="features.html" class="btn btn-secondary">Learn more</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Designed to empower animal rescues</h2>
+                <p>Features that make a real difference in animal welfare</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>Efficiency</h4>
+                    <h3>Reduce administrative burden</h3>
+                    <p>Automate repetitive tasks and focus on saving lives</p>
+                    <a href="features.html" class="btn btn-primary">Learn more</a>
+                </div>
+                <div class="feature-card">
+                    <h4>Community</h4>
+                    <h3>Enhance shelter engagement</h3>
+                    <p>Connect with volunteers, donors, and adopters seamlessly</p>
+                    <a href="solutions.html" class="btn btn-primary">Explore</a>
+                </div>
+                <div class="feature-card">
+                    <h4>Impact</h4>
+                    <h3>Increase adoption success</h3>
+                    <p>Improve matching and tracking of animals with potential homes</p>
+                    <a href="features.html" class="btn btn-primary">Discover</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature: Animal Management -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="content-two-col">
+                <div>
+                    <h2>Comprehensive animal management dashboard</h2>
+                    <p class="lead">Simplify intake, tracking, and adoption workflows with our intuitive platform. Manage every animal's journey from rescue to forever home.</p>
+                    <ul class="features-list">
+                        <li>Detailed animal profiles and medical histories</li>
+                        <li>Real-time tracking of animal status and location</li>
+                        <li>Streamlined intake and assessment processes</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <a href="features.html" class="btn btn-primary">Get started</a>
+                        <a href="features.html" class="btn btn-secondary" style="margin-left: 1rem;">Learn more</a>
+                    </div>
+                </div>
+                <div class="demo-visual">
+                    <img src="images/barkhaus_dog_and_bone.png" alt="Animal Management" style="width: 100%; border-radius: 1rem;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature: Adoption Tracking -->
+    <section class="section">
+        <div class="container">
+            <div class="content-two-col reverse">
+                <div>
+                    <h2>Smart adoption tracking and matching</h2>
+                    <p class="lead">Simplify the adoption process with intelligent matching and comprehensive application management.</p>
+                    <ul class="features-list">
+                        <li>Intelligent adopter-animal matching algorithm</li>
+                        <li>Comprehensive application tracking and management</li>
+                        <li>Real-time status updates for adoption processes</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <a href="features.html" class="btn btn-primary">Start matching</a>
+                        <a href="features.html" class="btn btn-secondary" style="margin-left: 1rem;">Learn more</a>
+                    </div>
+                </div>
+                <div class="demo-visual">
+                    <img src="images/barkhaus_dog_happy_family.png" alt="Adoption Tracking" style="width: 100%; border-radius: 1rem;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature: Marketing Tools -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="content-two-col">
+                <div>
+                    <h2>Powerful marketing tools for animal rescues</h2>
+                    <p class="lead">Create compelling campaigns and increase visibility for your animals and organization.</p>
+                    <ul class="features-list">
+                        <li>Social media content creation and scheduling</li>
+                        <li>Email newsletter templates and management</li>
+                        <li>Integrated marketing campaign tracking</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <a href="features.html" class="btn btn-primary">Start marketing</a>
+                        <a href="features.html" class="btn btn-secondary" style="margin-left: 1rem;">Learn more</a>
+                    </div>
+                </div>
+                <div class="demo-visual">
+                    <div class="image-placeholder">
+                        <p>Marketing Dashboard</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature: Volunteer Management -->
+    <section class="section">
+        <div class="container">
+            <div class="content-two-col reverse">
+                <div>
+                    <h2>Empower volunteers and foster networks</h2>
+                    <p class="lead">Streamline communication and coordination for your most valuable resource. Connect, schedule, and support your volunteer team effortlessly.</p>
+                    <ul class="features-list">
+                        <li>Volunteer scheduling and management</li>
+                        <li>Foster network communication tools</li>
+                        <li>Time tracking and impact reporting</li>
+                    </ul>
+                    <div style="margin-top: 2rem;">
+                        <a href="features.html" class="btn btn-primary">Manage</a>
+                        <a href="features.html" class="btn btn-secondary" style="margin-left: 1rem;">Connect</a>
+                    </div>
+                </div>
+                <div class="demo-visual">
+                    <img src="images/barkhaus_dog_and_vet.png" alt="Volunteer Management" style="width: 100%; border-radius: 1rem;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Getting started with Barkhaus</h2>
+                <p>Simple steps to transform your rescue operations</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>Setup</h4>
+                    <h3>Create your shelter profile</h3>
+                    <p>Build comprehensive organizational account</p>
+                    <a href="waitlist.html" class="btn btn-primary">Configure</a>
+                </div>
+                <div class="feature-card">
+                    <h4>Integrate</h4>
+                    <h3>Import shelter data</h3>
+                    <p>Seamlessly transfer existing animal records</p>
+                    <a href="waitlist.html" class="btn btn-primary">Connect</a>
+                </div>
+                <div class="feature-card">
+                    <h4>Launch</h4>
+                    <h3>Start saving lives</h3>
+                    <p>Begin tracking adoptions and managing shelter operations</p>
+                    <a href="waitlist.html" class="btn btn-primary">Go</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Transform CTA -->
+    <section class="section section-dark">
+        <div class="container">
+            <div class="cta-content text-center">
+                <h2 class="text-white">Transform your rescue operations</h2>
+                <p class="text-white">Discover how Barkhaus can help you save more lives and streamline your shelter's daily tasks.</p>
+                <div class="hero-buttons" style="margin-top: 2rem;">
+                    <a href="waitlist.html" class="btn btn-light btn-lg">Get started</a>
+                    <a href="#" class="btn btn-secondary btn-lg">Watch demo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Real stories</h2>
+                <p>See how shelters are changing lives with Barkhaus</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        <p>"Barkhaus has transformed our ability to match animals with loving homes faster than ever before."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="image-placeholder-sm"></div>
+                        <div>
+                            <strong>Sarah Martinez</strong>
+                            <p>Executive Director, Paws Hope Rescue</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        <p>"The platform's intuitive design has cut our administrative work in half."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="image-placeholder-sm"></div>
+                        <div>
+                            <strong>Michael Chen</strong>
+                            <p>Operations Manager, Urban Animal Shelter</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">
+                        <p>"We've increased our adoption rates by 40% since implementing Barkhaus."</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="image-placeholder-sm"></div>
+                        <div>
+                            <strong>Elena Rodriguez</strong>
+                            <p>Founder, Rescue Friends Network</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="section cta-section">
+        <div class="container">
+            <div class="cta-content text-center">
+                <h2 class="text-white">Ready to save more lives?</h2>
+                <p class="text-white">Start your free trial and see how Barkhaus can revolutionize your shelter's operations in minutes.</p>
+                <div class="hero-buttons" style="margin-top: 2rem;">
+                    <a href="waitlist.html" class="btn btn-light btn-lg">Start free trial</a>
+                    <a href="contact.html" class="btn btn-secondary btn-lg">Book demo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Contact us</h2>
+                <p>Our team is ready to help you transform your rescue operations and save more lives.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email</h3>
+                    <p><a href="mailto:support@barkhaus.com" style="color: var(--color-warm-brown); text-decoration: none; font-weight: 600;">support@barkhaus.com</a></p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3>Phone</h3>
+                    <p style="font-weight: 600;">+1 (888) BARK HELP</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📍</div>
+                    <h3>Office</h3>
+                    <p>123 Rescue Lane, San Francisco, CA 94105</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Platform</h4>
+                    <a href="features.html">Features</a>
+                    <a href="solutions.html">Solutions</a>
+                    <a href="pricing.html">Pricing</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <a href="resources.html">Blog & Guides</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <a href="about.html">About Us</a>
+                    <a href="partners.html">Partners</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <a href="contact.html">Help Center</a>
+                    <a href="waitlist.html">Join Waitlist</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Barkhaus. All rights reserved for animal rescue innovation</p>
+                <p style="margin-top: 0.5rem;">
+                    <a href="#" style="color: white; opacity: 0.8; text-decoration: none; margin-right: 1rem;">Privacy policy</a>
+                    <a href="#" style="color: white; opacity: 0.8; text-decoration: none; margin-right: 1rem;">Terms of service</a>
+                    <a href="#" style="color: white; opacity: 0.8; text-decoration: none;">Cookie settings</a>
+                </p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
