@@ -1193,6 +1193,14 @@
                                                     <textarea id="hero-subheading" class="form-input" rows="2" placeholder="Every animal deserves a loving home..."></textarea>
                                                 </div>
                                                 <div class="form-group">
+                                                    <label class="form-label">Button Text</label>
+                                                    <input type="text" id="hero-button-text" class="form-input" placeholder="Meet Our Dogs">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-label">Button Link</label>
+                                                    <input type="text" id="hero-button-link" class="form-input" placeholder="/our-animals/">
+                                                </div>
+                                                <div class="form-group">
                                                     <label class="form-label">Background Image</label>
                                                     <div class="space-y-2">
                                                         <input type="url" id="hero-bg-url" class="form-input" placeholder="https://example.com/image.jpg">
@@ -7571,11 +7579,15 @@
                     console.log('Populating hero section with:', content.hero);
                     const heroHeadingEl = document.getElementById('hero-heading');
                     const heroSubheadingEl = document.getElementById('hero-subheading');
+                    const heroButtonTextEl = document.getElementById('hero-button-text');
+                    const heroButtonLinkEl = document.getElementById('hero-button-link');
                     const heroBgUrlEl = document.getElementById('hero-bg-url');
 
                     console.log('Form elements found:', {
                         heroHeading: !!heroHeadingEl,
                         heroSubheading: !!heroSubheadingEl,
+                        heroButtonText: !!heroButtonTextEl,
+                        heroButtonLink: !!heroButtonLinkEl,
                         heroBgUrl: !!heroBgUrlEl
                     });
 
@@ -7587,6 +7599,14 @@
                         if (heroSubheadingEl) {
                             heroSubheadingEl.value = content.hero.body_text || '';
                             console.log('✏️ Set hero subheading input to:', heroSubheadingEl.value);
+                        }
+                        if (heroButtonTextEl) {
+                            heroButtonTextEl.value = content.hero.button_text || '';
+                            console.log('✏️ Set hero button text input to:', heroButtonTextEl.value);
+                        }
+                        if (heroButtonLinkEl) {
+                            heroButtonLinkEl.value = content.hero.button_link || '';
+                            console.log('✏️ Set hero button link input to:', heroButtonLinkEl.value);
                         }
                         if (heroBgUrlEl) {
                             heroBgUrlEl.value = content.hero.background_image_url || '';
@@ -7936,6 +7956,8 @@
             const heroData = {
                 headline: document.getElementById('hero-heading').value,
                 body_text: document.getElementById('hero-subheading').value,
+                button_text: document.getElementById('hero-button-text').value,
+                button_link: document.getElementById('hero-button-link').value,
                 background_image_url: document.getElementById('hero-bg-url').value
             };
 
