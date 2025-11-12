@@ -41,7 +41,7 @@
     <section class="section">
         <div class="container">
             <div class="form-card">
-                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+                <form id="contact-form">
                     <div class="form-group">
                         <label for="name">Name *</label>
                         <input type="text" id="name" name="name" class="form-control" required>
@@ -59,10 +59,63 @@
                         <textarea id="message" name="message" class="form-control" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">Send Message</button>
+                    <div id="form-status" style="margin-top: 1rem; text-align: center;"></div>
                 </form>
+                <div id="thank-you-message" style="display: none; text-align: center; padding: 3rem;">
+                    <h2 style="color: var(--color-warm-brown); margin-bottom: 1rem;">Message Sent!</h2>
+                    <p class="lead">Thank you for contacting us. We'll get back to you shortly.</p>
+                </div>
             </div>
         </div>
     </section>
+
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const statusDiv = document.getElementById('form-status');
+
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.textContent = 'Sending...';
+            statusDiv.textContent = '';
+
+            // Get form data
+            const formData = {
+                name: form.name.value,
+                organization: form.organization.value,
+                email: form.email.value,
+                message: form.message.value
+            };
+
+            try {
+                // TODO: Replace with actual API URL after pushing to Xano
+                // The URL will be: https://xz6u-fpaz-praf.n7e.xano.io/api:<API_KEY>/form_submissions/contact
+                const response = await fetch('https://xz6u-fpaz-praf.n7e.xano.io/api:wPrzs4Mr/form_submissions/contact', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    // Show thank you message
+                    form.style.display = 'none';
+                    document.getElementById('thank-you-message').style.display = 'block';
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = '<p style="color: #dc2626;">Sorry, there was an error sending your message. Please try again or email us directly at <a href="mailto:support@barkhaus.com">support@barkhaus.com</a>.</p>';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
+            }
+        });
+    </script>
 
     <!-- Alternative Contact Methods -->
     <section class="section section-light">

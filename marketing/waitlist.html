@@ -41,7 +41,7 @@
     <section class="section">
         <div class="container">
             <div class="form-card">
-                <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST" id="waitlist-form">
+                <form id="waitlist-form">
                     <div class="form-group">
                         <label for="name">Name *</label>
                         <input type="text" id="name" name="name" class="form-control" required>
@@ -84,6 +84,7 @@
                     <p style="text-align: center; margin-top: 1.5rem; opacity: 0.7; font-size: 0.9rem;">
                         We'll notify you as soon as early access is available.
                     </p>
+                    <div id="form-status" style="margin-top: 1rem; text-align: center;"></div>
                 </form>
                 <div id="thank-you-message" style="display: none; text-align: center; padding: 3rem;">
                     <h2 style="color: var(--color-warm-brown); margin-bottom: 1rem;">You're in!</h2>
@@ -137,13 +138,52 @@
     </section>
 
     <script>
-        // Simple form submission handler (you'll need to set up Formspree or another service)
-        document.getElementById('waitlist-form').addEventListener('submit', function(e) {
-            // Uncomment when you have a real form endpoint
-            // e.preventDefault();
-            // After successful submission, show thank you message
-            // document.getElementById('waitlist-form').style.display = 'none';
-            // document.getElementById('thank-you-message').style.display = 'block';
+        document.getElementById('waitlist-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const statusDiv = document.getElementById('form-status');
+
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            statusDiv.textContent = '';
+
+            // Get form data
+            const formData = {
+                name: form.name.value,
+                organization: form.organization.value,
+                email: form.email.value,
+                website: form.website.value || null,
+                how_heard: form.how_heard.value,
+                animals_count: form.animals_count.value || null
+            };
+
+            try {
+                // TODO: Replace with actual API URL after pushing to Xano
+                // The URL will be: https://xz6u-fpaz-praf.n7e.xano.io/api:<API_KEY>/form_submissions/waitlist
+                const response = await fetch('https://xz6u-fpaz-praf.n7e.xano.io/api:wPrzs4Mr/form_submissions/waitlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    // Show thank you message
+                    form.style.display = 'none';
+                    document.getElementById('thank-you-message').style.display = 'block';
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.innerHTML = '<p style="color: #dc2626;">Sorry, there was an error submitting your request. Please try again or email us directly at <a href="mailto:support@barkhaus.com">support@barkhaus.com</a>.</p>';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Get Early Access';
+            }
         });
     </script>
 
