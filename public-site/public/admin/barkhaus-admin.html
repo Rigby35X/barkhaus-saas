@@ -547,6 +547,220 @@
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
+
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+            /* Header adjustments */
+            header h1 {
+                font-size: 1.125rem !important;
+            }
+
+            /* Header buttons - keep inline but smaller */
+            header .btn-primary, header .btn-secondary {
+                width: auto;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            header .btn-primary svg {
+                width: 14px;
+                height: 14px;
+                margin-right: 4px;
+            }
+
+            /* Stat cards stack on mobile */
+            .stat-card {
+                padding: 16px;
+            }
+
+            /* Form inputs better touch targets */
+            .form-input, .form-select, .form-textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 14px;
+            }
+
+            /* Buttons full width on mobile (except header buttons) */
+            .tab-content .btn-primary,
+            .tab-content .btn-secondary,
+            .modal .btn-primary,
+            .modal .btn-secondary,
+            .content-section .btn-primary,
+            .content-section .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Modal adjustments */
+            .modal-content {
+                width: 95%;
+                padding: 16px;
+                max-height: 90vh;
+            }
+
+            /* Table responsiveness */
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px 4px;
+            }
+
+            /* Content sections */
+            .content-section {
+                padding: 12px;
+            }
+
+            /* Dropdown sections */
+            .border.rounded-lg {
+                margin-bottom: 12px;
+            }
+
+            /* Space between form groups */
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            /* Animal cards */
+            .animal-card {
+                padding: 12px;
+            }
+
+            /* Flex containers stack on mobile (except header) */
+            .tab-content .flex.space-x-2,
+            .tab-content .flex.space-x-4,
+            .content-section .flex.space-x-2,
+            .content-section .flex.space-x-4 {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .tab-content .flex.space-x-2 > *,
+            .tab-content .flex.space-x-4 > *,
+            .content-section .flex.space-x-2 > *,
+            .content-section .flex.space-x-4 > * {
+                margin: 0 !important;
+                width: 100%;
+            }
+
+            /* Content tabs wrap on mobile */
+            .flex.flex-wrap.gap-2 {
+                gap: 8px;
+            }
+
+            .content-tab {
+                flex: 1 1 auto;
+                min-width: 120px;
+            }
+
+            /* Sidebar full height on mobile */
+            #sidebar-drawer {
+                height: 100vh;
+            }
+        }
+
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            /* Even smaller text for tiny screens */
+            body {
+                font-size: 14px;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            h3 {
+                font-size: 1.125rem;
+            }
+
+            /* Tighter spacing */
+            .p-6 {
+                padding: 1rem !important;
+            }
+
+            .p-4 {
+                padding: 0.75rem !important;
+            }
+
+            /* Smaller buttons */
+            .tab-content .btn-primary,
+            .tab-content .btn-secondary,
+            .content-section .btn-primary,
+            .content-section .btn-secondary {
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+
+            /* Content tabs smaller */
+            .content-tab {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+
+            /* Header even more compact */
+            header h1 {
+                font-size: 1rem !important;
+            }
+
+            header .btn-primary, header .btn-secondary {
+                padding: 6px 10px;
+                font-size: 11px;
+            }
+        }
+
+        /* Touch-friendly improvements for all mobile */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger tap targets */
+            button, .btn-primary, .btn-secondary, .btn-outline {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* Sidebar tabs easier to tap */
+            .sidebar-tab {
+                padding: 14px 12px !important;
+            }
+
+            /* Content tabs easier to tap */
+            .content-tab {
+                padding: 12px 16px !important;
+            }
+
+            /* Dropdown toggles easier to tap */
+            .border.rounded-lg > button {
+                padding: 16px !important;
+            }
+
+            /* Remove hover effects on touch devices */
+            .btn-primary:hover,
+            .btn-secondary:hover,
+            .btn-outline:hover {
+                transform: none;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-width: 896px) and (orientation: landscape) {
+            /* Reduce header height in landscape */
+            header {
+                height: auto;
+            }
+
+            header .flex {
+                height: 3rem;
+            }
+
+            /* Adjust main content height */
+            .flex[style*="calc(100vh - 4rem)"] {
+                height: calc(100vh - 3rem) !important;
+            }
+
+            /* Sidebar more compact */
+            #sidebar-drawer {
+                top: 3rem;
+            }
+        }
         .tab-content {
             animation: fadeIn 0.3s ease-in-out;
         }
