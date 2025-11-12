@@ -1,0 +1,292 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { fetchAllPageData } from "../../utils/content-fetcher.js";
+
+// Fetch dynamic content for the page
+const { content, organization } = await fetchAllPageData('applications', '9', Astro.url.origin);
+
+// Use dynamic content with fallbacks
+const adoptionContent = content.adoption_application || {};
+---
+
+<BaseLayout
+  title="Mission Bay Puppy Rescue - Adoption Application"
+  description="Start your adoption journey with Mission Bay Puppy Rescue. Complete our adoption application to find your perfect companion."
+  organization={organization}
+>
+  <!-- ============================================ -->
+  <!--                 Page Header                  -->
+  <!-- ============================================ -->
+  
+  <section id="page-header">
+    <div class="cs-container">
+      <h1 class="cs-title">Adoption Application</h1>
+      <p class="cs-text">
+        Thank you for your interest in adopting from Mission Bay Puppy Rescue! 
+        Please complete the form below to begin the adoption process. We'll review 
+        your application and get back to you within 24-48 hours.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!--              Application Form                -->
+  <!-- ============================================ -->
+  
+  <section id="application-form">
+    <div class="cs-container">
+      <div class="cs-form-wrapper">
+        
+        <!-- Application Instructions -->
+        <div class="cs-instructions">
+          <h2>Before You Begin</h2>
+          <div class="cs-instruction-grid">
+            <div class="cs-instruction-item">
+              <div class="cs-icon">📋</div>
+              <h3>Complete Information</h3>
+              <p>Please fill out all required fields accurately. Incomplete applications may delay the review process.</p>
+            </div>
+            <div class="cs-instruction-item">
+              <div class="cs-icon">🏠</div>
+              <h3>Housing Requirements</h3>
+              <p>If you rent your home, please ensure you have landlord approval for pets before applying.</p>
+            </div>
+            <div class="cs-instruction-item">
+              <div class="cs-icon">🩺</div>
+              <h3>Veterinary References</h3>
+              <p>If you've had pets before, please have your veterinarian's contact information ready.</p>
+            </div>
+            <div class="cs-instruction-item">
+              <div class="cs-icon">⏰</div>
+              <h3>Review Process</h3>
+              <p>We'll review your application within 24-48 hours and contact you to discuss next steps.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Embedded Cognito Form -->
+        <div class="cs-form-container">
+          <div class="cs-form-header">
+            <h2>Adoption Application Form</h2>
+            <p>Please complete all sections of the form below:</p>
+          </div>
+          
+          <!-- Cognito Form Embed -->
+          <div id="cognito-form" class="cs-cognito-form">
+            <script src="https://www.cognitoforms.com/f/seamless.js" data-key="fGT316vhT0-rU8gCrayexQ" data-form="1"></script>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="cs-additional-info">
+          <h2>What Happens Next?</h2>
+          <div class="cs-process-steps">
+            <div class="cs-step">
+              <div class="cs-step-number">1</div>
+              <div class="cs-step-content">
+                <h3>Application Review</h3>
+                <p>Our team will carefully review your application within 24-48 hours.</p>
+              </div>
+            </div>
+            <div class="cs-step">
+              <div class="cs-step-number">2</div>
+              <div class="cs-step-content">
+                <h3>Initial Contact</h3>
+                <p>We'll contact you to discuss your application and answer any questions.</p>
+              </div>
+            </div>
+            <div class="cs-step">
+              <div class="cs-step-number">3</div>
+              <div class="cs-step-content">
+                <h3>Meet & Greet</h3>
+                <p>Schedule a visit to meet your potential new family member.</p>
+              </div>
+            </div>
+            <div class="cs-step">
+              <div class="cs-step-number">4</div>
+              <div class="cs-step-content">
+                <h3>Home Visit</h3>
+                <p>If required, we'll arrange a brief home visit to ensure a good fit.</p>
+              </div>
+            </div>
+            <div class="cs-step">
+              <div class="cs-step-number">5</div>
+              <div class="cs-step-content">
+                <h3>Finalize Adoption</h3>
+                <p>Complete the adoption paperwork and welcome your new companion home!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="cs-contact-info">
+          <h2>Questions?</h2>
+          <p>
+            If you have any questions about the adoption process or need assistance 
+            with the application, please don't hesitate to contact us.
+          </p>
+          <div class="cs-contact-details">
+            <div class="cs-contact-item">
+              <strong>Email:</strong> 
+              <a href="mailto:adoptions@missionbaypuppyrescue.org">adoptions@missionbaypuppyrescue.org</a>
+            </div>
+            <div class="cs-contact-item">
+              <strong>Phone:</strong> 
+              <a href="tel:+15555555555">(555) 555-5555</a>
+            </div>
+            <div class="cs-contact-item">
+              <strong>Hours:</strong> 
+              Monday - Friday: 9:00 AM - 6:00 PM, Saturday: 10:00 AM - 4:00 PM
+            </div>
+          </div>
+          <a href="/contact" class="cs-button-transparent">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Page Header */
+  #page-header {
+    padding: var(--sectionPadding);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primaryDark) 100%);
+    color: white;
+    text-align: center;
+
+    .cs-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cs-title {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    .cs-text {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+  }
+
+  /* Application Form Section */
+  #application-form {
+    padding: var(--sectionPadding);
+    background: #f8f9fa;
+
+    .cs-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .cs-form-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+  }
+
+  /* Instructions - using global component styles */
+
+  /* Form Container - using global component styles */
+
+  .cs-cognito-form {
+      /* Ensure the form takes full width and integrates well */
+      width: 100%;
+      
+      /* Style the embedded form to match site design */
+      :global(.cognito) {
+        font-family: inherit !important;
+        
+        .c-forms-form {
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        
+        .c-forms-form-title {
+          display: none !important; /* Hide the form title since we have our own */
+        }
+        
+        .c-textbox, .c-textarea, .c-dropdown {
+          border: 2px solid #e1e5e9 !important;
+          border-radius: 8px !important;
+          padding: 12px 16px !important;
+          font-size: 1rem !important;
+          transition: border-color 0.3s ease !important;
+          
+          &:focus {
+            border-color: var(--primary) !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(107, 179, 235, 0.1) !important;
+          }
+        }
+        
+        .c-label {
+          font-weight: 600 !important;
+          color: var(--headerColor) !important;
+          margin-bottom: 8px !important;
+        }
+        
+        .c-button {
+          background: var(--primary) !important;
+          border: none !important;
+          border-radius: 8px !important;
+          padding: 12px 24px !important;
+          font-size: 1rem !important;
+          font-weight: 600 !important;
+          color: white !important;
+          cursor: pointer !important;
+          transition: background-color 0.3s ease !important;
+          
+          &:hover {
+            background: var(--primaryDark) !important;
+          }
+        }
+        
+        .c-forms-section {
+          margin-bottom: 2rem !important;
+        }
+        
+        .c-forms-section-header {
+          font-size: 1.25rem !important;
+          font-weight: 600 !important;
+          color: var(--headerColor) !important;
+          border-bottom: 2px solid var(--primary) !important;
+          padding-bottom: 0.5rem !important;
+          margin-bottom: 1.5rem !important;
+        }
+      }
+    }
+  }
+
+  /* Additional Information - using global component styles */
+
+  /* Contact Information - using global component styles with overrides */
+  .cs-contact-info {
+    .cs-contact-item {
+      strong {
+        color: var(--primary);
+        margin-right: 0.5rem;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  /* Mobile responsive - using global component styles */
+</style>
