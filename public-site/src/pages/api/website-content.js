@@ -7,7 +7,8 @@
 export const prerender = false;
 
 // Xano Configuration
-const CACHE_CONTROL_HEADER = 'public, s-maxage=300, stale-while-revalidate=600';
+// Reduced cache time for faster content updates (30 seconds instead of 5 minutes)
+const CACHE_CONTROL_HEADER = 'public, s-maxage=30, stale-while-revalidate=60';
 
 const XANO_CONFIG = {
     contentUrl: import.meta.env.VITE_XANO_CONTENT_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:MU8UozDK',
@@ -615,7 +616,8 @@ export async function PUT({ request }) {
                 status: 200,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
+                    'Access-Control-Allow-Origin': '*',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate'
                 }
             });
 
