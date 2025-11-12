@@ -1,15 +1,19 @@
 // GET /api/form_submissions
 // Get all form submissions for the admin dashboard
+// Filtered by organization
 
 input {
+  org_id: int [required] // Organization ID to filter by
   form_type: text // Optional filter: "contact" or "waitlist"
   status: text // Optional filter: "new", "read", "replied", "archived"
   limit: int [default: 50]
   offset: int [default: 0]
 }
 
-// Build the query
-var query = {}
+// Build the query - MUST filter by org_id for security
+var query = {
+  org_id: input.org_id
+}
 
 if (input.form_type != null) {
   query.form_type = input.form_type

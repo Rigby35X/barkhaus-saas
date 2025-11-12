@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '../components/Layout';
+import { useTenant } from '../hooks/useTenant';
 import { fetchFormSubmissions, updateFormSubmissionStatus } from '../lib/xano';
 
 type FormSubmission = {
@@ -20,18 +21,21 @@ type FormSubmission = {
 };
 
 export default function Communications() {
+  const { orgId, loading: tenantLoading } = useTenant();
   const [filterType, setFilterType] = useState<'all' | 'contact' | 'waitlist'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'new' | 'read' | 'replied' | 'archived'>('all');
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['form_submissions', filterType, filterStatus],
+    queryKey: ['form_submissions', orgId, filterType, filterStatus],
     queryFn: () => fetchFormSubmissions({
+      org_id: orgId,
       form_type: filterType === 'all' ? undefined : filterType,
       status: filterStatus === 'all' ? undefined : filterStatus,
       limit: 100,
     }),
+    enabled: !!orgId,
   });
 
   const updateStatusMutation = useMutation({
@@ -44,6 +48,10 @@ export default function Communications() {
   });
 
   const submissions = data?.submissions || [];
+
+  if (tenantLoading || isLoading) {
+    return <Layout><div>Loading submissions...</div></Layout>;
+  }
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {

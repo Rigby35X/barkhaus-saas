@@ -4,6 +4,9 @@
 table("form_submissions") {
   id: int [pk, auto]
 
+  // Organization (which company/rescue this submission is for)
+  org_id: int [ref: organizations.id, required] // Should be 8 for Barkhaus marketing site
+
   // Form identification
   form_type: text [required] // "contact" or "waitlist"
 

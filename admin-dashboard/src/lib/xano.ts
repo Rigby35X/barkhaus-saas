@@ -24,7 +24,8 @@ export const fetchAnimalsByOrg = async (orgId: number) => {
   return response.data;
 };
 
-export const fetchFormSubmissions = async (params?: {
+export const fetchFormSubmissions = async (params: {
+  org_id: number;
   form_type?: 'contact' | 'waitlist';
   status?: 'new' | 'read' | 'replied' | 'archived';
   limit?: number;
@@ -35,6 +36,7 @@ export const fetchFormSubmissions = async (params?: {
                   `${import.meta.env.VITE_XANO_BASE_URL}/form_submissions`;
 
   const queryParams = new URLSearchParams();
+  queryParams.append('org_id', params.org_id.toString()); // Required for security
   if (params?.form_type) queryParams.append('form_type', params.form_type);
   if (params?.status) queryParams.append('status', params.status);
   if (params?.limit) queryParams.append('limit', params.limit.toString());
