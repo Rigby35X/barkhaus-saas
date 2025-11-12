@@ -1,69 +1,48 @@
 // Update a form submission's status and admin notes
 query "{id}" verb=PATCH {
   input {
-    int id? filters=min:1 {
-      description = "Form submission ID"
-    }
-    text status? {
-      description = "New status: new, read, replied, archived"
-    }
-    text admin_notes? {
-      description = "Admin notes about this submission"
+    int id? filters=min:1
+    dblink {
+      table = ""
     }
   }
 
   stack {
-    // Get the existing submission
-    db.get form_submissions {
+    util.get_raw_input {
+      encoding = "json"
+      exclude_middleware = false
+    } as $raw_input
+  
+    // Get the existing submission to check if it exists
+    db.get "" {
       field_name = "id"
       field_value = $input.id
     } as $submission
-
+  
     // Check if submission exists
     precondition ($submission != null) {
       error_type = "notfound"
       error = "Submission not found"
     }
-
-    // Build update data
-    var $update_data {
-      value = {
-        updated_at: "now"
-      }
-    }
-
-    // Add status if provided
+  
+    // If marking as replied, set replied_at timestamp
     conditional {
-      if ($input.status != null) {
-        var.update $update_data {
-          value = $update_data|set:"status":$input.status
-        }
-
-        // If marking as replied, set replied_at timestamp
-        conditional {
-          if ($input.status == "replied") {
-            var.update $update_data {
-              value = $update_data|set:"replied_at":"now"
-            }
-          }
+      if ($input.status == "replied") {
+        var $replied_at {
+          value = "now"
         }
       }
     }
-
-    // Add admin_notes if provided
-    conditional {
-      if ($input.admin_notes != null) {
-        var.update $update_data {
-          value = $update_data|set:"admin_notes":$input.admin_notes
-        }
-      }
-    }
-
-    // Update the submission
-    db.edit form_submissions {
+  
+    // Update the submission with provided fields
+    db.patch "" {
       field_name = "id"
       field_value = $input.id
-      data = $update_data
+      data = `$input|pick:($raw_input|keys)`
+        |filter_null
+        |filter_empty_text
+        |set:"updated_at":"now"
+        |set:"replied_at":$replied_at
     } as $updated_submission
   }
 

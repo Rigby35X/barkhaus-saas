@@ -1,5 +1,5 @@
 // Submit contact form from barkhaus.io marketing site
-query "contact" verb=POST {
+query contact verb=POST {
   input {
     text name?
     text organization?
@@ -10,16 +10,16 @@ query "contact" verb=POST {
   stack {
     db.add form_submissions {
       data = {
-        org           : 8
-        form_type     : "contact"
-        name          : $input.name
-        email         : $input.email
-        organization  : $input.organization
-        message       : $input.message
-        status        : "new"
+        org            : 8
+        form_type      : "contact"
+        name           : $input.name
+        email          : $input.email
+        organization   : $input.organization
+        message        : $input.message
+        status         : "new"
         submission_date: "now"
-        created_at    : "now"
-        updated_at    : "now"
+        created_at     : "now"
+        updated_at     : "now"
       }
     } as $submission
   }

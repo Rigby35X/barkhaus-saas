@@ -1,22 +1,11 @@
 // Get all form submissions for the admin dashboard
-query "" verb=GET {
+query submissions verb=GET {
   input {
-    int org_id? {
-      description = "Organization ID to filter by"
-      table = "organizations"
-    }
-    text form_type? {
-      description = "Optional filter: contact or waitlist"
-    }
-    text status? {
-      description = "Optional filter: new, read, replied, archived"
-    }
-    int limit?=50 {
-      description = "Number of items per page"
-    }
-    int offset?=0 {
-      description = "Pagination offset"
-    }
+    int org_id?
+    text form_type?
+    text status?
+    int limit?=50
+    int offset?=0
   }
 
   stack {

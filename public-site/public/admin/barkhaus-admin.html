@@ -551,37 +551,57 @@
         /* Mobile-specific improvements */
         @media (max-width: 768px) {
             /* Header adjustments */
-            header h1 {
-                font-size: 1.125rem !important;
+            header {
+                position: sticky;
+                top: 0;
+                z-index: 50;
             }
 
-            /* Header buttons - keep inline but smaller */
+            header h1 {
+                font-size: 1rem !important;
+                line-height: 1.2;
+            }
+
+            /* Header container spacing */
+            header .max-w-7xl {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            header .flex.justify-between {
+                gap: 0.5rem;
+            }
+
+            /* Header buttons - better sizing for mobile */
             header .btn-primary, header .btn-secondary {
                 width: auto;
-                padding: 6px 10px;
-                font-size: 11px;
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8125rem;
+                white-space: nowrap;
+                min-height: 36px;
             }
 
             header .btn-primary svg {
-                width: 12px;
-                height: 12px;
-                margin-right: 2px;
+                width: 14px;
+                height: 14px;
+                margin-right: 4px;
             }
 
-            /* Make View Website button text hidden on small mobile */
-            header .btn-primary {
-                white-space: nowrap;
+            /* Mobile menu button proper sizing */
+            header button[data-drawer-toggle] {
+                padding: 0.5rem;
+                margin-right: 0.5rem;
             }
 
             /* Larger logo on mobile */
             #sidebar-drawer img[alt="Happy Paws"] {
-                width: 180px !important;
-                max-width: 180px !important;
+                width: 150px !important;
+                max-width: 150px !important;
             }
 
             /* Dashboard stat cards - smaller and more compact */
             .stat-card {
-                padding: 12px;
+                padding: 1rem;
             }
 
             .stat-card p.text-3xl {
@@ -589,8 +609,8 @@
             }
 
             .stat-card svg {
-                width: 24px !important;
-                height: 24px !important;
+                width: 28px !important;
+                height: 28px !important;
             }
 
             .stat-card p.text-sm {
@@ -600,7 +620,7 @@
             /* Animals tab header - make it mobile friendly */
             #tab-content-animals h2 {
                 font-size: 1.25rem !important;
-                letter-spacing: 0.1em !important;
+                letter-spacing: 0.05em !important;
             }
 
             #tab-content-animals .text-2xl {
@@ -609,7 +629,7 @@
 
             /* Animals tab stat cards */
             #tab-content-animals .rounded-xl {
-                padding: 12px !important;
+                padding: 1rem !important;
             }
 
             #tab-content-animals .text-2xl.font-bold {
@@ -618,18 +638,18 @@
 
             #tab-content-animals .text-xs {
                 font-size: 0.65rem !important;
-                letter-spacing: 0.1em !important;
+                letter-spacing: 0.05em !important;
             }
 
-            /* Stat cards stack on mobile */
-            .stat-card {
-                padding: 16px;
+            /* Main content padding */
+            main.flex-1 {
+                padding: 1rem !important;
             }
 
             /* Form inputs better touch targets */
             .form-input, .form-select, .form-textarea {
                 font-size: 16px; /* Prevents zoom on iOS */
-                padding: 14px;
+                padding: 0.875rem;
             }
 
             /* Buttons full width on mobile (except header buttons) */
@@ -641,42 +661,53 @@
             .content-section .btn-secondary {
                 width: 100%;
                 justify-content: center;
+                padding: 0.75rem 1rem;
+                font-size: 0.9375rem;
+                min-height: 44px;
+            }
+
+            /* Button groups on mobile */
+            .tab-content .flex.gap-2,
+            .tab-content .flex.gap-4,
+            .content-section .flex.gap-2,
+            .content-section .flex.gap-4 {
+                gap: 0.75rem;
             }
 
             /* Modal adjustments */
             .modal-content {
                 width: 95%;
-                padding: 16px;
+                padding: 1.25rem;
                 max-height: 90vh;
             }
 
             /* Table responsiveness */
             table {
-                font-size: 14px;
+                font-size: 0.875rem;
             }
 
             th, td {
-                padding: 8px 4px;
+                padding: 0.5rem 0.25rem;
             }
 
             /* Content sections */
             .content-section {
-                padding: 12px;
+                padding: 1rem;
             }
 
             /* Dropdown sections */
             .border.rounded-lg {
-                margin-bottom: 12px;
+                margin-bottom: 0.75rem;
             }
 
             /* Space between form groups */
             .form-group {
-                margin-bottom: 20px;
+                margin-bottom: 1.25rem;
             }
 
             /* Animal cards */
             .animal-card {
-                padding: 12px;
+                padding: 1rem;
             }
 
             /* Flex containers stack on mobile (except header) */
@@ -685,7 +716,7 @@
             .content-section .flex.space-x-2,
             .content-section .flex.space-x-4 {
                 flex-direction: column;
-                gap: 8px;
+                gap: 0.75rem;
             }
 
             .tab-content .flex.space-x-2 > *,
@@ -698,17 +729,45 @@
 
             /* Content tabs wrap on mobile */
             .flex.flex-wrap.gap-2 {
-                gap: 8px;
+                gap: 0.5rem;
             }
 
             .content-tab {
                 flex: 1 1 auto;
-                min-width: 120px;
+                min-width: 100px;
+                padding: 0.625rem 0.875rem;
+                font-size: 0.875rem;
             }
 
             /* Sidebar full height on mobile */
             #sidebar-drawer {
                 height: 100vh;
+            }
+
+            /* Grid layouts on mobile */
+            .grid.gap-6 {
+                gap: 1rem;
+            }
+
+            .grid.gap-4 {
+                gap: 0.75rem;
+            }
+
+            /* Animals grid view on mobile */
+            .animals-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            /* List view hide on mobile - show grid instead */
+            .animals-list-header {
+                display: none;
+            }
+
+            .animal-list-item {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
             }
         }
 
@@ -716,60 +775,68 @@
         @media (max-width: 480px) {
             /* Even smaller text for tiny screens */
             body {
-                font-size: 14px;
+                font-size: 0.875rem;
             }
 
             h2 {
-                font-size: 1.25rem;
+                font-size: 1.125rem;
             }
 
             h3 {
-                font-size: 1.125rem;
+                font-size: 1rem;
             }
 
             /* Tighter spacing */
             .p-6 {
-                padding: 1rem !important;
+                padding: 0.875rem !important;
             }
 
             .p-4 {
+                padding: 0.625rem !important;
+            }
+
+            /* Main content even tighter */
+            main.flex-1 {
                 padding: 0.75rem !important;
             }
 
-            /* Smaller buttons */
+            /* Smaller buttons but still accessible */
             .tab-content .btn-primary,
             .tab-content .btn-secondary,
             .content-section .btn-primary,
             .content-section .btn-secondary {
-                padding: 10px 16px;
-                font-size: 14px;
+                padding: 0.625rem 0.875rem;
+                font-size: 0.875rem;
+                min-height: 40px;
             }
 
             /* Content tabs smaller */
             .content-tab {
-                font-size: 12px;
-                padding: 8px 12px;
+                font-size: 0.75rem;
+                padding: 0.5rem 0.75rem;
+                min-width: 80px;
             }
 
             /* Header even more compact */
             header h1 {
-                font-size: 0.9rem !important;
+                font-size: 0.875rem !important;
             }
 
             header .btn-primary, header .btn-secondary {
-                padding: 5px 8px;
-                font-size: 10px;
+                padding: 0.375rem 0.625rem;
+                font-size: 0.75rem;
+                min-height: 32px;
             }
 
             header .btn-primary svg {
-                width: 10px;
-                height: 10px;
+                width: 12px;
+                height: 12px;
                 margin-right: 2px;
             }
 
             /* Even smaller stat cards */
             .stat-card {
-                padding: 10px;
+                padding: 0.75rem;
             }
 
             .stat-card p.text-3xl {
@@ -777,39 +844,84 @@
             }
 
             .stat-card svg {
-                width: 20px !important;
-                height: 20px !important;
+                width: 24px !important;
+                height: 24px !important;
+            }
+
+            .stat-card p.text-sm {
+                font-size: 0.6875rem !important;
+            }
+
+            /* Grid gaps smaller */
+            .grid.gap-6 {
+                gap: 0.75rem;
+            }
+
+            .grid.gap-4 {
+                gap: 0.5rem;
+            }
+
+            /* Form groups tighter */
+            .form-group {
+                margin-bottom: 1rem;
+            }
+
+            /* Modal even more compact */
+            .modal-content {
+                padding: 1rem;
             }
         }
 
         /* Touch-friendly improvements for all mobile */
         @media (hover: none) and (pointer: coarse) {
-            /* Larger tap targets */
-            button, .btn-primary, .btn-secondary, .btn-outline {
+            /* Larger tap targets for touch devices */
+            button:not(header button),
+            .tab-content .btn-primary,
+            .tab-content .btn-secondary,
+            .tab-content .btn-outline,
+            .content-section .btn-primary,
+            .content-section .btn-secondary,
+            .content-section .btn-outline {
                 min-height: 44px;
-                min-width: 44px;
             }
 
             /* Sidebar tabs easier to tap */
             .sidebar-tab {
-                padding: 14px 12px !important;
+                padding: 0.875rem 0.75rem !important;
+                min-height: 44px;
             }
 
             /* Content tabs easier to tap */
             .content-tab {
-                padding: 12px 16px !important;
+                padding: 0.75rem 1rem !important;
+                min-height: 40px;
             }
 
             /* Dropdown toggles easier to tap */
             .border.rounded-lg > button {
-                padding: 16px !important;
+                padding: 1rem !important;
+                min-height: 44px;
             }
 
             /* Remove hover effects on touch devices */
             .btn-primary:hover,
             .btn-secondary:hover,
-            .btn-outline:hover {
+            .btn-outline:hover,
+            .animal-card:hover,
+            .animal-list-item:hover {
                 transform: none;
+            }
+
+            /* Form inputs larger for touch */
+            .form-input, .form-select, .form-textarea {
+                min-height: 44px;
+            }
+
+            /* Icon buttons proper size */
+            .btn-icon {
+                min-width: 40px;
+                min-height: 40px;
+                padding: 0.625rem;
             }
         }
 

@@ -45,7 +45,10 @@ table form_submissions {
     timestamp updated_at? default="NOW()"
   }
 
-  indexes {
-    [org, form_type, status, submission_date]
-  }
+  index = [
+    {type: "btree", field: [{name: "org"}]}
+    {type: "btree", field: [{name: "form_type"}]}
+    {type: "btree", field: [{name: "status"}]}
+    {type: "btree", field: [{name: "submission_date", op: "desc"}]}
+  ]
 }
