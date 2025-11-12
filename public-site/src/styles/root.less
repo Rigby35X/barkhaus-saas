@@ -238,6 +238,13 @@
 	}
 }
 
+/* Page Header Padding - Add extra top padding for all page headers */
+@media only screen and (min-width: 0em) {
+	#page-header {
+		padding-top: clamp(8rem, 15vw, 12rem) !important;
+	}
+}
+
 /* Scale full website with the viewport width */
 @media only screen and (min-width: 2000px) {
 	body,
@@ -937,5 +944,95 @@
 
   .cs-percentage {
     font-size: 2.5rem;
+  }
+}
+
+/*-- -------------------------- -->
+<---    Scroll to Top Button    -->
+<--- -------------------------- -*/
+
+#scroll-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(1rem);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--primaryDark);
+    transform: translateY(0);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  span {
+    line-height: 1;
+    font-weight: bold;
+  }
+}
+
+/* Mobile adjustments */
+@media only screen and (max-width: 768px) {
+  #scroll-to-top {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+}
+
+/*-- -------------------------- -->
+<---    Givebutter Section      -->
+<--- -------------------------- -*/
+
+#givebutter-section {
+  padding: var(--sectionPadding);
+  background: #f8f9fa;
+
+  .cs-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+/* Dark Mode */
+@media only screen and (min-width: 0em) {
+  body.dark-mode {
+    #scroll-to-top {
+      background: var(--primaryLight);
+
+      &:hover {
+        background: var(--primary);
+      }
+    }
+
+    #givebutter-section {
+      background: var(--dark);
+    }
   }
 }

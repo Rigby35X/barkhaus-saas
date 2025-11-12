@@ -95,7 +95,10 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
             <link rel="stylesheet" href={`/api/branding.css?orgId=${orgId}`} />
 
             <!-- Netlify Identity Widget for CMS Authentication -->
-            <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+            <script is:inline src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+
+            <!-- Givebutter Widget Script -->
+            <script is:inline src="https://js.givebutter.com/elements/latest.js"></script>
 
             <!-- Sitewide Scripts -->
             <script src="/src/js/nav.js"></script>
@@ -161,15 +164,8 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
       // if there is no preference set, the default of light will be used. apply accordingly
       theme === "dark" ? enableDarkMode() : disableDarkMode();
     }
-  
-    setTheme();
-    initScrollButton();
-  
-    document.addEventListener("astro:after-swap", () => {
-      setTheme();
-      initScrollButton();
-    }); // For View Transitions purposes - astro:after-swap ensures that the theme is kept after navigating to a new page.
 
+    // Scroll-to-top button functionality
     let scrollToggle;
 
     function initScrollButton() {
@@ -196,4 +192,12 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
 
       scrollToggle();
     }
+
+    setTheme();
+    initScrollButton();
+
+    document.addEventListener("astro:after-swap", () => {
+      setTheme();
+      initScrollButton();
+    }); // For View Transitions purposes - astro:after-swap ensures that the theme is kept after navigating to a new page.
   </script>
