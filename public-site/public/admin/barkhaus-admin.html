@@ -4869,6 +4869,18 @@
                 window.initFlowbite();
             }
 
+            // Detect organization based on domain
+            const hostname = window.location.hostname;
+            const orgIdInput = document.getElementById('orgId');
+
+            if (hostname === 'app.barkhaus.io' && orgIdInput) {
+                orgIdInput.value = '8'; // Barkhaus
+                orgIdInput.placeholder = 'Organization ID (Barkhaus = 8)';
+            } else if (hostname === 'mbpr.barkhaus.io' && orgIdInput) {
+                orgIdInput.value = '9'; // MBPR
+                orgIdInput.placeholder = 'Organization ID (MBPR = 9)';
+            }
+
             // Global variables for view state
             let currentView = 'grid'; // 'grid' or 'list'
             let allAnimals = []; // Store all animals for filtering
