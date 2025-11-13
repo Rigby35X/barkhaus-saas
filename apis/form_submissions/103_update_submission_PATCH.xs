@@ -2,47 +2,33 @@
 query "{id}" verb=PATCH {
   input {
     int id? filters=min:1
-    dblink {
-      table = ""
-    }
+    text status?
+    text admin_notes?
   }
 
   stack {
-    util.get_raw_input {
-      encoding = "json"
-      exclude_middleware = false
-    } as $raw_input
-  
     // Get the existing submission to check if it exists
-    db.get "" {
+    db.get form_submissions {
       field_name = "id"
       field_value = $input.id
     } as $submission
-  
+
     // Check if submission exists
     precondition ($submission != null) {
       error_type = "notfound"
       error = "Submission not found"
     }
-  
-    // If marking as replied, set replied_at timestamp
-    conditional {
-      if ($input.status == "replied") {
-        var $replied_at {
-          value = "now"
-        }
-      }
-    }
-  
-    // Update the submission with provided fields
-    db.patch "" {
+
+    // Update the submission
+    db.edit form_submissions {
       field_name = "id"
       field_value = $input.id
-      data = `$input|pick:($raw_input|keys)`
-        |filter_null
-        |filter_empty_text
-        |set:"updated_at":"now"
-        |set:"replied_at":$replied_at
+      data = {
+        status: $input.status
+        admin_notes: $input.admin_notes
+        updated_at: "now"
+        replied_at: ($input.status == "replied" ? "now" : $submission.replied_at)
+      }
     } as $updated_submission
   }
 
