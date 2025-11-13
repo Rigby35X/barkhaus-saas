@@ -4869,16 +4869,26 @@
                 window.initFlowbite();
             }
 
-            // Detect organization based on domain
+            // Detect organization based on tenant slug in URL path
             const hostname = window.location.hostname;
+            const pathname = window.location.pathname;
             const orgIdInput = document.getElementById('orgId');
 
-            if (hostname === 'barkhaus.barkhaus.io' && orgIdInput) {
-                orgIdInput.value = '8'; // Barkhaus
-                orgIdInput.placeholder = 'Organization ID (Barkhaus = 8)';
-            } else if (hostname === 'mbpr.barkhaus.io' && orgIdInput) {
-                orgIdInput.value = '9'; // MBPR
-                orgIdInput.placeholder = 'Organization ID (MBPR = 9)';
+            // Tenant slug mapping to org IDs
+            const tenantToOrg = {
+                'barkhaus': { id: 8, name: 'Barkhaus' },
+                'mbpr': { id: 9, name: 'MBPR' }
+            };
+
+            // Check if on app.barkhaus.io with a tenant slug
+            if (hostname === 'app.barkhaus.io' && orgIdInput) {
+                const tenantSlug = pathname.split('/')[1]; // Get first path segment
+                const tenant = tenantToOrg[tenantSlug];
+
+                if (tenant) {
+                    orgIdInput.value = tenant.id.toString();
+                    orgIdInput.placeholder = `Organization ID (${tenant.name} = ${tenant.id})`;
+                }
             }
 
             // Global variables for view state

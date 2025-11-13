@@ -1,6 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/:tenantSlug",
+      "destination": "/admin/barkhaus-admin.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.barkhaus.io"
+        }
+      ]
+    },
+    {
       "source": "/admin",
       "destination": "/admin/barkhaus-admin.html"
     }
