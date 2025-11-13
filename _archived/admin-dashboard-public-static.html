@@ -1499,9 +1499,6 @@
                         <div class="mb-6">
                             <div class="border-b border-gray-200">
                                 <nav class="-mb-px flex space-x-8">
-                                    <button onclick="showCommTab('inbox')" id="comm-tab-inbox" class="comm-tab-btn border-blue-500 text-blue-600 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
-                                        📬 Form Submissions
-                                    </button>
                                     <button onclick="showCommTab('mailchimp')" id="comm-tab-mailchimp" class="comm-tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
                                         📧 Mailchimp
                                     </button>
@@ -1509,46 +1506,6 @@
                                         🔜 More Integrations
                                     </button>
                                 </nav>
-                            </div>
-                        </div>
-
-                        <!-- Form Submissions Inbox Tab -->
-                        <div id="comm-content-inbox" class="comm-tab-content">
-                            <div class="space-y-6">
-                                <!-- Filters -->
-                                <div class="bg-gray-50 p-4 rounded-lg">
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Form Type</label>
-                                            <select id="filter-form-type" onchange="loadFormSubmissions()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                                                <option value="">All Forms</option>
-                                                <option value="contact">Contact Forms</option>
-                                                <option value="waitlist">Waitlist Forms</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                            <select id="filter-status" onchange="loadFormSubmissions()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                                                <option value="">All Statuses</option>
-                                                <option value="new">New</option>
-                                                <option value="read">Read</option>
-                                                <option value="replied">Replied</option>
-                                                <option value="archived">Archived</option>
-                                            </select>
-                                        </div>
-                                        <div class="flex items-end">
-                                            <button onclick="loadFormSubmissions()" class="btn-secondary w-full">🔄 Refresh</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Submissions Table -->
-                                <div id="submissions-container" class="bg-white rounded-lg shadow overflow-hidden">
-                                    <div id="submissions-loading" class="text-center py-12">
-                                        <div class="text-4xl mb-2">🔄</div>
-                                        <p class="text-gray-600">Loading form submissions...</p>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 

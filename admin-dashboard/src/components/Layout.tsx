@@ -48,7 +48,7 @@ export default function Layout({ children }: LayoutProps) {
 
           {organization && (
             <div className="p-6 border-t border-gray-700">
-              
+              <a
                 href={`https://${organization.subdomain}.barkhaus.io`}
                 target="_blank"
                 rel="noopener noreferrer"
