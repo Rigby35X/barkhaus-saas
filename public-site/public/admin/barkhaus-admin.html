@@ -1457,14 +1457,32 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Adoption Code</label>
                                     <select id="filter-app-status" onchange="loadApplications()" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
-                                        <option value="">All Statuses</option>
-                                        <option value="new">New</option>
-                                        <option value="under_review">Under Review</option>
-                                        <option value="approved">Approved</option>
-                                        <option value="denied">Denied</option>
-                                        <option value="completed">Completed</option>
+                                        <option value="">All Codes</option>
+                                        <option value="4.Approved">4.Approved (706)</option>
+                                        <option value="1.LM">1.LM (423)</option>
+                                        <option value="7.Adopted: MBPR">7.Adopted: MBPR (232)</option>
+                                        <option value="Approved">Approved (181)</option>
+                                        <option value="Adopted: MBPR">Adopted: MBPR (176)</option>
+                                        <option value="Z.Denied">Z.Denied (172)</option>
+                                        <option value="6.Conditional Approval">6.Conditional Approval (151)</option>
+                                        <option value="LM">LM (151)</option>
+                                        <option value="Foster">Foster (86)</option>
+                                        <option value="Denied">Denied (74)</option>
+                                        <option value="Conditional Approval">Conditional Approval (68)</option>
+                                        <option value="Call Later">Call Later (47)</option>
+                                        <option value="5.Approved: Adult">5.Approved: Adult (27)</option>
+                                        <option value="8.Adopted: Other">8.Adopted: Other (22)</option>
+                                        <option value="2.Call Later">2.Call Later (21)</option>
+                                        <option value="9.Foster">9.Foster (18)</option>
+                                        <option value="Approved: Adult">Approved: Adult (17)</option>
+                                        <option value="Returned">Returned (12)</option>
+                                        <option value="3.VIP">3.VIP (11)</option>
+                                        <option value="VIP">VIP (10)</option>
+                                        <option value="Adopted: Other">Adopted: Other (8)</option>
+                                        <option value="Volunteer">Volunteer (4)</option>
+                                        <option value="Y.Returned">Y.Returned (2)</option>
                                     </select>
                                 </div>
                                 <div class="flex items-end">
@@ -8495,13 +8513,12 @@
 
             // Get filter values
             const appType = document.getElementById('filter-app-type')?.value || '';
-            const status = document.getElementById('filter-app-status')?.value || '';
+            const adoptionCode = document.getElementById('filter-app-status')?.value || '';
 
             try {
-                // Build query params
-                let url = `${APPLICATIONS_API_URL}?org_id=${currentOrgId}`;
+                // Build query params (fetch by type only)
+                let url = `${APPLICATIONS_API_URL}?org_id=${currentOrgId}&per_page=3000`;
                 if (appType) url += `&application_type=${appType}`;
-                if (status) url += `&status=${status}`;
 
                 const response = await fetch(url);
 
@@ -8509,7 +8526,12 @@
                     throw new Error('Failed to fetch applications');
                 }
 
-                const applications = await response.json();
+                let applications = await response.json();
+
+                // Filter by adoption code on client side
+                if (adoptionCode) {
+                    applications = applications.filter(app => app.adoption_code === adoptionCode);
+                }
 
                 // Hide loading
                 if (loadingDiv) loadingDiv.style.display = 'none';
