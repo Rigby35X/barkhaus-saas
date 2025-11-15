@@ -3831,6 +3831,143 @@
                     </div>
                 </div>
 
+                <!-- ===== MBPR-ONLY FIELDS (ORG 9) ===== -->
+                <div class="org9-only" style="display: none;">
+                    <hr class="my-6 border-gray-300">
+                    <h4 class="text-lg font-semibold mb-4 text-gray-800">MBPR-Specific Information</h4>
+
+                    <!-- Internal-Only Fields -->
+                    <div class="mb-4">
+                        <h5 class="text-md font-semibold mb-3 text-gray-700">Internal Use Only</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">MBPR Internal ID</label>
+                                <input type="text" id="mbpr_internal_id" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Estimated Adoption Date</label>
+                                <input type="date" id="estimated_adoption_date" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">New Name (from Owner)</label>
+                                <input type="text" id="new_name" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Acquired From</label>
+                                <input type="text" id="acquired_from" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Original Name (from Shelter)</label>
+                                <input type="text" id="acquired_from_original_name" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Shelter ID</label>
+                                <input type="text" id="acquired_from_shelter_id" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Foster Name</label>
+                                <input type="text" id="foster_name" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Foster Contact</label>
+                                <input type="text" id="foster_contact" class="form-input">
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label class="form-label">New Owner Photo</label>
+                            <input type="file" id="new_owner_photo" class="form-input" accept="image/*">
+                            <div id="newOwnerPhotoPreview" class="hidden mt-2">
+                                <img class="w-32 h-20 object-cover rounded border">
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-4">
+                            <label class="form-label">Veterinary Files</label>
+                            <input type="file" id="vet_file_uploads" class="form-input" multiple accept="image/*,.pdf">
+                            <p class="text-xs text-gray-500 mt-1">You can select multiple files</p>
+                        </div>
+                    </div>
+
+                    <!-- Public/Shared Fields -->
+                    <div class="mb-4">
+                        <h5 class="text-md font-semibold mb-3 text-gray-700">Public Information</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">Primary Breed</label>
+                                <input type="text" id="breed_primary" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Secondary Breed</label>
+                                <input type="text" id="breed_secondary" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Third Breed</label>
+                                <input type="text" id="breed_third" class="form-input">
+                            </div>
+
+                            <div class="checkbox-group" style="margin-top: 32px;">
+                                <input type="checkbox" id="birthday_estimated">
+                                <label for="birthday_estimated" class="text-sm">Birthday is Estimated</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Coat Color</label>
+                                <input type="text" id="markings_color" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Coat Type</label>
+                                <input type="text" id="markings_coat" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Eye Color</label>
+                                <input type="text" id="markings_eye_color" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Grooming Requirements</label>
+                                <input type="text" id="grooming" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Orphan or with Mother?</label>
+                                <select id="orphan_or_mother" class="form-select">
+                                    <option value="">Select...</option>
+                                    <option value="Orphan">Orphan</option>
+                                    <option value="With Mother">With Mother</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Mother's Name</label>
+                                <input type="text" id="mother_name" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">YouTube Video URL</label>
+                                <input type="url" id="youtube_video_url" class="form-input" placeholder="https://youtube.com/...">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Temperament</label>
+                            <textarea id="temperament" class="form-textarea" placeholder="Describe the animal's temperament..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <!-- ===== END MBPR-ONLY FIELDS ===== -->
+
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancelBtn" class="btn-secondary">Cancel</button>
                     <button type="submit" id="saveBtn" class="btn-primary">Save Animal</button>
@@ -4529,6 +4666,14 @@
             console.log('Opening modal for animal:', animalId);
             editingAnimalId = animalId;
 
+            // Show/hide MBPR-only fields based on org ID
+            const org9Fields = document.querySelectorAll('.org9-only');
+            if (currentOrgId === 9) {
+                org9Fields.forEach(el => el.style.display = 'block');
+            } else {
+                org9Fields.forEach(el => el.style.display = 'none');
+            }
+
             if (animalId) {
                 modalTitle.textContent = 'Edit Animal';
                 const animal = animals.find(a => a.id === animalId);
@@ -4545,7 +4690,7 @@
                 animalForm.reset();
 
                 // Clear all image previews
-                ['animalImagePreview', 'animalImage1Preview', 'animalImage2Preview', 'animalImage3Preview', 'animalImage4Preview'].forEach(id => {
+                ['animalImagePreview', 'animalImage1Preview', 'animalImage2Preview', 'animalImage3Preview', 'animalImage4Preview', 'newOwnerPhotoPreview'].forEach(id => {
                     const preview = document.getElementById(id);
                     if (preview) preview.classList.add('hidden');
                 });
@@ -4615,6 +4760,43 @@
                     }
                 }
             });
+
+            // Populate MBPR-only fields (Org 9)
+            if (currentOrgId === 9) {
+                // Internal fields
+                document.getElementById('mbpr_internal_id').value = animal.mbpr_internal_id || '';
+                document.getElementById('estimated_adoption_date').value = animal.estimated_adoption_date || '';
+                document.getElementById('new_name').value = animal.new_name || '';
+                document.getElementById('acquired_from').value = animal.acquired_from || '';
+                document.getElementById('acquired_from_original_name').value = animal.acquired_from_original_name || '';
+                document.getElementById('acquired_from_shelter_id').value = animal.acquired_from_shelter_id || '';
+                document.getElementById('foster_name').value = animal.foster_name || '';
+                document.getElementById('foster_contact').value = animal.foster_contact || '';
+
+                // Public fields
+                document.getElementById('birthday_estimated').checked = animal.birthday_estimated || false;
+                document.getElementById('breed_primary').value = animal.breed_primary || '';
+                document.getElementById('breed_secondary').value = animal.breed_secondary || '';
+                document.getElementById('breed_third').value = animal.breed_third || '';
+                document.getElementById('markings_color').value = animal.markings_color || '';
+                document.getElementById('markings_coat').value = animal.markings_coat || '';
+                document.getElementById('markings_eye_color').value = animal.markings_eye_color || '';
+                document.getElementById('grooming').value = animal.grooming || '';
+                document.getElementById('temperament').value = animal.temperament || '';
+                document.getElementById('orphan_or_mother').value = animal.orphan_or_mother || '';
+                document.getElementById('mother_name').value = animal.mother_name || '';
+                document.getElementById('youtube_video_url').value = animal.youtube_video_url || '';
+
+                // Show new owner photo preview if available
+                if (animal.new_owner_photo?.url) {
+                    const preview = document.getElementById('newOwnerPhotoPreview');
+                    const img = preview.querySelector('img');
+                    if (img) {
+                        img.src = animal.new_owner_photo.url;
+                        preview.classList.remove('hidden');
+                    }
+                }
+            }
         }
 
         async function handleSaveAnimal(e) {
@@ -4725,6 +4907,80 @@
                 microchip: document.getElementById('animalMicrochip').checked,
                 orgId: currentOrgId
             };
+
+            // Add MBPR-only fields for Org 9
+            if (currentOrgId === 9) {
+                // Helper to get value or null
+                const getVal = (id) => {
+                    const el = document.getElementById(id);
+                    return el ? (el.value || null) : null;
+                };
+
+                // Internal-only fields
+                formData.mbpr_internal_id = getVal('mbpr_internal_id');
+                formData.estimated_adoption_date = getVal('estimated_adoption_date');
+                formData.new_name = getVal('new_name');
+                formData.acquired_from = getVal('acquired_from');
+                formData.acquired_from_original_name = getVal('acquired_from_original_name');
+                formData.acquired_from_shelter_id = getVal('acquired_from_shelter_id');
+                formData.foster_name = getVal('foster_name');
+                formData.foster_contact = getVal('foster_contact');
+
+                // Public/shared fields
+                formData.birthday_estimated = document.getElementById('birthday_estimated')?.checked || false;
+                formData.breed_primary = getVal('breed_primary');
+                formData.breed_secondary = getVal('breed_secondary');
+                formData.breed_third = getVal('breed_third');
+                formData.markings_color = getVal('markings_color');
+                formData.markings_coat = getVal('markings_coat');
+                formData.markings_eye_color = getVal('markings_eye_color');
+                formData.grooming = getVal('grooming');
+                formData.temperament = getVal('temperament');
+                formData.orphan_or_mother = getVal('orphan_or_mother');
+                formData.mother_name = getVal('mother_name');
+                formData.youtube_video_url = getVal('youtube_video_url');
+
+                // Handle new owner photo upload
+                try {
+                    const newOwnerPhotoUpload = document.getElementById('new_owner_photo');
+                    if (newOwnerPhotoUpload && newOwnerPhotoUpload.files.length > 0) {
+                        const photoUrl = await uploadImageFile(newOwnerPhotoUpload);
+                        formData.new_owner_photo = photoUrl;
+                    }
+                } catch (uploadError) {
+                    console.error('Error uploading new owner photo:', uploadError);
+                }
+
+                // Handle vet file uploads (Note: Multiple files need special handling)
+                // For now, we'll store as JSON array of uploaded URLs
+                try {
+                    const vetFilesUpload = document.getElementById('vet_file_uploads');
+                    if (vetFilesUpload && vetFilesUpload.files.length > 0) {
+                        const uploadedFiles = [];
+                        for (let i = 0; i < vetFilesUpload.files.length; i++) {
+                            const tempInput = document.createElement('input');
+                            tempInput.type = 'file';
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(vetFilesUpload.files[i]);
+                            tempInput.files = dataTransfer.files;
+
+                            try {
+                                const fileUrl = await uploadImageFile(tempInput);
+                                if (fileUrl) {
+                                    uploadedFiles.push({ url: fileUrl, name: vetFilesUpload.files[i].name });
+                                }
+                            } catch (err) {
+                                console.error('Error uploading vet file:', err);
+                            }
+                        }
+                        if (uploadedFiles.length > 0) {
+                            formData.vet_file_uploads = uploadedFiles;
+                        }
+                    }
+                } catch (uploadError) {
+                    console.error('Error uploading vet files:', uploadError);
+                }
+            }
 
             // For editing, add the ID to the data
             if (editingAnimalId) {
@@ -5561,6 +5817,9 @@
 
             animalsList.className = 'space-y-3';
 
+            // For Org 9 (MBPR), show additional columns
+            const isMBPR = currentOrgId === 9;
+
             animalsList.innerHTML = animals.map(animal => `
                 <div class="animal-list-item rounded-xl p-4 flex items-center gap-4 hover:shadow-md transition-all duration-200">
                     <div class="flex-shrink-0">
@@ -5571,10 +5830,17 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-start justify-between">
-                            <div>
+                            <div class="flex-1">
                                 <h3 class="text-lg font-noto font-semibold" style="color: var(--color-deep-taupe);">${animal.name}</h3>
                                 <p class="text-sm font-poppins" style="color: var(--color-charcoal);">${animal.breed || 'Mixed'} • ${animal.age || 'Unknown age'} • ${animal.gender || 'Unknown'}</p>
-                                <p class="text-sm font-poppins mt-1 line-clamp-1" style="color: var(--color-charcoal);">${animal.description || 'No description available'}</p>
+                                ${isMBPR ? `
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-xs font-poppins" style="color: var(--color-charcoal);">
+                                        ${animal.mbpr_internal_id ? `<div><span class="font-medium">ID:</span> ${animal.mbpr_internal_id}</div>` : ''}
+                                        ${animal.acquired_from ? `<div><span class="font-medium">From:</span> ${animal.acquired_from}</div>` : ''}
+                                        ${animal.foster_name ? `<div><span class="font-medium">Foster:</span> ${animal.foster_name}</div>` : ''}
+                                        ${animal.estimated_adoption_date ? `<div><span class="font-medium">Est. Adoption:</span> ${animal.estimated_adoption_date}</div>` : ''}
+                                    </div>
+                                ` : `<p class="text-sm font-poppins mt-1 line-clamp-1" style="color: var(--color-charcoal);">${animal.description || 'No description available'}</p>`}
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="px-3 py-1 text-xs font-poppins font-medium rounded-full ${getStatusBadgeClass(animal.status)}">${animal.status || 'Available'}</span>
