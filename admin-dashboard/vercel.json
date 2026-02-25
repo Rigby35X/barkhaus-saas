@@ -1,13 +1,14 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "framework": "vite",
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/",
-      "destination": "/admin/barkhaus-admin.html",
-      "permanent": false
+      "source": "/(.*)",
+      "destination": "/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "app.barkhaus.io"
+        }
+      ]
     }
   ]
 }
