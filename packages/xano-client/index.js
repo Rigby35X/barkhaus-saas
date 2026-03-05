@@ -126,7 +126,7 @@ async function updateFormSubmission(id, status, adminNotes) {
   });
 }
 
-module.exports = {
+export {
   configure,
   setToken,
   getOrg,
