@@ -1,6 +1,6 @@
 /**
  * Content Fetcher Utility
- * Reusable utility for fetching dynamic content from Xano across all pages
+ * Fetches dynamic content from Xano directly — no self-referencing proxy calls.
  */
 
 // Default fallback content for different page types
@@ -158,6 +158,41 @@ const DEFAULT_CONTENT = {
   }
 };
 
+// Default organization fallback
+const DEFAULT_ORG = {
+  id: 9,
+  org: 'Mission Bay Puppy Rescue',
+  name: 'Mission Bay Puppy Rescue',
+  slug: 'mbpr',
+  email: 'info@mbpr.org',
+  phone: '555-555-5555',
+  address: { lineOne: '123 Main Street', lineTwo: '', city: 'San Diego', state: 'CA', zip: '92109' },
+  domain: 'mbpr.org',
+  website: 'mbpr.org',
+  ein: '87-2984609',
+  logo_url: '/assets/images/logo.png',
+  primary_color: '#6bb3eb',
+  secondary_color: '#047857',
+  accent_color: '#059669',
+  socialMedia: { facebook: '', instagram: '', twitter: '' }
+};
+
+// Make an authenticated GET request to Xano
+async function xanoGet(url, token) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) throw new Error(`Xano ${res.status}: ${res.statusText}`);
+  return res.json();
+}
+
+// Safely parse JSON content stored as a string in Xano
+function parseSectionContent(rawContent) {
+  if (!rawContent) return {};
+  if (typeof rawContent === 'object') return rawContent;
+  try { return JSON.parse(rawContent); } catch { return {}; }
+}
+
 function normalizeFaqSection(faqSection) {
   if (!faqSection || typeof faqSection !== 'object') {
     return {};
@@ -213,26 +248,79 @@ function normalizeFaqSection(faqSection) {
 }
 
 /**
- * Fetch dynamic website content from Xano
- * @param {string} pageSlug - The page slug (homepage, about, contact, etc.)
- * @param {string} orgId - Organization ID (default: 9)
- * @param {string} origin - The origin URL for API calls
- * @returns {Promise<Object>} Content object with fallbacks
+ * Fetch dynamic website content directly from Xano.
+ * @param {string} pageSlug
+ * @param {string} orgId
+ * @param {string} origin - unused, kept for backward compatibility
  */
 export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origin = '') {
   let websiteContent = {};
-  
+
   try {
-    console.log(`🎨 Fetching content for page: ${pageSlug}, org: ${orgId}`);
-    
-    const response = await fetch(`${origin}/api/website-content?orgId=${orgId}&page=${pageSlug}`);
-    
-    if (response.ok) {
-      websiteContent = await response.json();
-      console.log(`✅ Fetched content for ${pageSlug}:`, Object.keys(websiteContent));
-    } else {
-      console.warn(`⚠️ Failed to fetch content for ${pageSlug}:`, response.status);
-    }
+    const contentUrl = import.meta.env.VITE_XANO_CONTENT_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:MU8UozDK';
+    const token = import.meta.env.VITE_XANO_CONTENT_TOKEN;
+
+    const sections = await xanoGet(`${contentUrl}/website_content/${orgId}?id=1`, token);
+    console.log(`✅ Fetched ${sections.length} content sections for page: ${pageSlug}, org: ${orgId}`);
+
+    // Organize sections by section_key — same logic as the website-content.js GET handler
+    const organizedContent = {};
+    sections.forEach(section => {
+      if ((section.page_slug === pageSlug || section.page_slug === 'global') && section.is_visible) {
+        if (section.section_key === 'footer') {
+          organizedContent['footer'] = {
+            content: {
+              footer_organization_name: section.footer_organization_name,
+              footer_address_line_one: section.footer_address_line_one,
+              footer_address_line_two: section.footer_address_line_two,
+              footer_address_city: section.footer_address_city,
+              footer_address_state: section.footer_address_state,
+              footer_address_zip: section.footer_address_zip,
+              footer_phone: section.footer_phone,
+              footer_email: section.footer_email,
+              footer_copyright: section.footer_copyright,
+              footer_ein: section.footer_ein
+            }
+          };
+        } else {
+          const parsedContent = parseSectionContent(section.content);
+          const isFaqSection = section.section_key === 'faq' || section.section_key === 'faq_section';
+          const targetKey = isFaqSection ? 'faq_section' : section.section_key;
+
+          const combinedSection = {
+            ...section,
+            ...parsedContent,
+            id: section.id,
+            section_key: section.section_key,
+            page_slug: section.page_slug,
+            is_visible: section.is_visible,
+            headline: section.headline || parsedContent.headline || section.title,
+            subheadline: section.subheadline || parsedContent.subheadline || section.subtitle,
+            body_text: section.body_text || parsedContent.body_text || parsedContent.description || section.description,
+            button_text: section.button_text || parsedContent.button_text || parsedContent.cta_text,
+            button_link: section.button_link || parsedContent.button_link || parsedContent.cta_link,
+            background_image_url: section.background_image_url || parsedContent.background_image_url || parsedContent.hero_image_url,
+            featured_image_url: section.featured_image_url || parsedContent.featured_image_url || parsedContent.image_url,
+            secondary_image_url: section.secondary_image_url || parsedContent.secondary_image_url || null,
+            content: parsedContent
+          };
+
+          if (isFaqSection) {
+            const normalizedFaq = normalizeFaqSection(combinedSection);
+            Object.assign(combinedSection, normalizedFaq);
+          }
+
+          // Preserve faq_question_N / faq_answer_N at the top level
+          Object.keys(parsedContent)
+            .filter(k => k.startsWith('faq_question_') || k.startsWith('faq_answer_'))
+            .forEach(k => { combinedSection[k] = parsedContent[k]; });
+
+          organizedContent[targetKey] = combinedSection;
+        }
+      }
+    });
+
+    websiteContent = organizedContent;
   } catch (error) {
     console.error(`❌ Error fetching content for ${pageSlug}:`, error);
   }
@@ -242,10 +330,9 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
     delete websiteContent.faq;
   }
 
-  // Merge with default content, prioritizing Xano content
   const pageDefaults = DEFAULT_CONTENT[pageSlug] || {};
   const globalDefaults = DEFAULT_CONTENT.global || {};
-  
+
   return {
     ...pageDefaults,
     ...globalDefaults,
@@ -254,58 +341,67 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
 }
 
 /**
- * Get organization data from client-data API
- * @param {string} orgId - Organization ID
- * @param {string} origin - The origin URL for API calls
- * @returns {Promise<Object>} Organization data
+ * Fetch organization data directly from Xano.
+ * @param {string} orgId
+ * @param {string} origin - unused, kept for backward compatibility
  */
 export async function fetchOrganizationData(orgId = '9', origin = '') {
   try {
-    const response = await fetch(`${origin}/api/client-data?orgId=${orgId}`);
-    
-    if (response.ok) {
-      const data = await response.json();
-      console.log(`✅ Fetched organization data for org ${orgId}`);
-      return data;
-    } else {
-      console.warn(`⚠️ Failed to fetch organization data:`, response.status);
-    }
+    const orgsUrl = import.meta.env.VITE_XANO_ORGANIZATIONS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz';
+    const token = import.meta.env.VITE_XANO_ORGANIZATIONS_TOKEN;
+
+    const xanoData = await xanoGet(`${orgsUrl}/organizations/${orgId}`, token);
+    console.log(`✅ Fetched organization data for org ${orgId}`);
+
+    // Same field mapping as client-data.js GET handler
+    return {
+      id: xanoData.id || orgId,
+      org: xanoData.name,
+      name: xanoData.name,
+      slug: xanoData.slug,
+      email: xanoData.email,
+      phone: xanoData.phone,
+      phoneForTel: xanoData.phone,
+      phoneFormatted: xanoData.phone,
+      address: {
+        lineOne: xanoData.address,
+        lineTwo: '',
+        city: xanoData.city,
+        state: xanoData.state,
+        zip: xanoData.zip_code,
+      },
+      domain: xanoData.custom_domain || xanoData.website,
+      website: xanoData.website,
+      ein: xanoData.ein,
+      orgId: orgId,
+      logo_url: xanoData.logo_light_url,
+      primary_color: xanoData.primary_color,
+      secondary_color: xanoData.secondary_color,
+      accent_color: xanoData.accent_color,
+      socialMedia: {
+        facebook: xanoData.facebook_url || '',
+        instagram: xanoData.instagram_url || '',
+        twitter: xanoData.twitter_url || ''
+      }
+    };
   } catch (error) {
     console.error(`❌ Error fetching organization data:`, error);
   }
 
-  // Return default organization data
-  return {
-    id: 9,
-    org: 'Mission Bay Puppy Rescue',
-    slug: 'mbpr',
-    email: 'info@mbpr.org',
-    phone: '555-555-5555',
-    address: '123 Main Street, San Diego, CA 92109',
-    website: 'mbpr.org',
-    ein: '87-2984609',
-    logo_url: '/assets/images/logo.png',
-    primary_color: '#6bb3eb',
-    secondary_color: '#047857',
-    accent_color: '#059669'
-  };
+  return { ...DEFAULT_ORG, orgId };
 }
 
 /**
- * Create a content object with both page content and organization data
- * @param {string} pageSlug - The page slug
- * @param {string} orgId - Organization ID
- * @param {string} origin - The origin URL for API calls
- * @returns {Promise<Object>} Combined content and organization data
+ * Fetch both page content and organization data in parallel.
+ * @param {string} pageSlug
+ * @param {string} orgId
+ * @param {string} origin - unused, kept for backward compatibility
  */
 export async function fetchAllPageData(pageSlug = 'homepage', orgId = '9', origin = '') {
   const [content, organization] = await Promise.all([
-    fetchPageContent(pageSlug, orgId, origin),
-    fetchOrganizationData(orgId, origin)
+    fetchPageContent(pageSlug, orgId),
+    fetchOrganizationData(orgId)
   ]);
 
-  return {
-    content,
-    organization
-  };
+  return { content, organization };
 }

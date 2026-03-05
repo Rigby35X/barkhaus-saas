@@ -16,22 +16,56 @@ const adoptionProcessContent = content.adoption_process || {};
 const moreInfoContent = content.more_info || {};
 const adoptedGalleryContent = content.adopted_gallery || {};
 
-// Fetch animals server-side
+// Fetch animals directly from Xano (no self-referencing proxy)
 let animals = [];
 let error = null;
 
 try {
-  // Use the same API endpoint that works with dynamic orgId
-  const response = await fetch(`${Astro.url.origin}/api/admin/animals?orgId=${orgId}`);
-  if (response.ok) {
-    animals = await response.json();
-    console.log('✅ Server-side fetch successful:', animals.length, 'animals');
+  const xanoBase = import.meta.env.VITE_XANO_ANIMALS_URL || import.meta.env.PUBLIC_XANO_BASE_URL;
+  const xanoToken = import.meta.env.VITE_XANO_ANIMALS_TOKEN;
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (xanoToken) headers['Authorization'] = `Bearer ${xanoToken}`;
+
+  if (orgId === '9') {
+    // MBPR uses the legacy dogs table with its own field names
+    const dogsData = await fetch(`${xanoBase}/dogs`, { headers }).then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
+    animals = dogsData.map((dog: any) => ({
+      id: dog.id,
+      org: dog.org,
+      name: dog.Dog_Name,
+      species: 'dog',
+      breed: dog.Breed || '',
+      description: dog.My_Story || '',
+      status: dog.Code || 'Available',
+      image_url: dog.main_image?.url || '',
+      main_image: dog.main_image,
+      additional_image_1: dog.additional_image_1,
+      additional_image_2: dog.additional_image_2,
+      additional_image_3: dog.additional_image_3,
+      additional_image_4: dog.additional_image_4,
+      age: dog.Pup_is_currently_this_many_weeks_old
+        ? Math.floor(dog.Pup_is_currently_this_many_weeks_old / 52) + ' years'
+        : '',
+      gender: dog.Gender || '',
+      size: dog.Estimated_Size_When_Grown?.includes('Large') ? 'Large'
+          : dog.Estimated_Size_When_Grown?.includes('Medium') ? 'Medium' : 'Small',
+      good_with_kids: false,
+      good_with_cats: false,
+      good_with_dogs: false,
+    }));
   } else {
-    throw new Error(`HTTP ${response.status}`);
+    animals = await fetch(`${xanoBase}/animals?organization_id=${orgId}`, { headers }).then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    });
   }
+  console.log('✅ Direct Xano fetch successful:', animals.length, 'animals');
 } catch (e) {
-  console.error('❌ Server-side fetch failed:', e);
-  error = e.message;
+  console.error('❌ Direct Xano fetch failed:', e);
+  error = e instanceof Error ? e.message : String(e);
 }
 
 const adoptedAnimals = animals.filter((animal) => (animal.status || '').toLowerCase() === 'adopted');
