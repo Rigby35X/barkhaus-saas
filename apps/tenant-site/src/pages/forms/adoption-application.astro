@@ -2,10 +2,7 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { fetchAllPageData } from "../../utils/content-fetcher.js";
 
-// Fetch dynamic content for the page
 const { content, organization } = await fetchAllPageData('applications', '9', Astro.url.origin);
-
-// Use dynamic content with fallbacks
 const adoptionContent = content.adoption_application || {};
 ---
 
@@ -17,13 +14,13 @@ const adoptionContent = content.adoption_application || {};
   <!-- ============================================ -->
   <!--                 Page Header                  -->
   <!-- ============================================ -->
-  
+
   <section id="page-header">
     <div class="cs-container">
       <h1 class="cs-title">Adoption Application</h1>
       <p class="cs-text">
-        Thank you for your interest in adopting from Mission Bay Puppy Rescue! 
-        Please complete the form below to begin the adoption process. We'll review 
+        Thank you for your interest in adopting from Mission Bay Puppy Rescue!
+        Please complete the form below to begin the adoption process. We'll review
         your application and get back to you within 24-48 hours.
       </p>
     </div>
@@ -32,12 +29,12 @@ const adoptionContent = content.adoption_application || {};
   <!-- ============================================ -->
   <!--              Application Form                -->
   <!-- ============================================ -->
-  
+
   <section id="application-form">
     <div class="cs-container">
       <div class="cs-form-wrapper">
-        
-        <!-- Application Instructions -->
+
+        <!-- Instructions -->
         <div class="cs-instructions">
           <h2>Before You Begin</h2>
           <div class="cs-instruction-grid">
@@ -64,20 +61,394 @@ const adoptionContent = content.adoption_application || {};
           </div>
         </div>
 
-        <!-- Embedded Cognito Form -->
+        <!-- Native Adoption Application Form -->
         <div class="cs-form-container">
           <div class="cs-form-header">
             <h2>Adoption Application Form</h2>
-            <p>Please complete all sections of the form below:</p>
+            <p>Fields marked with <span class="cs-required-marker">*</span> are required.</p>
           </div>
-          
-          <!-- Cognito Form Embed -->
+
+          <!-- Success message (hidden until submit) -->
+          <div id="form-success" class="cs-form-success" hidden>
+            <div class="cs-success-icon">✅</div>
+            <h3>Application Submitted!</h3>
+            <p>Thank you for applying to adopt from Mission Bay Puppy Rescue. We'll review your application and reach out within 24–48 hours.</p>
+          </div>
+
+          <!-- Error message (hidden until error) -->
+          <div id="form-error" class="cs-form-error" hidden>
+            <strong>Something went wrong.</strong>
+            <span id="form-error-text"></span>
+            Please try again or email us at <a href="mailto:adoptions@missionbaypuppyrescue.org">adoptions@missionbaypuppyrescue.org</a>.
+          </div>
+
+          <!-- Cognito embed — commented out for rollback if needed -->
+          <!--
           <div id="cognito-form" class="cs-cognito-form">
             <script src="https://www.cognitoforms.com/f/seamless.js" data-key="fGT316vhT0-rU8gCrayexQ" data-form="1"></script>
           </div>
+          -->
+
+          <form id="adoption-form" novalidate>
+
+            <!-- ==================== ABOUT YOU ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">About You</h3>
+              <div class="cs-field-grid">
+                <div class="cs-field">
+                  <label for="AboutYou2_Name_First">First Name <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_Name_First" name="AboutYou2_Name_First" required autocomplete="given-name" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_Name_Last">Last Name <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_Name_Last" name="AboutYou2_Name_Last" required autocomplete="family-name" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_Email">Email <span class="cs-required-marker">*</span></label>
+                  <input type="email" id="AboutYou2_Email" name="AboutYou2_Email" required autocomplete="email" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_CellPhone">Cell Phone <span class="cs-required-marker">*</span></label>
+                  <input type="tel" id="AboutYou2_CellPhone" name="AboutYou2_CellPhone" required autocomplete="tel" />
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="AboutYou2_AddressNOPOBOX_Line1">Street Address (no PO Box) <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_AddressNOPOBOX_Line1" name="AboutYou2_AddressNOPOBOX_Line1" required autocomplete="street-address" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_AddressNOPOBOX_City">City <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_AddressNOPOBOX_City" name="AboutYou2_AddressNOPOBOX_City" required autocomplete="address-level2" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_AddressNOPOBOX_State">State <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_AddressNOPOBOX_State" name="AboutYou2_AddressNOPOBOX_State" required maxlength="2" placeholder="CA" autocomplete="address-level1" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_AddressNOPOBOX_PostalCode">Zip Code <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="AboutYou2_AddressNOPOBOX_PostalCode" name="AboutYou2_AddressNOPOBOX_PostalCode" required autocomplete="postal-code" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_WhatIsYourAge">Age <span class="cs-required-marker">*</span></label>
+                  <input type="number" id="AboutYou2_WhatIsYourAge" name="AboutYou2_WhatIsYourAge" required min="18" max="120" />
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_MaritalStatus">Marital Status</label>
+                  <select id="AboutYou2_MaritalStatus" name="AboutYou2_MaritalStatus">
+                    <option value="">Select...</option>
+                    <option>Single</option>
+                    <option>Married</option>
+                    <option>Partnered</option>
+                    <option>Divorced</option>
+                    <option>Widowed</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYou2_PersonalActivityLevel">Activity Level</label>
+                  <select id="AboutYou2_PersonalActivityLevel" name="AboutYou2_PersonalActivityLevel">
+                    <option value="">Select...</option>
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High: Enjoy hiking, running, outdoor fun</option>
+                  </select>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="AboutYou2_HowDidYouHearAboutMissionBayPuppyRescue">How did you hear about us?</label>
+                  <input type="text" id="AboutYou2_HowDidYouHearAboutMissionBayPuppyRescue" name="AboutYou2_HowDidYouHearAboutMissionBayPuppyRescue" />
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== WORK ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">Work</h3>
+              <div class="cs-field-grid">
+                <div class="cs-field cs-field--full">
+                  <label for="Work_WorkSchedule">Work Schedule</label>
+                  <select id="Work_WorkSchedule" name="Work_WorkSchedule">
+                    <option value="">Select...</option>
+                    <option>Full-time: Away</option>
+                    <option>Full-time: Home</option>
+                    <option>Part-time</option>
+                    <option>Retired</option>
+                    <option>Student</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="Work_OccupationPleaseDescribeWhatYouDo">Occupation — please describe what you do <span class="cs-required-marker">*</span></label>
+                  <textarea id="Work_OccupationPleaseDescribeWhatYouDo" name="Work_OccupationPleaseDescribeWhatYouDo" rows="3" required></textarea>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="Work_PleaseDescribeYourWorkWeekAndWeekendHoursAwayFromHome">Describe your work week and weekend hours away from home <span class="cs-required-marker">*</span></label>
+                  <textarea id="Work_PleaseDescribeYourWorkWeekAndWeekendHoursAwayFromHome" name="Work_PleaseDescribeYourWorkWeekAndWeekendHoursAwayFromHome" rows="3" required></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== YOUR HOME ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">Your Home</h3>
+              <div class="cs-field-grid">
+                <div class="cs-field">
+                  <label for="AboutYourHome_HousingType">Housing Type</label>
+                  <select id="AboutYourHome_HousingType" name="AboutYourHome_HousingType">
+                    <option value="">Select...</option>
+                    <option>House</option>
+                    <option>Condo</option>
+                    <option>Apartment</option>
+                    <option>Mobile Home</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_OwnRent">Own or Rent</label>
+                  <select id="AboutYourHome_OwnRent" name="AboutYourHome_OwnRent">
+                    <option value="">Select...</option>
+                    <option>Own</option>
+                    <option>Rent</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_AnyRestrictions">Any pet restrictions?</label>
+                  <select id="AboutYourHome_AnyRestrictions" name="AboutYourHome_AnyRestrictions">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_FenceType">Fence Type</label>
+                  <select id="AboutYourHome_FenceType" name="AboutYourHome_FenceType">
+                    <option value="">Select...</option>
+                    <option>Fully-fenced</option>
+                    <option>Partially-fenced</option>
+                    <option>No fence</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_DoYouHaveAPool">Do you have a pool?</label>
+                  <select id="AboutYourHome_DoYouHaveAPool" name="AboutYourHome_DoYouHaveAPool">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_DoYouHaveADogDoor">Do you have a dog door?</label>
+                  <select id="AboutYourHome_DoYouHaveADogDoor" name="AboutYourHome_DoYouHaveADogDoor">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_DoYouHaveOtherPets">Do you have other pets?</label>
+                  <select id="AboutYourHome_DoYouHaveOtherPets" name="AboutYourHome_DoYouHaveOtherPets">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="AboutYourHome_WhenNotHomeMyDogWill">When not home, dog will...</label>
+                  <select id="AboutYourHome_WhenNotHomeMyDogWill" name="AboutYourHome_WhenNotHomeMyDogWill">
+                    <option value="">Select...</option>
+                    <option>Stay inside</option>
+                    <option>Stay outside</option>
+                    <option>Stay in kennel</option>
+                    <option>Go to doggy daycare</option>
+                  </select>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="AboutYourHome_HaveYouBeenApprovedForADog">Previously approved for a dog by a rescue?</label>
+                  <select id="AboutYourHome_HaveYouBeenApprovedForADog" name="AboutYourHome_HaveYouBeenApprovedForADog">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== FAMILY ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">Family &amp; Adoption Plans</h3>
+              <div class="cs-field-grid">
+                <div class="cs-field">
+                  <label for="FamilyRoommates_IncludingYourselfHowManyPeopleLiveInYourHouse">Number of people in household</label>
+                  <input type="number" id="FamilyRoommates_IncludingYourselfHowManyPeopleLiveInYourHouse" name="FamilyRoommates_IncludingYourselfHowManyPeopleLiveInYourHouse" min="1" />
+                </div>
+                <div class="cs-field">
+                  <label for="AreYouInterestedIn">Interested in</label>
+                  <select id="AreYouInterestedIn" name="AreYouInterestedIn">
+                    <option value="">Select...</option>
+                    <option>Adoption</option>
+                    <option>Fostering</option>
+                    <option>Both</option>
+                  </select>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="HowSoonWillYouBeReadyToAdopt">How soon will you be ready to adopt?</label>
+                  <select id="HowSoonWillYouBeReadyToAdopt" name="HowSoonWillYouBeReadyToAdopt">
+                    <option value="">Select...</option>
+                    <option>Today!</option>
+                    <option>Within 1 month</option>
+                    <option>1-3 months</option>
+                    <option>Just browsing</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== THE DOG YOU WANT ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">The Dog You Want</h3>
+              <div class="cs-field-grid">
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_AdultSize">Preferred adult size</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_AdultSize" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_AdultSize">
+                    <option value="">Select...</option>
+                    <option>Small under 25</option>
+                    <option>Medium 25-50</option>
+                    <option>Large 50-100</option>
+                    <option>X-Large 100+</option>
+                    <option>No preference</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_DesiredSex">Preferred sex</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_DesiredSex" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_DesiredSex">
+                    <option value="">Select...</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Neutered Male</option>
+                    <option>Spayed Female</option>
+                    <option>No preference</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_PreferredAge">Preferred age</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_PreferredAge" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_PreferredAge">
+                    <option value="">Select...</option>
+                    <option>8 weeks to 12 months</option>
+                    <option>1-3 years</option>
+                    <option>3+ years</option>
+                    <option>No preference</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_WouldYouBeInterestedInFostering">Interested in fostering?</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_WouldYouBeInterestedInFostering" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_WouldYouBeInterestedInFostering">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_DoYouOrAnyoneInYourHouseholdHaveAllergiesThatRestrictWhatTypeOfBreedYouCanGet">Allergies that restrict breed?</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_DoYouOrAnyoneInYourHouseholdHaveAllergiesThatRestrictWhatTypeOfBreedYouCanGet" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_DoYouOrAnyoneInYourHouseholdHaveAllergiesThatRestrictWhatTypeOfBreedYouCanGet">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_SocialMediaApproval">Social media approval?</label>
+                  <select id="NowLetsTalkAboutThePuppydogYouWishToAdopt_SocialMediaApproval" name="NowLetsTalkAboutThePuppydogYouWishToAdopt_SocialMediaApproval">
+                    <option value="">Select...</option>
+                    <option>Yes</option>
+                    <option>No</option>
+                  </select>
+                </div>
+                <div class="cs-field cs-field--full">
+                  <label for="NowLetsTalkAboutThePuppydogYouWishToAdopt_PleaseProvideABriefDescriptionOfYourFamilyLifestyleAndAnyAdditionalInformationThatWouldBeValuableForUsToBetterUnderstandYourHousehold">
+                    Describe your family lifestyle and anything that would help us understand your household <span class="cs-required-marker">*</span>
+                  </label>
+                  <textarea
+                    id="NowLetsTalkAboutThePuppydogYouWishToAdopt_PleaseProvideABriefDescriptionOfYourFamilyLifestyleAndAnyAdditionalInformationThatWouldBeValuableForUsToBetterUnderstandYourHousehold"
+                    name="NowLetsTalkAboutThePuppydogYouWishToAdopt_PleaseProvideABriefDescriptionOfYourFamilyLifestyleAndAnyAdditionalInformationThatWouldBeValuableForUsToBetterUnderstandYourHousehold"
+                    rows="5"
+                    required
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==================== CONTRACT AGREEMENTS ==================== -->
+            <div class="cs-form-section">
+              <h3 class="cs-section-heading">Contract Agreements</h3>
+              <p class="cs-section-note">Please read and agree to each of the following. All are required.</p>
+              <div class="cs-agreement-list">
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_Health" value="Yes" required />
+                  <span>I agree to the <strong>Health Agreement</strong> — I understand the health terms for my adopted dog. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_SpayNeuter" value="Yes" required />
+                  <span>I agree to the <strong>Spay/Neuter Agreement</strong> — I will have my dog spayed or neutered per the terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_ReturnPolicy" value="Yes" required />
+                  <span>I agree to the <strong>Return Policy</strong> — I will return the dog to MBPR if I can no longer care for it. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_CaringForMyDog" value="Yes" required />
+                  <span>I agree to the <strong>Caring for My Dog</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_CaringForMyDogMEALS" value="Yes" required />
+                  <span>I agree to the <strong>Meals &amp; Feeding</strong> terms for caring for my dog. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_KennelingYourDog" value="Yes" required />
+                  <span>I agree to the <strong>Kenneling</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_Relinquishment" value="Yes" required />
+                  <span>I agree to the <strong>Relinquishment</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_FinancialCommitment" value="Yes" required />
+                  <span>I agree to the <strong>Financial Commitment</strong> terms for adoption. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_VaccinationsShelter" value="Yes" required />
+                  <span>I agree to the <strong>Vaccinations &amp; Shelter</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_HoldHarmlessAnyClaims" value="Yes" required />
+                  <span>I agree to the <strong>Hold Harmless — Any Claims</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_HoldHarmlessCurrentPets" value="Yes" required />
+                  <span>I agree to the <strong>Hold Harmless — Current Pets</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+                <label class="cs-agreement-item">
+                  <input type="checkbox" name="ContractAgreement_HoldHarmlessDuringMeetAndGreet" value="Yes" required />
+                  <span>I agree to the <strong>Hold Harmless — During Meet &amp; Greet</strong> terms. <span class="cs-required-marker">*</span></span>
+                </label>
+              </div>
+
+              <div class="cs-field-grid cs-signature-row">
+                <div class="cs-field cs-field--full">
+                  <label for="ContractAgreement_Signature">Digital Signature — type your full name to sign <span class="cs-required-marker">*</span></label>
+                  <input type="text" id="ContractAgreement_Signature" name="ContractAgreement_Signature" required placeholder="Your full legal name" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="cs-form-submit">
+              <button type="submit" id="submit-btn" class="cs-button-solid">
+                <span id="submit-label">Submit Application</span>
+                <span id="submit-spinner" hidden>Submitting…</span>
+              </button>
+            </div>
+
+          </form>
         </div>
 
-        <!-- Additional Information -->
+        <!-- What Happens Next -->
         <div class="cs-additional-info">
           <h2>What Happens Next?</h2>
           <div class="cs-process-steps">
@@ -98,7 +469,7 @@ const adoptionContent = content.adoption_application || {};
             <div class="cs-step">
               <div class="cs-step-number">3</div>
               <div class="cs-step-content">
-                <h3>Meet & Greet</h3>
+                <h3>Meet &amp; Greet</h3>
                 <p>Schedule a visit to meet your potential new family member.</p>
               </div>
             </div>
@@ -119,46 +490,190 @@ const adoptionContent = content.adoption_application || {};
           </div>
         </div>
 
-        <!-- Contact Information -->
+        <!-- Contact Info -->
         <div class="cs-contact-info">
           <h2>Questions?</h2>
-          <p>
-            If you have any questions about the adoption process or need assistance 
-            with the application, please don't hesitate to contact us.
-          </p>
+          <p>If you have any questions about the adoption process or need assistance with the application, please don't hesitate to contact us.</p>
           <div class="cs-contact-details">
             <div class="cs-contact-item">
-              <strong>Email:</strong> 
+              <strong>Email:</strong>
               <a href="mailto:adoptions@missionbaypuppyrescue.org">adoptions@missionbaypuppyrescue.org</a>
             </div>
             <div class="cs-contact-item">
-              <strong>Phone:</strong> 
+              <strong>Phone:</strong>
               <a href="tel:+15555555555">(555) 555-5555</a>
             </div>
             <div class="cs-contact-item">
-              <strong>Hours:</strong> 
-              Monday - Friday: 9:00 AM - 6:00 PM, Saturday: 10:00 AM - 4:00 PM
+              <strong>Hours:</strong>
+              Monday – Friday: 9:00 AM – 6:00 PM, Saturday: 10:00 AM – 4:00 PM
             </div>
           </div>
           <a href="/contact" class="cs-button-transparent">Contact Us</a>
         </div>
+
       </div>
     </div>
   </section>
 </BaseLayout>
 
+<script is:inline>
+(function () {
+  const XANO_ENDPOINT =
+    'https://xz6u-fpaz-praf.n7e.xano.io/api:tVL5q7Ta/applications/cognito-webhook?org_id=9&cognito_form_id=1';
+
+  const form      = document.getElementById('adoption-form');
+  const success   = document.getElementById('form-success');
+  const errorBox  = document.getElementById('form-error');
+  const errorText = document.getElementById('form-error-text');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitLabel   = document.getElementById('submit-label');
+  const submitSpinner = document.getElementById('submit-spinner');
+
+  if (!form) return;
+
+  // ── Validation helpers ────────────────────────────────────────────────────
+
+  function showFieldError(el, msg) {
+    el.classList.add('cs-field-invalid');
+    let hint = el.parentElement.querySelector('.cs-field-hint');
+    if (!hint) {
+      hint = document.createElement('span');
+      hint.className = 'cs-field-hint';
+      el.parentElement.appendChild(hint);
+    }
+    hint.textContent = msg;
+  }
+
+  function clearFieldError(el) {
+    el.classList.remove('cs-field-invalid');
+    const hint = el.parentElement.querySelector('.cs-field-hint');
+    if (hint) hint.remove();
+  }
+
+  function validateForm() {
+    let valid = true;
+
+    // Clear previous errors
+    form.querySelectorAll('.cs-field-invalid').forEach(el => el.classList.remove('cs-field-invalid'));
+    form.querySelectorAll('.cs-field-hint').forEach(el => el.remove());
+
+    // Required text/email/tel/number/textarea/select inputs
+    form.querySelectorAll('[required]').forEach(el => {
+      if (el.type === 'checkbox') {
+        if (!el.checked) {
+          el.closest('.cs-agreement-item').classList.add('cs-field-invalid');
+          valid = false;
+        }
+      } else if (!el.value.trim()) {
+        showFieldError(el, 'This field is required.');
+        valid = false;
+      }
+    });
+
+    // Email format
+    const emailEl = form.querySelector('[name="AboutYou2_Email"]');
+    if (emailEl && emailEl.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailEl.value)) {
+      showFieldError(emailEl, 'Please enter a valid email address.');
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  // ── Live validation on blur ───────────────────────────────────────────────
+
+  form.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('blur', () => {
+      if (el.required) {
+        if (el.type === 'checkbox') return; // handled on submit
+        if (!el.value.trim()) {
+          showFieldError(el, 'This field is required.');
+        } else {
+          clearFieldError(el);
+        }
+      }
+    });
+    el.addEventListener('input', () => clearFieldError(el));
+  });
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    errorBox.hidden = true;
+
+    if (!validateForm()) {
+      const firstInvalid = form.querySelector('.cs-field-invalid');
+      if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Disable button, show spinner
+    submitBtn.disabled = true;
+    submitLabel.hidden = true;
+    submitSpinner.hidden = false;
+
+    // Build payload from all named form fields
+    const data = {};
+    const fd = new FormData(form);
+
+    // Collect all text/select/textarea values
+    for (const [key, value] of fd.entries()) {
+      data[key] = value;
+    }
+
+    // Checkboxes that are NOT checked need to be explicitly "No"
+    form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      if (!cb.checked) data[cb.name] = 'No';
+    });
+
+    // Auto-populated fields
+    const today = new Date().toISOString().split('T')[0];
+    data['ContractAgreement_Date'] = today;
+    data['Entry_Status']           = 'Submitted';
+    data['Entry_DateSubmitted']    = today;
+    data['Entry_DateCreated']      = today;
+
+    try {
+      const res = await fetch(XANO_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`Server error ${res.status}: ${body}`);
+      }
+
+      // Success
+      form.hidden = true;
+      success.hidden = false;
+      success.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      errorText.textContent = ' ' + (err.message || 'Unknown error.') + ' ';
+      errorBox.hidden = false;
+      errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      submitBtn.disabled = false;
+      submitLabel.hidden = false;
+      submitSpinner.hidden = true;
+    }
+  });
+})();
+</script>
+
 <style>
-  /* Page Header */
+  /* ── Page Header ──────────────────────────────────────────────────────── */
   #page-header {
     padding: var(--sectionPadding);
     background: linear-gradient(135deg, var(--primary) 0%, var(--primaryDark) 100%);
     color: white;
     text-align: center;
 
-    .cs-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
+    .cs-container { max-width: 800px; margin: 0 auto; }
 
     .cs-title {
       font-size: clamp(2.5rem, 5vw, 4rem);
@@ -169,21 +684,18 @@ const adoptionContent = content.adoption_application || {};
     .cs-text {
       font-size: 1.125rem;
       line-height: 1.6;
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255,255,255,0.9);
       max-width: 600px;
       margin: 0 auto;
     }
   }
 
-  /* Application Form Section */
+  /* ── Section wrapper ─────────────────────────────────────────────────── */
   #application-form {
     padding: var(--sectionPadding);
     background: #f8f9fa;
 
-    .cs-container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+    .cs-container { max-width: 900px; margin: 0 auto; }
 
     .cs-form-wrapper {
       display: flex;
@@ -192,101 +704,199 @@ const adoptionContent = content.adoption_application || {};
     }
   }
 
-  /* Instructions - using global component styles */
+  /* ── Form container ──────────────────────────────────────────────────── */
+  .cs-form-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2.5rem;
+  }
 
-  /* Form Container - using global component styles */
+  .cs-form-header {
+    margin-bottom: 2rem;
+    h2 { font-size: 1.75rem; color: var(--headerColor); margin-bottom: 0.5rem; }
+    p  { color: #6b7280; }
+  }
 
-  .cs-cognito-form {
-      /* Ensure the form takes full width and integrates well */
-      width: 100%;
-      
-      /* Style the embedded form to match site design */
-      :global(.cognito) {
-        font-family: inherit !important;
-        
-        .c-forms-form {
-          border: none !important;
-          box-shadow: none !important;
-          background: transparent !important;
-        }
-        
-        .c-forms-form-title {
-          display: none !important; /* Hide the form title since we have our own */
-        }
-        
-        .c-textbox, .c-textarea, .c-dropdown {
-          border: 2px solid #e1e5e9 !important;
-          border-radius: 8px !important;
-          padding: 12px 16px !important;
-          font-size: 1rem !important;
-          transition: border-color 0.3s ease !important;
-          
-          &:focus {
-            border-color: var(--primary) !important;
-            outline: none !important;
-            box-shadow: 0 0 0 3px rgba(107, 179, 235, 0.1) !important;
-          }
-        }
-        
-        .c-label {
-          font-weight: 600 !important;
-          color: var(--headerColor) !important;
-          margin-bottom: 8px !important;
-        }
-        
-        .c-button {
-          background: var(--primary) !important;
-          border: none !important;
-          border-radius: 8px !important;
-          padding: 12px 24px !important;
-          font-size: 1rem !important;
-          font-weight: 600 !important;
-          color: white !important;
-          cursor: pointer !important;
-          transition: background-color 0.3s ease !important;
-          
-          &:hover {
-            background: var(--primaryDark) !important;
-          }
-        }
-        
-        .c-forms-section {
-          margin-bottom: 2rem !important;
-        }
-        
-        .c-forms-section-header {
-          font-size: 1.25rem !important;
-          font-weight: 600 !important;
-          color: var(--headerColor) !important;
-          border-bottom: 2px solid var(--primary) !important;
-          padding-bottom: 0.5rem !important;
-          margin-bottom: 1.5rem !important;
-        }
-      }
+  .cs-required-marker { color: #dc2626; font-weight: 700; }
+
+  /* ── Form sections ───────────────────────────────────────────────────── */
+  .cs-form-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 1px solid #e5e7eb;
+
+    &:last-of-type { border-bottom: none; }
+  }
+
+  .cs-section-heading {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--headerColor);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cs-section-note {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Field grid ──────────────────────────────────────────────────────── */
+  .cs-field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  .cs-field { display: flex; flex-direction: column; gap: 0.4rem; }
+  .cs-field--full { grid-column: 1 / -1; }
+
+  .cs-field label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--headerColor);
+  }
+
+  .cs-field input,
+  .cs-field select,
+  .cs-field textarea {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 0.65rem 0.9rem;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fafafa;
+    color: var(--bodyTextColor);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(107,179,235,0.15);
+      background: white;
     }
   }
 
-  /* Additional Information - using global component styles */
+  .cs-field textarea { resize: vertical; }
 
-  /* Contact Information - using global component styles with overrides */
+  /* Validation states */
+  .cs-field-invalid {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220,38,38,0.1) !important;
+  }
+
+  .cs-field-hint {
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+  }
+
+  /* ── Agreement checkboxes ────────────────────────────────────────────── */
+  .cs-agreement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cs-agreement-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover { border-color: var(--primary); background: #f0f8ff; }
+
+    input[type="checkbox"] {
+      width: 1.1rem;
+      height: 1.1rem;
+      min-width: 1.1rem;
+      margin-top: 0.15rem;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    span { font-size: 0.95rem; line-height: 1.5; color: var(--bodyTextColor); }
+
+    &.cs-field-invalid {
+      border-color: #dc2626;
+      background: #fff5f5;
+    }
+  }
+
+  .cs-signature-row { margin-top: 1rem; }
+
+  /* ── Submit button ───────────────────────────────────────────────────── */
+  .cs-form-submit {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+
+    .cs-button-solid {
+      min-width: 220px;
+      font-size: 1.05rem;
+      padding: 0.9rem 2rem;
+
+      &:disabled { opacity: 0.65; cursor: not-allowed; }
+    }
+  }
+
+  /* ── Success / Error banners ─────────────────────────────────────────── */
+  .cs-form-success {
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: #f0fdf4;
+    border: 2px solid #16a34a;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+
+    .cs-success-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    h3 { color: #15803d; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    p  { color: #166534; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+  }
+
+  .cs-form-error {
+    padding: 1rem 1.25rem;
+    background: #fef2f2;
+    border: 2px solid #dc2626;
+    border-radius: 8px;
+    color: #991b1b;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+
+    a { color: #991b1b; font-weight: 600; }
+  }
+
+  /* ── Contact info ────────────────────────────────────────────────────── */
   .cs-contact-info {
+    .cs-contact-details {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin: 1.25rem 0 1.75rem;
+    }
+
     .cs-contact-item {
-      strong {
-        color: var(--primary);
-        margin-right: 0.5rem;
-      }
-
-      a {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 500;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
+      strong { color: var(--primary); margin-right: 0.4rem; }
+      a { color: var(--primary); text-decoration: none; font-weight: 500;
+          &:hover { text-decoration: underline; } }
     }
   }
 
-  /* Mobile responsive - using global component styles */
+  /* ── Mobile ──────────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .cs-form-container { padding: 1.5rem; }
+    .cs-field-grid { grid-template-columns: 1fr; }
+    .cs-field--full { grid-column: 1; }
+  }
 </style>
