@@ -1,0 +1,716 @@
+---
+import client from "@data/client.json";
+import navData from "@data/navData.json";
+import { getCurrentYear } from "@js/utils"
+
+const currentYear = getCurrentYear()
+
+// Get tenant context from middleware
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
+
+let websiteContent: any = {};
+try {
+  const response = await fetch(`${Astro.url.origin}/api/website-content?orgId=${orgId}`);
+  if (response.ok) {
+    websiteContent = await response.json();
+    console.log(`✅ Fetched website content for footer (org ${orgId}):`, Object.keys(websiteContent));
+  } else {
+    console.error('❌ Failed to fetch website content:', response.status);
+  }
+} catch (error) {
+  console.error('❌ Error fetching website content:', error);
+}
+
+// Fetch organization data
+let organizationData: any = {};
+try {
+  const response = await fetch(`${Astro.url.origin}/api/client-data?orgId=${orgId}`);
+  if (response.ok) {
+    organizationData = await response.json();
+    console.log(`✅ Fetched organization data for footer (org ${orgId}):`, organizationData.name);
+  }
+} catch (error) {
+  console.error('❌ Error fetching organization data:', error);
+}
+
+// Fallback content if API fails
+const defaultFooterContent = {
+  organization_name: "Mission Bay Puppy Rescue",
+  address_line_one: "123 Main Street",
+  address_line_two: "Suite 200",
+  address_city: "San Diego",
+  address_state: "CA",
+  address_zip: "92109",
+  phone: "555-555-5555",
+  phone_tel: "5555555555",
+  email: "info@mbpr.org",
+  copyright: `© ${currentYear} Mission Bay Puppy Rescue. All rights reserved.`,
+  ein: "87-2984609"
+};
+
+// Use dynamic content with fallbacks (same pattern as homepage)
+const footerSource = websiteContent.footer?.content || websiteContent.footer || {};
+const content = {
+  footer: {
+    organization_name: footerSource.footer_organization_name || footerSource.organization_name || organizationData.name || organizationData.org || defaultFooterContent.organization_name,
+    address_line_one: footerSource.footer_address_line_one || footerSource.address_line_one || organizationData.address?.lineOne || defaultFooterContent.address_line_one,
+    address_line_two: footerSource.footer_address_line_two || footerSource.address_line_two || organizationData.address?.lineTwo || defaultFooterContent.address_line_two,
+    address_city: footerSource.footer_address_city || footerSource.address_city || organizationData.address?.city || defaultFooterContent.address_city,
+    address_state: footerSource.footer_address_state || footerSource.address_state || organizationData.address?.state || defaultFooterContent.address_state,
+    address_zip: footerSource.footer_address_zip || footerSource.address_zip || organizationData.address?.zip || defaultFooterContent.address_zip,
+    phone: footerSource.footer_phone || footerSource.phone || organizationData.phone || defaultFooterContent.phone,
+    phone_tel: (footerSource.footer_phone || footerSource.phone || organizationData.phone || defaultFooterContent.phone || '').replace(/[^\d]/g, '') || defaultFooterContent.phone_tel,
+    email: footerSource.footer_email || footerSource.email || organizationData.email || defaultFooterContent.email,
+    ein: footerSource.footer_ein || footerSource.ein || organizationData.ein || defaultFooterContent.ein,
+    copyright: footerSource.footer_copyright || footerSource.copyright || `© ${currentYear} ${organizationData.name || organizationData.org || defaultFooterContent.organization_name}. All rights reserved.`
+  }
+};
+
+console.log('🦶 Footer content structure:', content.footer);
+console.log('🔍 Raw websiteContent for footer:', {
+  footer: websiteContent.footer,
+  footer_organization_name: websiteContent.footer_organization_name,
+  footer_phone: websiteContent.footer_phone,
+  footer_email: websiteContent.footer_email,
+  footer_copyright: websiteContent.footer_copyright,
+  footer_ein: websiteContent.footer_ein
+});
+---
+
+
+
+<!-- ============================================ --><!--                   Footer                     --><!-- ============================================ -->
+<footer id="footer">
+  <div class="container">
+    <div class="left-section">
+      <a class="logo" href="/"
+        ><img
+          loading="lazy"
+          decoding="async"
+          src={organizationData.logo_url || "/assets/images/MBPR-White.png"}
+          alt={content.footer.organization_name}
+          width="280"
+          height="110"
+        /></a
+      >
+      <p>
+        Bring Happiness Home. {content.footer.organization_name} is a 501(c)(3) non-profit organization dedicated to finding loving homes for abandoned and homeless puppies in San Diego and beyond.
+      </p>
+    </div>
+    <div class="right-section">
+      <div class="lists">
+        <ul>
+          <li>
+            <h2>Information</h2>
+          </li>
+          {
+            navData.map((entry) => (
+              <li class="cs-li">
+                <a href={entry.url}>
+                  {entry.key}
+                </a>
+              </li>
+            ))
+          }
+          <li class="cs-li">
+            <a href="/public/admin/index.html">
+              Admin Login
+            </a>
+          </li>
+        </ul>
+        <!-- Services column hidden per user request -->
+        <!-- <ul>
+          <li>
+            <h2>Services</h2>
+          </li>
+          <li>Service1</li>
+          <li>Service2</li>
+          <li>Service4</li>
+          <li>Service5</li>
+        </ul> -->
+        <ul>
+          <li>
+            <h2>Contact</h2>
+          </li>
+          <li>
+            <a href="/contact" id="footer-address">
+              {content.footer.address_line_one}<br />
+              {content.footer.address_line_two && (
+                <>
+                  {content.footer.address_line_two}<br />
+                </>
+              )}
+              {content.footer.address_city}, {content.footer.address_state} {content.footer.address_zip}
+            </a>
+          </li>
+          <li>
+            <a href={`tel:${content.footer.phone_tel}`} id="footer-phone">
+              T: {content.footer.phone}
+            </a>
+          </li>
+          <li>
+            <a href={`mailto:${content.footer.email}`} id="footer-email">Contact Us</a>
+          </li>
+          <li>
+            <span id="ein-display">EIN: {content.footer.ein}</span>
+          </li>
+        </ul>
+        <ul id="social-media-links" class="social-media">
+          <li>
+            <h2>Follow Us</h2>
+          </li>
+          <!-- Social media icons will be dynamically added here -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="credit">
+    <span>Designed and Hand Coded by</span>
+    <a href="https://barkhaus.io/" target="_blank" rel="noopener">Barkhaus</a>
+    <span class="copyright">{content.footer.copyright}</span>
+  </div>
+</footer>
+
+<script>
+  // Load and display social media icons
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDynamicClientData();
+  });
+
+  async function loadDynamicClientData() {
+    try {
+      const orgId = '9'; // Mission Bay Puppy Rescue organization ID
+      const response = await fetch(`/api/website-content?orgId=${orgId}&page=homepage`);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Dynamic website content loaded for footer:', data);
+
+        // Extract footer content from website content
+        const footerSection = data.footer || {};
+        const footerContent = footerSection.content || {};
+
+        console.log('Footer section data:', footerSection);
+        console.log('Footer content data:', footerContent);
+
+        // Update all footer content dynamically
+        updateFooterContent(footerContent);
+
+        // Load social media icons from client data
+        loadSocialMediaFromClientData();
+      }
+    } catch (error) {
+      console.error('Error loading dynamic website content:', error);
+    }
+  }
+
+  async function loadSocialMediaFromClientData() {
+    try {
+      const orgId = '9';
+      const response = await fetch(`/api/client-data?orgId=${orgId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.socialMedia) {
+          loadSocialMediaIcons(data.socialMedia);
+        }
+      }
+    } catch (error) {
+      console.log('Social media data not available');
+    }
+  }
+
+  function updateFooterContent(footerData) {
+    console.log('Updating footer with data:', footerData);
+
+    // Update address
+    const addressElement = document.getElementById('footer-address');
+    if (addressElement) {
+      const addressHtml = `
+        ${footerData.footer_address_line_one || '123 Main Street'}<br />
+        ${footerData.footer_address_line_two ? footerData.footer_address_line_two + '<br />' : ''}
+        ${footerData.footer_address_city || 'San Diego'}, ${footerData.footer_address_state || 'CA'} ${footerData.footer_address_zip || '92109'}
+      `;
+      addressElement.innerHTML = addressHtml;
+    }
+
+    // Update phone
+    const phoneElement = document.getElementById('footer-phone');
+    if (phoneElement && footerData.footer_phone) {
+      const phoneForTel = footerData.footer_phone.replace(/[^\d]/g, '');
+      phoneElement.href = `tel:${phoneForTel}`;
+      phoneElement.innerHTML = `T: ${footerData.footer_phone}`;
+    }
+
+    // Update email
+    const emailElement = document.getElementById('footer-email');
+    if (emailElement && footerData.footer_email) {
+      emailElement.href = `mailto:${footerData.footer_email}`;
+      emailElement.textContent = 'Contact Us';
+    }
+
+    // Update EIN
+    const einElement = document.getElementById('ein-display');
+    if (einElement && footerData.footer_ein) {
+      einElement.textContent = `EIN: ${footerData.footer_ein}`;
+    }
+
+    // Update copyright
+    const copyrightElement = document.querySelector('.copyright');
+    if (copyrightElement) {
+      const currentYear = new Date().getFullYear();
+      const orgName = footerData.footer_organization_name || 'Mission Bay Puppy Rescue';
+      copyrightElement.textContent = footerData.footer_copyright || `© ${currentYear} ${orgName}. All rights reserved.`;
+    }
+  }
+
+  async function loadSocialMediaIcons(socialMediaData = null) {
+    try {
+      // Get organization ID from environment or default to 3
+      const orgId = '9';
+
+      // Use passed data or try to load from API
+      let socialMedia = socialMediaData || {};
+
+      if (!socialMediaData) {
+        try {
+          const response = await fetch(`/api/client-data?orgId=${orgId}`);
+          if (response.ok) {
+            const data = await response.json();
+            socialMedia = data.socialMedia || {};
+          }
+        } catch (error) {
+          console.log('API not available, checking localStorage');
+        }
+      }
+
+      // Fallback to localStorage
+      if (!socialMedia.instagram && !socialMedia.facebook && !socialMedia.twitter) {
+        const stored = localStorage.getItem(`socialMedia_${orgId}`);
+        if (stored) {
+          socialMedia = JSON.parse(stored);
+        }
+      }
+
+      // Display social media icons if any URLs are provided
+      const socialContainer = document.getElementById('social-media-links');
+      if (socialContainer && (socialMedia.instagram || socialMedia.facebook || socialMedia.twitter)) {
+
+        // Clear existing content except the header
+        const header = socialContainer.querySelector('h2');
+        socialContainer.innerHTML = '';
+        if (header) {
+          const headerLi = document.createElement('li');
+          headerLi.style.listStyle = 'none';
+          headerLi.style.marginBottom = '0';
+          headerLi.appendChild(header);
+          socialContainer.appendChild(headerLi);
+        }
+
+        // Add social media icons
+        if (socialMedia.instagram) {
+          addSocialIcon(socialContainer, 'instagram', socialMedia.instagram);
+        }
+
+        if (socialMedia.facebook) {
+          addSocialIcon(socialContainer, 'facebook', socialMedia.facebook);
+        }
+
+        if (socialMedia.twitter) {
+          addSocialIcon(socialContainer, 'twitter', socialMedia.twitter);
+        }
+
+        // Show the social media section
+        socialContainer.style.display = 'block';
+      } else {
+        // Hide social media section if no links
+        if (socialContainer) {
+          socialContainer.style.display = 'none';
+        }
+      }
+    } catch (error) {
+      console.error('Error loading social media icons:', error);
+    }
+  }
+
+  function addSocialIcon(container, platform, url) {
+    const li = document.createElement('li');
+    li.style.marginBottom = '8px';
+    li.style.listStyle = 'none'; // Remove bullet points
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'flex';
+    link.style.alignItems = 'center';
+    link.style.color = 'white';
+    link.style.textDecoration = 'none';
+    link.style.fontSize = '14px';
+
+    // Add icon and text
+    const icon = getSocialIcon(platform);
+    const text = document.createElement('span');
+    text.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+    text.style.marginLeft = '8px';
+
+    link.appendChild(icon);
+    link.appendChild(text);
+    li.appendChild(link);
+    container.appendChild(li);
+  }
+
+  function getSocialIcon(platform) {
+    const icon = document.createElement('div');
+    icon.style.width = '20px';
+    icon.style.height = '20px';
+    icon.style.fill = 'currentColor';
+
+    let svgContent = '';
+
+    switch (platform) {
+      case 'instagram':
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>`;
+        break;
+      case 'facebook':
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>`;
+        break;
+      case 'twitter':
+        svgContent = `<svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+        </svg>`;
+        break;
+    }
+
+    icon.innerHTML = svgContent;
+    return icon;
+  }
+</script>
+
+<style lang="less">
+  /* Social Media Styles */
+  .social-media {
+    display: none; /* Hidden by default, shown when social links are available */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 8px;
+      list-style: none;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+      font-size: 14px;
+      transition: opacity 0.3s ease;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      fill: currentColor;
+    }
+  }
+
+  /* Mobile */
+@media only screen and (min-width: 0em) {
+  #footer {
+    font-size: ~"min(4vw, 1.2em)";
+    padding: (84/16rem) 0 (20/16rem);
+    background: #1c1c1c;
+
+    .left-section {
+      text-align: center;
+      margin: auto;
+      margin-bottom: (50/16rem);
+      .logo {
+        text-align: center;
+        width: auto;
+        height: (32/16em);
+        margin: auto;
+        margin-bottom: (30/16em);
+        display: inline-block;
+
+        img {
+          width: auto;
+          height: 100%;
+          display: block;
+        }
+      }
+
+      p {
+        font-size: (14/16rem);
+        line-height: 27/14;
+        text-align: center;
+        width: 100%;
+        width: 307/14rem;
+        margin: auto;
+        color: #fff;
+        opacity: 0.9;
+      }
+    }
+
+    .right-section {
+      width: 96%;
+      max-width: (407/16rem);
+      margin: auto;
+      .lists {
+        width: 96%;
+        max-width: (307/16rem);
+        margin: auto;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        ul {
+          margin-top: 0;
+          margin-bottom: 0;
+          padding: 0;
+
+          &:nth-of-type(3) {
+            margin-top: (50/16rem);
+            li {
+              margin-bottom: (16/16rem);
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+
+              &:last-of-type {
+                margin-bottom: 0;
+              }
+            }
+          }
+
+          li {
+            font-size: (18/16rem);
+            list-style: none;
+            margin-bottom: (12/16rem);
+            color: #fff;
+            opacity: 0.9;
+
+            a {
+              line-height: 21/18em;
+              text-decoration: none;
+              color: #fff;
+              transition: color 0.3s;
+              &:hover {
+                color: var(--primary);
+              }
+            }
+          }
+          h2 {
+            font-size: (18/16rem);
+            font-weight: bold;
+            line-height: 21/18em;
+            text-transform: uppercase;
+            margin-bottom: (37/16rem);
+            color: #fff;
+            position: relative;
+
+            &:before {
+              content: "";
+              width: (97/16rem);
+              height: (2/16rem);
+              background: var(--primary);
+              opacity: 1;
+              display: block;
+              position: absolute;
+              bottom: (-16/16rem);
+              left: 0;
+            }
+          }
+          li {
+            font-size: (18/16rem);
+            list-style: none;
+            margin-bottom: (12/16rem);
+            color: #fff;
+            opacity: 0.9;
+
+            a {
+              line-height: 21/18em;
+              text-decoration: none;
+              color: #fff;
+              transition: color 0.3s;
+              &:hover {
+                color: var(--primary);
+              }
+            }
+          }
+          h2 {
+            font-size: (18/16rem);
+            font-weight: bold;
+            line-height: 21/18em;
+            text-transform: uppercase;
+            margin-bottom: (37/16rem);
+            color: #fff;
+            position: relative;
+
+            &:before {
+              content: "";
+              width: (97/16rem);
+              height: (2/16rem);
+              background: var(--primary);
+              opacity: 1;
+              display: block;
+              position: absolute;
+              bottom: (-16/16rem);
+              left: 0;
+            }
+          }
+        }
+      }
+
+      .buttons {
+        display: flex;
+        justify-content: center;
+      }
+
+      .cs-button-solid {
+        width: (250/16rem);
+        height: (53/16rem);
+        margin: 0;
+        padding-top: (3/16rem);
+      }
+    }
+
+    .credit {
+      font-size: (16/16rem);
+      line-height: (36/16rem);
+      text-align: center;
+      width: 96%;
+      margin: auto;
+      margin-top: (100/16rem);
+      color: #fff;
+
+      a {
+        font-size: (16/16rem);
+        text-decoration: none;
+        color: var(--primary);
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      .copyright {
+        font-size: (16/16rem);
+        display: block;
+      }
+    }
+  }
+}
+
+/* Small Desktop */
+@media only screen and (min-width: 64em) {
+  #footer {
+    font-size: ~"min(1.2vw, 1em)";
+    .container {
+      width: 96%;
+      max-width: (1320/16rem);
+      margin: auto;
+      padding: 0;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+    }
+
+    .left-section {
+      text-align: left;
+      width: (409/16rem);
+      margin: 0;
+
+      .logo {
+        text-align: left;
+        height: (40/16rem);
+        margin-left: 0;
+      }
+
+      p {
+        text-align: left;
+        margin-left: 0;
+      }
+    }
+
+    .right-section {
+      width: (609/16rem);
+      max-width: none;
+      margin: 0;
+      .lists {
+        width: 96%;
+        max-width: (769/16rem);
+        max-width: initial;
+        margin: 0;
+
+        ul {
+          &:nth-of-type(3) {
+            margin-top: 0;
+
+            li:first-of-type {
+              margin-bottom: 0;
+            }
+          }
+
+          li {
+            a {
+              position: relative;
+
+              &:before {
+                content: "";
+                width: 0%;
+                height: (2/16rem);
+                background: var(--primary);
+                opacity: 1;
+                display: block;
+                position: absolute;
+                bottom: (-3/16rem);
+                left: 0;
+                transition: width 0.3s;
+              }
+
+              &:hover {
+                &:before {
+                  width: 100%;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .buttons {
+        justify-content: flex-start;
+      }
+    }
+
+    .credit {
+      .copyright {
+        display: inline-block;
+      }
+    }
+  }
+}
+
+/* Dark Mode */
+@media only screen and (min-width: 0em) {
+  body.dark-mode {
+    #footer {
+      background: #061623;
+    }
+  }
+}
+
+</style>
