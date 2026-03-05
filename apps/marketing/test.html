@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Barkhaus — Rescue software, made simple</title>
+  <meta name="description" content="Barkhaus is an all-in-one platform for animal rescues—marketing, forms, foster management, and adoptions in one place." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+          colors: {
+            bark: {
+              teal: '#0B7A73',
+              tealDark: '#075F5A',
+              ink: '#0A0F0F',
+              muted: '#4B5563',
+              paper: '#F7F7F7'
+            }
+          },
+          boxShadow: {
+            soft: '0 10px 30px rgba(0,0,0,.10)',
+            polaroid: '0 18px 40px rgba(0,0,0,.18)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root { color-scheme: light; }
+    html { scroll-behavior: smooth; }
+    /* subtle grain */
+    .grain:before{
+      content:"";
+      position:absolute; inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.11'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.25;
+    }
+    /* polaroid hover */
+    .polaroid { transform-origin: center; }
+    .polaroid:hover { transform: translateY(-6px) rotate(var(--r,0deg)) scale(1.02); }
+    .polaroid:active { transform: translateY(-2px) rotate(var(--r,0deg)) scale(1.01); }
+    /* nice focus */
+    .focus-ring:focus { outline: none; box-shadow: 0 0 0 4px rgba(255,255,255,.35), 0 0 0 7px rgba(11,122,115,.35); }
+    /* animate in */
+    .reveal { opacity: 0; transform: translateY(10px); transition: opacity .8s ease, transform .8s ease; }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+
+<body class="font-sans text-bark-ink bg-white">
+  <!-- Top Bar -->
+  <header class="relative bg-bark-teal text-white grain overflow-hidden">
+    <div class="absolute -top-20 -left-24 w-72 h-72 rounded-full bg-white/10 blur-2xl"></div>
+    <div class="absolute top-24 -right-28 w-96 h-96 rounded-full bg-black/10 blur-2xl"></div>
+
+    <div class="relative">
+      <!-- Nav -->
+      <nav class="mx-auto max-w-6xl px-6 py-5">
+        <div class="flex items-center justify-between">
+          <a href="#top" class="flex items-center gap-3 group">
+            <div class="w-9 h-9 rounded-lg bg-white/15 ring-1 ring-white/20 flex items-center justify-center shadow-soft">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9.5 11.5c0 1.4-1.1 2.5-2.5 2.5S4.5 12.9 4.5 11.5 5.6 9 7 9s2.5 1.1 2.5 2.5Z" fill="white" opacity=".9"/>
+                <path d="M19.5 11.5c0 1.4-1.1 2.5-2.5 2.5s-2.5-1.1-2.5-2.5S15.6 9 17 9s2.5 1.1 2.5 2.5Z" fill="white" opacity=".9"/>
+                <path d="M14 17.2c-.9.6-1.9.9-2 .9s-1.1-.3-2-.9c-1.3-.9-2.2-2.1-2.2-3.5 0-2.3 1.9-4.2 4.2-4.2h0c2.3 0 4.2 1.9 4.2 4.2 0 1.4-.9 2.6-2.2 3.5Z" fill="white"/>
+                <path d="M12 2c2.1 0 3.9 1.7 4 3.8l.1 1.2c.6.1 1.2.4 1.8.8 1.6 1.1 2.6 2.9 2.6 4.8 0 3.6-3.6 6.9-8.5 9.3-.4.2-.9.2-1.3 0C6 19.5 2.4 16.2 2.4 12.6c0-1.9 1-3.7 2.6-4.8.6-.4 1.2-.7 1.8-.8L6.9 5.8C7.1 3.7 8.9 2 11 2H12Z" stroke="white" stroke-opacity=".55" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <span class="font-extrabold tracking-tight text-lg group-hover:opacity-90">BARKHAUS</span>
+          </a>
+
+          <div class="hidden md:flex items-center gap-6 text-sm">
+            <!-- Services dropdown -->
+            <div class="relative" data-dropdown>
+              <button class="flex items-center gap-2 text-white/90 hover:text-white focus-ring rounded-md px-2 py-1"
+                      aria-haspopup="true" aria-expanded="false">
+                Services
+                <svg class="w-4 h-4 opacity-90" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <div class="absolute right-0 mt-2 w-72 rounded-xl bg-white text-bark-ink shadow-soft ring-1 ring-black/5 p-2 hidden"
+                   role="menu">
+                <a href="#features" class="flex items-start gap-3 rounded-lg p-3 hover:bg-bark-paper" role="menuitem">
+                  <div class="mt-0.5 w-9 h-9 rounded-lg bg-bark-teal/10 flex items-center justify-center">
+                    <span class="text-bark-teal font-bold">F</span>
+                  </div>
+                  <div>
+                    <div class="font-semibold">Forms + Intake</div>
+                    <div class="text-xs text-bark-muted">Online applications, signatures, and automation.</div>
+                  </div>
+                </a>
+                <a href="#tools" class="flex items-start gap-3 rounded-lg p-3 hover:bg-bark-paper" role="menuitem">
+                  <div class="mt-0.5 w-9 h-9 rounded-lg bg-bark-teal/10 flex items-center justify-center">
+                    <span class="text-bark-teal font-bold">A</span>
+                  </div>
+                  <div>
+                    <div class="font-semibold">Adoption Pipeline</div>
+                    <div class="text-xs text-bark-muted">Track meet & greets, follow-ups, and outcomes.</div>
+                  </div>
+                </a>
+                <a href="#pricing" class="flex items-start gap-3 rounded-lg p-3 hover:bg-bark-paper" role="menuitem">
+                  <div class="mt-0.5 w-9 h-9 rounded-lg bg-bark-teal/10 flex items-center justify-center">
+                    <span class="text-bark-teal font-bold">$</span>
+                  </div>
+                  <div>
+                    <div class="font-semibold">Pricing</div>
+                    <div class="text-xs text-bark-muted">Simple plans that scale with your rescue.</div>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <a href="#about" class="text-white/90 hover:text-white">About us</a>
+            <a href="#resources" class="text-white/90 hover:text-white">Resources</a>
+            <a href="#support" class="text-white/90 hover:text-white">Support</a>
+
+            <a href="#login"
+               class="ml-2 inline-flex items-center rounded-full bg-white text-bark-ink px-4 py-2 font-semibold hover:bg-white/90 transition focus-ring">
+              Log in
+            </a>
+          </div>
+
+          <!-- Mobile -->
+          <button id="mobileBtn" class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white/10 ring-1 ring-white/20 focus-ring"
+                  aria-label="Open menu" aria-expanded="false">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Mobile panel -->
+        <div id="mobilePanel" class="md:hidden hidden mt-4 rounded-2xl bg-white/10 ring-1 ring-white/20 p-4">
+          <div class="grid gap-2 text-sm">
+            <a class="px-3 py-2 rounded-lg hover:bg-white/10" href="#features">Services</a>
+            <a class="px-3 py-2 rounded-lg hover:bg-white/10" href="#about">About us</a>
+            <a class="px-3 py-2 rounded-lg hover:bg-white/10" href="#resources">Resources</a>
+            <a class="px-3 py-2 rounded-lg hover:bg-white/10" href="#support">Support</a>
+            <a class="mt-2 inline-flex items-center justify-center rounded-full bg-white text-bark-ink px-4 py-2 font-semibold"
+               href="#login">Log in</a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <section id="top" class="relative mx-auto max-w-6xl px-6 pt-10 pb-16 md:pt-14 md:pb-20">
+        <div class="text-center max-w-3xl mx-auto">
+          <h1 class="reveal text-white font-extrabold tracking-tight leading-[1.05] text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+            BARKHAUS IS AN ALL-IN-ONE PLATFORM FILLED WITH THE TOOLS NEEDED FOR ANIMAL RESCUES.
+            ALL OF YOUR MARKETING, FORM MANAGEMENT, AND ADOPTION PROCESSES IN ONE PLACE.
+            RESCUE SOFTWARE, MADE SIMPLE.
+          </h1>
+
+          <div class="reveal mt-9 flex items-center justify-center gap-3">
+            <a href="#pricing"
+               class="inline-flex items-center justify-center rounded-full bg-white text-bark-ink px-5 py-2.5 font-semibold shadow-soft hover:bg-white/90 transition focus-ring">
+              See pricing
+            </a>
+            <a href="#demo"
+               class="inline-flex items-center justify-center rounded-full bg-transparent text-white px-5 py-2.5 font-semibold ring-1 ring-white/40 hover:bg-white/10 transition focus-ring">
+              Book a demo
+            </a>
+          </div>
+        </div>
+
+        <!-- Polaroids -->
+        <div class="relative mt-14 md:mt-16 h-[520px] sm:h-[560px] md:h-[620px]">
+          <div class="absolute left-1/2 -translate-x-1/2 top-0 w-6 h-6 rotate-45 bg-white/20 blur-[0.5px]"></div>
+
+          <!-- Polaroid 1 -->
+          <article class="polaroid reveal absolute left-1/2 -translate-x-1/2 md:left-[58%] md:translate-x-0 top-4 md:top-0
+                          w-[250px] sm:w-[300px] bg-white rounded-2xl shadow-polaroid ring-1 ring-black/5 p-4 transition"
+                   style="--r:-6deg; transform: rotate(-6deg);">
+            <div class="text-[10px] font-extrabold tracking-widest text-center text-bark-ink/70 uppercase">
+              Foster/Rescue Management
+            </div>
+            <div class="mt-3 overflow-hidden rounded-xl bg-bark-paper aspect-[4/3]">
+              <img alt="Shelter play yard"
+                   class="w-full h-full object-cover"
+                   src="https://images.unsplash.com/photo-1525253013412-55c1a69a5738?auto=format&fit=crop&w=1200&q=80">
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-xs text-bark-muted">Assignments • Check-ins</span>
+              <span class="text-xs font-semibold text-bark-teal">View</span>
+            </div>
+          </article>
+
+          <!-- Polaroid 2 -->
+          <article class="polaroid reveal absolute left-[10%] sm:left-[12%] top-[190px] sm:top-[210px] md:top-[220px]
+                          w-[250px] sm:w-[300px] bg-white rounded-2xl shadow-polaroid ring-1 ring-black/5 p-4 transition"
+                   style="--r:8deg; transform: rotate(8deg);">
+            <div class="text-[10px] font-extrabold tracking-widest text-center text-bark-ink/70 uppercase">
+              Desk Time Organization
+            </div>
+            <div class="mt-3 overflow-hidden rounded-xl bg-bark-paper aspect-[4/3]">
+              <img alt="Team with dogs"
+                   class="w-full h-full object-cover"
+                   src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=1200&q=80">
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-xs text-bark-muted">Tasks • Templates</span>
+              <span class="text-xs font-semibold text-bark-teal">Open</span>
+            </div>
+          </article>
+
+          <!-- Polaroid 3 -->
+          <article class="polaroid reveal absolute right-[10%] sm:right-[12%] top-[360px] sm:top-[385px] md:top-[395px]
+                          w-[250px] sm:w-[300px] bg-white rounded-2xl shadow-polaroid ring-1 ring-black/5 p-4 transition"
+                   style="--r:-9deg; transform: rotate(-9deg);">
+            <div class="text-[10px] font-extrabold tracking-widest text-center text-bark-ink/70 uppercase">
+              Streamlined Adoption Journeys
+            </div>
+            <div class="mt-3 overflow-hidden rounded-xl bg-bark-paper aspect-[4/3]">
+              <img alt="Happy family with puppy"
+                   class="w-full h-full object-cover"
+                   src="https://images.unsplash.com/photo-1525253086316-d0c936c814f8?auto=format&fit=crop&w=1200&q=80">
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-xs text-bark-muted">Pipeline • Follow-ups</span>
+              <span class="text-xs font-semibold text-bark-teal">Track</span>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </header>
+
+  <!-- Features -->
+  <main>
+    <section id="features" class="bg-white">
+      <div class="mx-auto max-w-6xl px-6 py-16 md:py-20">
+        <div class="text-center max-w-3xl mx-auto">
+          <h2 class="reveal text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
+            STREAMLINE YOUR RESCUE'S IMPACT WITH POWERFUL, EASY-TO-USE TOOLS
+          </h2>
+          <p class="reveal mt-4 text-bark-muted">
+            Discover how our platform helps animal rescues manage everything from marketing to adoption applications—all in one place.
+            Designed to save you time and help more pets find loving homes.
+          </p>
+        </div>
+
+        <div class="mt-10 grid md:grid-cols-2 gap-6">
+          <article class="reveal rounded-2xl bg-bark-paper/60 ring-1 ring-black/5 shadow-soft overflow-hidden">
+            <div class="p-6">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-bark-teal/10 text-bark-teal font-bold">✓</span>
+                <h3 class="font-extrabold tracking-tight text-lg">Easily manage community and rescue adopters</h3>
+              </div>
+              <p class="mt-3 text-sm text-bark-muted">
+                Effortlessly create campaigns, manage social posts, and share adoptable pets with supporters.
+                Our intuitive tools make it simple to increase your animals’ reach and visibility.
+              </p>
+              <div class="mt-5">
+                <a href="#tools" class="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold ring-1 ring-black/10 hover:bg-white/90 focus-ring">
+                  Explore
+                </a>
+              </div>
+            </div>
+            <div class="h-44 md:h-52 bg-white">
+              <img class="w-full h-full object-cover"
+                   alt="Dog being held"
+                   src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&q=80">
+            </div>
+          </article>
+
+          <article class="reveal rounded-2xl bg-bark-paper/60 ring-1 ring-black/5 shadow-soft overflow-hidden">
+            <div class="p-6">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-bark-teal/10 text-bark-teal font-bold">⚡</span>
+                <h3 class="font-extrabold tracking-tight text-lg">Simplify applications and track every step</h3>
+              </div>
+              <p class="mt-3 text-sm text-bark-muted">
+                Collect, organize, and review adoption applications with ease.
+                Keep everything in one place so you can focus on matching pets with their perfect families.
+              </p>
+              <div class="mt-5">
+                <a href="#demo" class="inline-flex items-center justify-center rounded-full bg-bark-teal px-4 py-2 text-sm font-semibold text-white hover:bg-bark-tealDark focus-ring">
+                  See tools
+                </a>
+              </div>
+            </div>
+            <div class="h-44 md:h-52 bg-white">
+              <img class="w-full h-full object-cover"
+                   alt="Rescue volunteers"
+                   src="https://images.unsplash.com/photo-1525253086316-d0c936c814f8?auto=format&fit=crop&w=1400&q=80">
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quote band -->
+    <section class="bg-[#153A37] text-white">
+      <div class="mx-auto max-w-6xl px-6 py-14 md:py-16">
+        <blockquote class="reveal text-center text-sm sm:text-base md:text-lg leading-relaxed text-white/90">
+          “Barkhaus has completely transformed how we connect with our community and manage our rescue’s day-to-day.
+          From sharing our dogs’ stories to streamlining adoption applications, everything is easier—and our impact has grown.
+          We finally have time to focus on what matters most: helping more animals find loving homes.”
+        </blockquote>
+        <div class="reveal mt-6 flex items-center justify-center gap-3 text-white/70 text-xs">
+          <span class="inline-flex w-8 h-8 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/15">BH</span>
+          <span class="font-semibold text-white/80">Rescue Director</span>
+          <span class="opacity-60">•</span>
+          <span class="opacity-80">Midwest Foster Network</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Big tools section -->
+    <section id="tools" class="bg-white">
+      <div class="mx-auto max-w-6xl px-6 py-16 md:py-20">
+        <div class="grid lg:grid-cols-2 gap-12 items-start">
+          <div class="reveal">
+            <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[0.95]">
+              ALL-IN-ONE<br>
+              TOOLS FOR<br>
+              ANIMAL<br>
+              RESCUE<br>
+              SUCCESS
+            </h2>
+          </div>
+
+          <div class="reveal lg:pt-6">
+            <p class="text-bark-muted leading-relaxed">
+              Manage adoptions, fundraising, and your online presence—all in one place.
+              Empower your team and connect more pets with loving homes.
+            </p>
+
+            <div class="mt-6 grid gap-3">
+              <div class="rounded-2xl ring-1 ring-black/5 p-4 shadow-soft">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">Adoption pipeline</span>
+                  <span class="text-xs text-bark-muted">Status, tasks, follow-ups</span>
+                </div>
+                <div class="mt-3 h-2 rounded-full bg-bark-paper overflow-hidden">
+                  <div class="h-full w-[72%] bg-bark-teal"></div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl ring-1 ring-black/5 p-4 shadow-soft">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">Forms + e-signatures</span>
+                  <span class="text-xs text-bark-muted">Templates, automation</span>
+                </div>
+                <div class="mt-3 flex gap-2">
+                  <span class="text-xs px-2 py-1 rounded-full bg-bark-teal/10 text-bark-teal font-semibold">Intake</span>
+                  <span class="text-xs px-2 py-1 rounded-full bg-bark-teal/10 text-bark-teal font-semibold">Foster</span>
+                  <span class="text-xs px-2 py-1 rounded-full bg-bark-teal/10 text-bark-teal font-semibold">Adopt</span>
+                </div>
+              </div>
+
+              <div class="rounded-2xl ring-1 ring-black/5 p-4 shadow-soft">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">Marketing + outreach</span>
+                  <span class="text-xs text-bark-muted">Posts, campaigns, updates</span>
+                </div>
+                <div class="mt-3 grid grid-cols-3 gap-2">
+                  <div class="h-10 rounded-xl bg-bark-paper"></div>
+                  <div class="h-10 rounded-xl bg-bark-paper"></div>
+                  <div class="h-10 rounded-xl bg-bark-paper"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-wrap items-center gap-3">
+              <a href="#demo" class="inline-flex items-center justify-center rounded-full bg-bark-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-bark-tealDark focus-ring">
+                Get started
+              </a>
+              <a href="#resources" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-semibold ring-1 ring-black/10 hover:bg-bark-paper focus-ring">
+                View resources
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Footer band -->
+    <section class="bg-bark-teal text-white grain relative overflow-hidden">
+      <div class="absolute -bottom-24 -left-28 w-96 h-96 rounded-full bg-black/10 blur-2xl"></div>
+      <div class="mx-auto max-w-6xl px-6 py-16 md:py-20 relative">
+        <div class="reveal max-w-3xl">
+          <h2 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[0.95]">
+            BE PART OF OUR<br>
+            JOURNEY TO MAKE A<br>
+            DIFFERENCE
+          </h2>
+          <p class="mt-5 text-white/80 max-w-xl">
+            Bring your rescue operations into one calm, organized space.
+            Save time, reduce inbox chaos, and help more animals get home.
+          </p>
+
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a id="demo" href="#"
+               class="inline-flex items-center justify-center rounded-full bg-white text-bark-ink px-5 py-2.5 font-semibold shadow-soft hover:bg-white/90 focus-ring">
+              Book a demo
+            </a>
+            <a href="#pricing"
+               class="inline-flex items-center justify-center rounded-full bg-transparent text-white px-5 py-2.5 font-semibold ring-1 ring-white/40 hover:bg-white/10 focus-ring">
+              See pricing
+            </a>
+          </div>
+
+          <div class="mt-8 text-sm text-white/80">
+            <span class="font-semibold">hello@barkhaus.com</span>
+          </div>
+        </div>
+
+        <div class="mt-14 border-t border-white/20 pt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div class="text-xs text-white/70">
+            © <span id="year"></span> Barkhaus. All rights reserved.
+          </div>
+          <div class="flex flex-wrap gap-5 text-sm text-white/80">
+            <a class="hover:text-white" href="#about">Company</a>
+            <a class="hover:text-white" href="#pricing">Pricing</a>
+            <a class="hover:text-white" href="#support">Support</a>
+            <a class="hover:text-white" href="#login">Log in</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modals / Panels -->
+  <div id="modalBackdrop" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-soft ring-1 ring-black/10 overflow-hidden">
+      <div class="p-5 flex items-center justify-between border-b border-black/5">
+        <div class="font-extrabold tracking-tight">Book a demo</div>
+        <button id="closeModal" class="w-10 h-10 rounded-xl hover:bg-bark-paper focus-ring inline-flex items-center justify-center" aria-label="Close">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <form class="p-5 grid gap-4" id="demoForm">
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="grid gap-1 text-sm">
+            <span class="text-bark-muted">Name</span>
+            <input required class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none" placeholder="Jamie" />
+          </label>
+          <label class="grid gap-1 text-sm">
+            <span class="text-bark-muted">Organization</span>
+            <input required class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none" placeholder="Happy Tails Rescue" />
+          </label>
+        </div>
+        <label class="grid gap-1 text-sm">
+          <span class="text-bark-muted">Email</span>
+          <input required type="email" class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none" placeholder="you@rescue.org" />
+        </label>
+        <label class="grid gap-1 text-sm">
+          <span class="text-bark-muted">What do you want to improve?</span>
+          <select class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none">
+            <option>Adoption applications</option>
+            <option>Foster coordination</option>
+            <option>Marketing & outreach</option>
+            <option>All of the above</option>
+          </select>
+        </label>
+        <button class="mt-1 inline-flex items-center justify-center rounded-full bg-bark-teal px-5 py-2.5 font-semibold text-white hover:bg-bark-tealDark focus:outline-none focus:ring-4 focus:ring-bark-teal/30">
+          Request demo
+        </button>
+        <p class="text-xs text-bark-muted">
+          This is a prototype form—submissions won’t be sent. You’ll see a confirmation message.
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Simple Pricing Anchor Section (so "See pricing" scrolls somewhere real) -->
+  <section id="pricing" class="bg-white">
+    <div class="mx-auto max-w-6xl px-6 py-16 md:py-20">
+      <div class="reveal flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+        <div>
+          <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Pricing that fits your rescue</h2>
+          <p class="mt-2 text-bark-muted max-w-xl">Start small, scale up. No hidden fees—just the tools you need to help more animals.</p>
+        </div>
+        <a href="#demo" class="inline-flex items-center justify-center rounded-full bg-bark-teal px-5 py-2.5 text-sm font-semibold text-white hover:bg-bark-tealDark focus-ring">
+          Talk to us
+        </a>
+      </div>
+
+      <div class="mt-10 grid md:grid-cols-3 gap-6">
+        <div class="reveal rounded-2xl ring-1 ring-black/5 p-6 shadow-soft">
+          <div class="font-extrabold">Starter</div>
+          <div class="mt-2 text-3xl font-extrabold">$29<span class="text-base font-semibold text-bark-muted">/mo</span></div>
+          <ul class="mt-4 space-y-2 text-sm text-bark-muted">
+            <li>• Unlimited forms</li>
+            <li>• Applicant inbox</li>
+            <li>• Basic automation</li>
+          </ul>
+          <button class="mt-6 w-full rounded-full bg-bark-paper px-5 py-2.5 font-semibold hover:bg-bark-paper/70 focus-ring">Choose Starter</button>
+        </div>
+
+        <div class="reveal rounded-2xl ring-2 ring-bark-teal p-6 shadow-soft relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-bark-teal/15"></div>
+          <div class="flex items-center justify-between">
+            <div class="font-extrabold">Pro</div>
+            <span class="text-xs font-bold px-2 py-1 rounded-full bg-bark-teal/10 text-bark-teal">Most popular</span>
+          </div>
+          <div class="mt-2 text-3xl font-extrabold">$59<span class="text-base font-semibold text-bark-muted">/mo</span></div>
+          <ul class="mt-4 space-y-2 text-sm text-bark-muted">
+            <li>• Foster management</li>
+            <li>• Adoption pipeline</li>
+            <li>• Team permissions</li>
+          </ul>
+          <button class="mt-6 w-full rounded-full bg-bark-teal text-white px-5 py-2.5 font-semibold hover:bg-bark-tealDark focus-ring">Choose Pro</button>
+        </div>
+
+        <div class="reveal rounded-2xl ring-1 ring-black/5 p-6 shadow-soft">
+          <div class="font-extrabold">Organization</div>
+          <div class="mt-2 text-3xl font-extrabold">Custom</div>
+          <ul class="mt-4 space-y-2 text-sm text-bark-muted">
+            <li>• Multi-program reporting</li>
+            <li>• Dedicated onboarding</li>
+            <li>• Priority support</li>
+          </ul>
+          <button class="mt-6 w-full rounded-full bg-bark-paper px-5 py-2.5 font-semibold hover:bg-bark-paper/70 focus-ring">Contact sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Small anchors -->
+  <section id="about" class="bg-bark-paper">
+    <div class="mx-auto max-w-6xl px-6 py-12">
+      <div class="reveal grid md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h3 class="text-2xl font-extrabold tracking-tight">Built for real rescue work</h3>
+          <p class="mt-3 text-bark-muted">
+            Barkhaus is designed around the daily reality of animal rescues: high volume, constant communication, and a need for clarity.
+            Our goal is to reduce admin time so your team can spend more time helping animals.
+          </p>
+        </div>
+        <div class="rounded-2xl overflow-hidden shadow-soft ring-1 ring-black/5">
+          <img class="w-full h-56 md:h-64 object-cover" alt="Dog nose closeup"
+               src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=1400&q=80">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resources" class="bg-white">
+    <div class="mx-auto max-w-6xl px-6 py-12">
+      <div class="reveal flex items-end justify-between gap-6">
+        <div>
+          <h3 class="text-2xl font-extrabold tracking-tight">Resources</h3>
+          <p class="mt-2 text-bark-muted">Templates, playbooks, and best practices for modern rescue operations.</p>
+        </div>
+        <a class="text-sm font-semibold text-bark-teal hover:underline" href="#demo">Get updates</a>
+      </div>
+
+      <div class="mt-8 grid md:grid-cols-3 gap-6">
+        <a class="reveal group rounded-2xl ring-1 ring-black/5 p-5 shadow-soft hover:shadow-polaroid transition" href="#demo">
+          <div class="text-xs font-bold text-bark-teal">PLAYBOOK</div>
+          <div class="mt-2 font-extrabold">Application review checklist</div>
+          <div class="mt-2 text-sm text-bark-muted">A practical rubric to speed decisions and reduce bias.</div>
+          <div class="mt-4 text-sm font-semibold text-bark-teal group-hover:underline">Read</div>
+        </a>
+        <a class="reveal group rounded-2xl ring-1 ring-black/5 p-5 shadow-soft hover:shadow-polaroid transition" href="#demo">
+          <div class="text-xs font-bold text-bark-teal">TEMPLATE</div>
+          <div class="mt-2 font-extrabold">Foster weekly check-in</div>
+          <div class="mt-2 text-sm text-bark-muted">Keep pets safe with consistent updates and alerts.</div>
+          <div class="mt-4 text-sm font-semibold text-bark-teal group-hover:underline">Download</div>
+        </a>
+        <a class="reveal group rounded-2xl ring-1 ring-black/5 p-5 shadow-soft hover:shadow-polaroid transition" href="#demo">
+          <div class="text-xs font-bold text-bark-teal">GUIDE</div>
+          <div class="mt-2 font-extrabold">Adoption follow-up cadence</div>
+          <div class="mt-2 text-sm text-bark-muted">Improve retention and reduce returns with simple structure.</div>
+          <div class="mt-4 text-sm font-semibold text-bark-teal group-hover:underline">Learn</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="support" class="bg-white">
+    <div class="mx-auto max-w-6xl px-6 py-12">
+      <div class="reveal rounded-2xl bg-bark-paper/60 ring-1 ring-black/5 p-8 md:p-10 shadow-soft">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h3 class="text-2xl font-extrabold tracking-tight">Support that feels human</h3>
+            <p class="mt-2 text-bark-muted max-w-2xl">
+              Need help setting up forms, migrating from spreadsheets, or designing your adoption workflow?
+              We’ll guide you step-by-step.
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <a href="#demo" class="inline-flex items-center justify-center rounded-full bg-bark-teal text-white px-5 py-2.5 font-semibold hover:bg-bark-tealDark focus-ring">
+              Contact support
+            </a>
+            <a href="#resources" class="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 font-semibold ring-1 ring-black/10 hover:bg-bark-paper focus-ring">
+              Help center
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Login anchor (prototype) -->
+  <section id="login" class="bg-bark-paper">
+    <div class="mx-auto max-w-6xl px-6 py-14">
+      <div class="reveal max-w-md">
+        <h3 class="text-2xl font-extrabold tracking-tight">Log in</h3>
+        <p class="mt-2 text-bark-muted">Prototype login — no real authentication.</p>
+        <form class="mt-6 grid gap-3" onsubmit="event.preventDefault(); toast('Logged in (prototype).');">
+          <input class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none" placeholder="Email" type="email" required />
+          <input class="rounded-xl border border-black/10 px-3 py-2 focus:ring-4 focus:ring-bark-teal/20 focus:outline-none" placeholder="Password" type="password" required />
+          <button class="rounded-full bg-bark-teal text-white px-5 py-2.5 font-semibold hover:bg-bark-tealDark focus-ring">Continue</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] hidden">
+    <div class="rounded-full bg-bark-ink text-white px-5 py-3 shadow-soft text-sm"></div>
+  </div>
+
+  <script>
+    // year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // mobile menu
+    const mobileBtn = document.getElementById('mobileBtn');
+    const mobilePanel = document.getElementById('mobilePanel');
+    mobileBtn?.addEventListener('click', () => {
+      const open = !mobilePanel.classList.contains('hidden');
+      mobilePanel.classList.toggle('hidden');
+      mobileBtn.setAttribute('aria-expanded', String(!open));
+    });
+
+    // dropdown
+    function closeAllDropdowns() {
+      document.querySelectorAll('[data-dropdown]').forEach(d => {
+        const menu = d.querySelector('[role="menu"]');
+        const btn = d.querySelector('button');
+        menu?.classList.add('hidden');
+        btn?.setAttribute('aria-expanded', 'false');
+      });
+    }
+    document.querySelectorAll('[data-dropdown]').forEach(d => {
+      const btn = d.querySelector('button');
+      const menu = d.querySelector('[role="menu"]');
+      btn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = menu.classList.contains('hidden');
+        closeAllDropdowns();
+        if (isHidden) {
+          menu.classList.remove('hidden');
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+    document.addEventListener('click', () => closeAllDropdowns());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllDropdowns();
+        closeModal();
+      }
+    });
+
+    // demo modal
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const closeModalBtn = document.getElementById('closeModal');
+    const demoLinks = document.querySelectorAll('a[href="#demo"], #demo a, a#demo');
+
+    function openModal() {
+      modalBackdrop.classList.remove('hidden');
+      modalBackdrop.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        const first = modalBackdrop.querySelector('input,select,button');
+        first && first.focus();
+      }, 50);
+    }
+    function closeModal() {
+      modalBackdrop.classList.add('hidden');
+      modalBackdrop.classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+    demoLinks.forEach(a => a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal();
+    }));
+    closeModalBtn?.addEventListener('click', closeModal);
+    modalBackdrop?.addEventListener('click', (e) => {
+      if (e.target === modalBackdrop) closeModal();
+    });
+
+    // form submit
+    document.getElementById('demoForm')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      closeModal();
+      toast("Request received! We'll reach out soon (prototype).");
+    });
+
+    // toast
+    let toastTimer;
+    function toast(message) {
+      const wrap = document.getElementById('toast');
+      const box = wrap.querySelector('div');
+      box.textContent = message;
+      wrap.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => wrap.classList.add('hidden'), 3200);
+    }
+
+    // reveal on scroll
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(ent => {
+        if (ent.isIntersecting) ent.target.classList.add('in');
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // subtle parallax for hero polaroids
+    const hero = document.querySelector('header');
+    const polaroids = document.querySelectorAll('.polaroid');
+    window.addEventListener('mousemove', (e) => {
+      if (!hero) return;
+      const rect = hero.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / rect.width;
+      const dy = (e.clientY - cy) / rect.height;
+
+      polaroids.forEach((p, i) => {
+        const depth = (i + 1) * 6;
+        p.style.transform = `rotate(${getRotation(p)}deg) translate(${dx * depth}px, ${dy * depth}px)`;
+      });
+    }, { passive: true });
+
+    function getRotation(el){
+      const st = el.getAttribute('style') || '';
+      const match = st.match(/--r:\s*([-\d.]+)deg/);
+      if (match) return parseFloat(match[1]);
+      // fallback from initial inline transform
+      const t = (el.style.transform || '');
+      const m = t.match(/rotate\(([-\d.]+)deg\)/);
+      return m ? parseFloat(m[1]) : 0;
+    }
+  </script>
+</body>
+</html>
