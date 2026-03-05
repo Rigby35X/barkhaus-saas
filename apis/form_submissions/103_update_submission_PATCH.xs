@@ -12,22 +12,22 @@ query "{id}" verb=PATCH {
       field_name = "id"
       field_value = $input.id
     } as $submission
-
+  
     // Check if submission exists
     precondition ($submission != null) {
       error_type = "notfound"
       error = "Submission not found"
     }
-
+  
     // Update the submission
     db.edit form_submissions {
       field_name = "id"
       field_value = $input.id
       data = {
-        status: $input.status
+        status     : $input.status
         admin_notes: $input.admin_notes
-        updated_at: "now"
-        replied_at: ($input.status == "replied" ? "now" : $submission.replied_at)
+        updated_at : "now"
+        replied_at : ($input.status == "replied" ? "now" : $submission.replied_at)
       }
     } as $updated_submission
   }

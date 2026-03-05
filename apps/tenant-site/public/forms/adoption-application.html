@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adoption Application - Mission Bay Puppy Rescue</title>
+    <meta name="description" content="Apply to adopt a puppy from Mission Bay Puppy Rescue">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        label .required {
+            color: #dc2626;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .thank-you.show {
+            display: block;
+        }
+
+        .thank-you h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .thank-you p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.25rem;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🐾 Adoption Application</h1>
+            <p>Mission Bay Puppy Rescue</p>
+        </div>
+
+        <div class="form-card">
+            <form id="adoption-form">
+                <!-- About You -->
+                <div class="form-section">
+                    <h2>About You</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name">First Name <span class="required">*</span></label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name <span class="required">*</span></label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address <span class="required">*</span></label>
+                        <input type="text" id="address" name="address" placeholder="Street Address" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City <span class="required">*</span></label>
+                            <input type="text" id="city" name="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State <span class="required">*</span></label>
+                            <input type="text" id="state" name="state" value="California" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="zip">Zip Code <span class="required">*</span></label>
+                            <input type="text" id="zip" name="zip" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age <span class="required">*</span></label>
+                            <input type="number" id="age" name="age" min="18" max="120" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Housing Information -->
+                <div class="form-section">
+                    <h2>Housing Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="housing_type">Do you own or rent? <span class="required">*</span></label>
+                            <select id="housing_type" name="housing_type" required>
+                                <option value="">Select</option>
+                                <option value="own">Own</option>
+                                <option value="rent">Rent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="home_type">Type of Home <span class="required">*</span></label>
+                            <select id="home_type" name="home_type" required>
+                                <option value="">Select</option>
+                                <option value="house">House</option>
+                                <option value="apartment">Apartment</option>
+                                <option value="condo">Condo/Townhouse</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="yard_type">Yard Type <span class="required">*</span></label>
+                        <select id="yard_type" name="yard_type" required>
+                            <option value="">Select</option>
+                            <option value="fully_fenced">Fully Fenced</option>
+                            <option value="partially_fenced">Partially Fenced</option>
+                            <option value="no_fence">No Fence</option>
+                            <option value="no_yard">No Yard</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="landlord_section" style="display: none;">
+                        <label for="landlord_approval">Landlord Name & Phone (if renting)</label>
+                        <input type="text" id="landlord_approval" name="landlord_approval" placeholder="Name: 123-456-7890">
+                    </div>
+                </div>
+
+                <!-- Household & Lifestyle -->
+                <div class="form-section">
+                    <h2>Household & Lifestyle</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="household_size">People in Household <span class="required">*</span></label>
+                            <input type="number" id="household_size" name="household_size" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="activity_level">Activity Level <span class="required">*</span></label>
+                            <select id="activity_level" name="activity_level" required>
+                                <option value="">Select</option>
+                                <option value="low">Low - Prefer quiet, indoor activities</option>
+                                <option value="medium">Medium - Balanced indoor/outdoor</option>
+                                <option value="high">High - Very active, outdoor enthusiast</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="work_schedule">Work Schedule <span class="required">*</span></label>
+                        <textarea id="work_schedule" name="work_schedule" placeholder="Describe your typical work week and weekend hours" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="has_other_pets">Do you have other pets? <span class="required">*</span></label>
+                        <select id="has_other_pets" name="has_other_pets" required>
+                            <option value="">Select</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="pets_details_section" style="display: none;">
+                        <label for="pets_details">Please describe your other pets</label>
+                        <textarea id="pets_details" name="pets_details" placeholder="Type, age, temperament"></textarea>
+                    </div>
+                </div>
+
+                <!-- About the Puppy You Want -->
+                <div class="form-section">
+                    <h2>About the Puppy You Want</h2>
+                    <div class="form-group">
+                        <label for="puppy_interest">Which puppy are you interested in?</label>
+                        <input type="text" id="puppy_interest" name="puppy_interest" placeholder="Name or litter">
+                    </div>
+                    <div class="form-group">
+                        <label for="ready_date">When are you ready to adopt? <span class="required">*</span></label>
+                        <select id="ready_date" name="ready_date" required>
+                            <option value="">Select</option>
+                            <option value="today">Today!</option>
+                            <option value="this_week">Within this week</option>
+                            <option value="this_month">Within this month</option>
+                            <option value="flexible">Flexible</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="why_adopt">Why do you want to adopt a puppy? <span class="required">*</span></label>
+                        <textarea id="why_adopt" name="why_adopt" placeholder="Tell us about your family, lifestyle, and what you're looking for in a puppy" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Agreement -->
+                <div class="form-section">
+                    <h2>Agreement</h2>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agreement" name="agreement" required>
+                        <label for="agreement">I understand that this is an application and not a guarantee of adoption. I agree to provide accurate information and understand that Mission Bay Puppy Rescue may verify the information provided. <span class="required">*</span></label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Submit Application</button>
+                <div id="status-message" class="status-message"></div>
+            </form>
+
+            <div id="thank-you" class="thank-you">
+                <h2>🎉 Application Submitted!</h2>
+                <p>Thank you for your interest in adopting from Mission Bay Puppy Rescue.</p>
+                <p>We've received your application and will review it shortly. Someone from our team will be in touch with you soon!</p>
+                <p style="margin-top: 2rem;"><a href="https://mbpr.barkhaus.io" style="color: #667eea; text-decoration: none; font-weight: 600;">← Back to MBPR</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide landlord section based on housing type
+        document.getElementById('housing_type').addEventListener('change', function(e) {
+            const landlordSection = document.getElementById('landlord_section');
+            landlordSection.style.display = e.target.value === 'rent' ? 'block' : 'none';
+        });
+
+        // Show/hide pets details based on selection
+        document.getElementById('has_other_pets').addEventListener('change', function(e) {
+            const petsSection = document.getElementById('pets_details_section');
+            petsSection.style.display = e.target.value === 'yes' ? 'block' : 'none';
+        });
+
+        // Form submission
+        document.getElementById('adoption-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const statusDiv = document.getElementById('status-message');
+
+            // Disable submit button
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = '';
+
+            // Collect form data
+            const formData = new FormData(form);
+            const data = {
+                application_type: 'adoption',
+                applicant_name: `${formData.get('first_name')} ${formData.get('last_name')}`,
+                applicant_email: formData.get('email'),
+                applicant_phone: formData.get('phone'),
+                form_data: {
+                    first_name: formData.get('first_name'),
+                    last_name: formData.get('last_name'),
+                    email: formData.get('email'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    zip: formData.get('zip'),
+                    age: formData.get('age'),
+                    housing_type: formData.get('housing_type'),
+                    home_type: formData.get('home_type'),
+                    yard_type: formData.get('yard_type'),
+                    landlord_approval: formData.get('landlord_approval'),
+                    household_size: formData.get('household_size'),
+                    activity_level: formData.get('activity_level'),
+                    work_schedule: formData.get('work_schedule'),
+                    has_other_pets: formData.get('has_other_pets'),
+                    pets_details: formData.get('pets_details'),
+                    puppy_interest: formData.get('puppy_interest'),
+                    ready_date: formData.get('ready_date'),
+                    why_adopt: formData.get('why_adopt')
+                }
+            };
+
+            try {
+                const response = await fetch('https://xz6u-fpaz-praf.n7e.xano.io/api:tVL5q7Ta/applications?org_id=9', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Show thank you message
+                    form.style.display = 'none';
+                    document.getElementById('thank-you').classList.add('show');
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = 'Sorry, there was an error submitting your application. Please try again or contact us directly.';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Application';
+            }
+        });
+    </script>
+</body>
+</html>

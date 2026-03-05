@@ -3,7 +3,7 @@ table organizations {
 
   schema {
     int id
-    text org? filters=trim
+    text name? filters=trim
     text slug? filters=trim
     email email? filters=trim|lower
     text phone? filters=trim

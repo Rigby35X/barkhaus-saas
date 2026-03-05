@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surrender Application - Mission Bay Puppy Rescue</title>
+    <meta name="description" content="Apply to surrender a dog to Mission Bay Puppy Rescue">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .form-section h2 {
+            color: #4facfe;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        label .required {
+            color: #dc2626;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .thank-you.show {
+            display: block;
+        }
+
+        .thank-you h2 {
+            color: #4facfe;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .thank-you p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: start;
+            gap: 0.5rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.25rem;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏡 Dog Surrender Application</h1>
+            <p>Mission Bay Puppy Rescue</p>
+        </div>
+
+        <div class="form-card">
+            <form id="relinquishment-form">
+                <!-- Your Information -->
+                <div class="form-section">
+                    <h2>Your Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first_name">First Name <span class="required">*</span></label>
+                            <input type="text" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last_name">Last Name <span class="required">*</span></label>
+                            <input type="text" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email <span class="required">*</span></label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About the Dog -->
+                <div class="form-section">
+                    <h2>About the Dog</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dog_name">Dog's Name <span class="required">*</span></label>
+                            <input type="text" id="dog_name" name="dog_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dog_age">Dog's Age <span class="required">*</span></label>
+                            <input type="text" id="dog_age" name="dog_age" placeholder="e.g., 2 years, 6 months" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dog_breed">Breed <span class="required">*</span></label>
+                            <input type="text" id="dog_breed" name="dog_breed" placeholder="e.g., Labrador, Mixed Breed" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dog_sex">Sex <span class="required">*</span></label>
+                            <select id="dog_sex" name="dog_sex" required>
+                                <option value="">Select</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dog_weight">Weight (lbs) <span class="required">*</span></label>
+                            <input type="number" id="dog_weight" name="dog_weight" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="spayed_neutered">Spayed/Neutered? <span class="required">*</span></label>
+                            <select id="spayed_neutered" name="spayed_neutered" required>
+                                <option value="">Select</option>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="unknown">Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="medical_history">Medical History <span class="required">*</span></label>
+                        <textarea id="medical_history" name="medical_history" placeholder="Vaccinations, health issues, medications, etc." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Behavior & Temperament -->
+                <div class="form-section">
+                    <h2>Behavior & Temperament</h2>
+                    <div class="form-group">
+                        <label for="temperament">How would you describe the dog's temperament? <span class="required">*</span></label>
+                        <textarea id="temperament" name="temperament" placeholder="Friendly, shy, energetic, calm, etc." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="good_with_kids">Good with children? <span class="required">*</span></label>
+                        <select id="good_with_kids" name="good_with_kids" required>
+                            <option value="">Select</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="unknown">Unknown/Never tested</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="good_with_dogs">Good with other dogs? <span class="required">*</span></label>
+                        <select id="good_with_dogs" name="good_with_dogs" required>
+                            <option value="">Select</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="unknown">Unknown/Never tested</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="behavioral_issues">Any behavioral issues we should know about?</label>
+                        <textarea id="behavioral_issues" name="behavioral_issues" placeholder="Separation anxiety, aggression, house training issues, etc."></textarea>
+                    </div>
+                </div>
+
+                <!-- Surrender Information -->
+                <div class="form-section">
+                    <h2>Surrender Information</h2>
+                    <div class="form-group">
+                        <label for="ownership_duration">How long have you owned this dog? <span class="required">*</span></label>
+                        <input type="text" id="ownership_duration" name="ownership_duration" placeholder="e.g., 2 years, 6 months" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="surrender_reason">Why are you surrendering this dog? <span class="required">*</span></label>
+                        <textarea id="surrender_reason" name="surrender_reason" placeholder="Please be honest - this helps us find the best placement" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeline">When do you need to surrender? <span class="required">*</span></label>
+                        <select id="timeline" name="timeline" required>
+                            <option value="">Select</option>
+                            <option value="immediately">Immediately</option>
+                            <option value="this_week">Within this week</option>
+                            <option value="this_month">Within this month</option>
+                            <option value="flexible">Flexible</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Agreement -->
+                <div class="form-section">
+                    <h2>Agreement</h2>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="agreement" name="agreement" required>
+                        <label for="agreement">I understand this is an application to surrender my dog to Mission Bay Puppy Rescue. I certify that all information provided is accurate. I understand that MBPR will review this application and contact me. <span class="required">*</span></label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Submit Application</button>
+                <div id="status-message" class="status-message"></div>
+            </form>
+
+            <div id="thank-you" class="thank-you">
+                <h2>Application Received</h2>
+                <p>Thank you for reaching out to Mission Bay Puppy Rescue.</p>
+                <p>We've received your surrender application and will review it carefully. Someone from our team will contact you soon to discuss next steps.</p>
+                <p style="margin-top: 2rem;"><a href="https://mbpr.barkhaus.io" style="color: #4facfe; text-decoration: none; font-weight: 600;">← Back to MBPR</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form submission
+        document.getElementById('relinquishment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            const statusDiv = document.getElementById('status-message');
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Submitting...';
+            statusDiv.className = 'status-message';
+            statusDiv.textContent = '';
+
+            const formData = new FormData(form);
+            const data = {
+                application_type: 'relinquishment',
+                applicant_name: `${formData.get('first_name')} ${formData.get('last_name')}`,
+                applicant_email: formData.get('email'),
+                applicant_phone: formData.get('phone'),
+                form_data: Object.fromEntries(formData)
+            };
+
+            try {
+                const response = await fetch('https://xz6u-fpaz-praf.n7e.xano.io/api:tVL5q7Ta/applications?org_id=9', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    form.style.display = 'none';
+                    document.getElementById('thank-you').classList.add('show');
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.className = 'status-message error';
+                statusDiv.textContent = 'Sorry, there was an error submitting your application. Please try again or contact us directly.';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Submit Application';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -120,6 +120,36 @@ table animals {
   
     // Custom SEO description for social sharing
     text meta_description? filters=trim
+  
+    // ===== MBPR-ONLY FIELDS (Org 9) =====
+    // Internal-only fields
+    text mbpr_internal_id? filters=trim
+  
+    date estimated_adoption_date?
+    text new_name? filters=trim
+    text acquired_from? filters=trim
+    text acquired_from_original_name? filters=trim
+    text acquired_from_shelter_id? filters=trim
+    text foster_name? filters=trim
+    text foster_contact? filters=trim
+    json medical_notes_array?
+    json vet_file_uploads?
+    image new_owner_photo?
+  
+    // Public/shared fields
+    bool birthday_estimated?
+  
+    text breed_primary? filters=trim
+    text breed_secondary? filters=trim
+    text breed_third? filters=trim
+    text markings_color? filters=trim
+    text markings_coat? filters=trim
+    text markings_eye_color? filters=trim
+    text grooming? filters=trim
+    text temperament? filters=trim
+    text orphan_or_mother? filters=trim
+    text mother_name? filters=trim
+    text youtube_video_url? filters=trim
   }
 
   index = [

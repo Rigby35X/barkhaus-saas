@@ -1,8 +1,8 @@
 // Delete organizations record
 query "orgs/{orgId}" verb=DELETE {
   input {
-    int orgId?=1
-    text id? filters=trim
+    int id? filters=min:1
+    text orgId? filters=trim
   }
 
   stack {

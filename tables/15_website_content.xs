@@ -1,5 +1,5 @@
 table website_content {
-  auth = false
+  auth = true
 
   schema {
     int id

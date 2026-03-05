@@ -9,7 +9,6 @@ table Dogs {
     }
   
     text? Code?
-    text? Main_Photo?
     image? main_image?
     image? additional_image_1?
     image? additional_image_2?
