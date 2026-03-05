@@ -21,8 +21,8 @@ let animals = [];
 let error = null;
 
 try {
-  const xanoBase = import.meta.env.VITE_XANO_ANIMALS_URL || import.meta.env.PUBLIC_XANO_BASE_URL;
-  const xanoToken = import.meta.env.VITE_XANO_ANIMALS_TOKEN;
+  const xanoBase = import.meta.env.PUBLIC_XANO_ANIMALS_URL || import.meta.env.PUBLIC_XANO_BASE_URL;
+  const xanoToken = import.meta.env.PUBLIC_XANO_ANIMALS_TOKEN;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (xanoToken) headers['Authorization'] = `Bearer ${xanoToken}`;
 
