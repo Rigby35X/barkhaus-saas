@@ -15,6 +15,7 @@
     "template:senior-sanctuary": "node scripts/process-template.js examples/senior-pet-sanctuary.config.json ./output"
   },
   "dependencies": {
+    "@barkhaus/xano-client": "*",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/vercel": "^8.0.4",
     "@useparagon/connect": "^2.1.1",
