@@ -21,15 +21,17 @@ let animals = [];
 let error = null;
 
 try {
-  const xanoBase = import.meta.env.PUBLIC_XANO_ANIMALS_URL || import.meta.env.PUBLIC_XANO_BASE_URL;
-  const xanoToken = import.meta.env.PUBLIC_XANO_ANIMALS_TOKEN;
+  const xanoBase = (import.meta.env.PUBLIC_XANO_ANIMALS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:Od874PbA').replace(/\/$/, '');
+  const xanoToken = import.meta.env.PUBLIC_XANO_ANIMALS_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (xanoToken) headers['Authorization'] = `Bearer ${xanoToken}`;
 
   if (orgId === '9') {
     // MBPR uses the legacy dogs table with its own field names
-    const dogsData = await fetch(`${xanoBase}/dogs`, { headers }).then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const dogsUrl = `${xanoBase}/dogs`;
+    console.log('🐕 Fetching dogs from:', dogsUrl);
+    const dogsData = await fetch(dogsUrl, { headers }).then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status} from ${dogsUrl}`);
       return r.json();
     });
     animals = dogsData.map((dog: any) => ({
