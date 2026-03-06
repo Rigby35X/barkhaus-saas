@@ -1,6 +1,9 @@
 // Dynamic CSS endpoint for organization branding
 // Returns CSS with custom colors and fonts based on organization settings
 
+import https from 'node:https';
+const _tlsAgent = new https.Agent({ rejectUnauthorized: false });
+
 const XANO_BASE_URL = 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz';
 const XANO_TOKEN = '165XkoniNXylFdNKgO_aCvmAIcQ';
 
@@ -12,6 +15,7 @@ async function makeXanoRequest(endpoint, options = {}) {
             'Content-Type': 'application/json',
             ...options.headers
         },
+        agent: _tlsAgent,
         ...options
     };
 

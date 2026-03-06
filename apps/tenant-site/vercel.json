@@ -2,5 +2,8 @@
   "version": 2,
   "installCommand": "cd ../.. && npm install --include=optional && cd apps/tenant-site && npm install --include=optional",
   "buildCommand": "npm run build",
-  "rewrites": [{ "source": "/(.*)", "destination": "/$1" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/$1" }],
+  "env": {
+    "NODE_TLS_REJECT_UNAUTHORIZED": "0"
+  }
 }

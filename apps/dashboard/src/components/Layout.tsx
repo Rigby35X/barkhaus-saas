@@ -25,7 +25,15 @@ export default function Layout({ children }: LayoutProps) {
       <aside className="fixed inset-y-0 left-0 w-64 bg-deep-taupe text-white">
         <div className="flex flex-col h-full">
           <div className="p-6">
-            <h1 className="text-2xl font-bold mb-2">🐾 Barkhaus</h1>
+            {organization?.logo_light_url ? (
+              <img
+                src={organization.logo_light_url}
+                alt={organization.org}
+                className="h-12 w-auto mb-2 object-contain"
+              />
+            ) : (
+              <h1 className="text-2xl font-bold mb-2">Barkhaus</h1>
+            )}
             {organization && (
               <p className="text-sm text-gray-300">{organization.org}</p>
             )}

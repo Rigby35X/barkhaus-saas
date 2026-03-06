@@ -1,4 +1,6 @@
 ---
+import https from 'node:https';
+const _tlsAgent = new https.Agent({ rejectUnauthorized: false });
 import BaseLayout from "@layouts/BaseLayout.astro";
 import CTA from "@components/CTA.astro";
 import { fetchAllPageData } from "../utils/content-fetcher.js";
@@ -30,7 +32,7 @@ try {
     // MBPR uses the legacy dogs table with its own field names
     const dogsUrl = `${xanoBase}/dogs`;
     console.log('🐕 Fetching dogs from:', dogsUrl);
-    const dogsData = await fetch(dogsUrl, { headers }).then(r => {
+    const dogsData = await fetch(dogsUrl, { headers, agent: _tlsAgent }).then(r => {
       if (!r.ok) throw new Error(`HTTP ${r.status} from ${dogsUrl}`);
       return r.json();
     });
@@ -59,7 +61,7 @@ try {
       good_with_dogs: false,
     }));
   } else {
-    animals = await fetch(`${xanoBase}/animals?organization_id=${orgId}`, { headers }).then(r => {
+    animals = await fetch(`${xanoBase}/animals?organization_id=${orgId}`, { headers, agent: _tlsAgent }).then(r => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       return r.json();
     });

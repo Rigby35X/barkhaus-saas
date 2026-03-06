@@ -1,4 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
+import https from 'node:https';
+const _tlsAgent = new https.Agent({ rejectUnauthorized: false });
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const host = context.request.headers.get('host') || '';
@@ -23,7 +25,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const response = await fetch(xanoUrl, {
         headers: {
           'Authorization': `Bearer ${xanoToken}`
-        }
+        },
+        agent: _tlsAgent,
       });
 
       if (response.ok) {
@@ -49,7 +52,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       // Look up tenant by custom domain in Xano
       const xanoUrl = 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/domains';
-      const response = await fetch(`${xanoUrl}?domain=${host}`);
+      const response = await fetch(`${xanoUrl}?domain=${host}`, { agent: _tlsAgent });
       
       if (response.ok) {
         const domainData = await response.json();
@@ -58,7 +61,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
           orgId = domainData[0].organization_id;
           
           // Fetch full organization data
-          const orgResponse = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations/${orgId}`);
+          const orgResponse = await fetch(`https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations/${orgId}`, { agent: _tlsAgent });
           if (orgResponse.ok) {
             organizationData = await orgResponse.json();
             console.log('✅ Found organization via custom domain:', orgId, organizationData.name);
@@ -76,7 +79,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       // Fetch organization data
       const xanoUrl = `https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz/organizations/${orgId}`;
-      const response = await fetch(xanoUrl);
+      const response = await fetch(xanoUrl, { agent: _tlsAgent });
       if (response.ok) {
         organizationData = await response.json();
         console.log('✅ Using demo organization:', orgId, organizationData.name);

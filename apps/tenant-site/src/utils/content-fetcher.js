@@ -177,11 +177,14 @@ const DEFAULT_ORG = {
   socialMedia: { facebook: '', instagram: '', twitter: '' }
 };
 
+import https from 'node:https';
+const _tlsAgent = new https.Agent({ rejectUnauthorized: false });
+
 // Make an authenticated GET request to Xano
 async function xanoGet(url, token) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(url, { headers });
+  const res = await fetch(url, { headers, agent: _tlsAgent });
   if (!res.ok) throw new Error(`Xano ${res.status}: ${res.statusText}`);
   return res.json();
 }
