@@ -9,6 +9,7 @@ export default {
       colors: {
         'deep-taupe': '#4d4c4c',
         'warm-brown': '#804e3f',
+        'silver-gray': '#d8c8b6',
         'sand': '#cbb19d',
         'stone': '#bfae9b',
         'dove': '#e2d4c6',

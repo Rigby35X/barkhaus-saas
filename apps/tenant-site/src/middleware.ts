@@ -1,3 +1,4 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 import { defineMiddleware } from 'astro:middleware';
 import https from 'node:https';
 const _tlsAgent = new https.Agent({ rejectUnauthorized: false });

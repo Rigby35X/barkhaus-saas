@@ -16,7 +16,6 @@ export const useTenant = (): TenantContext & { loading: boolean; error: string |
   useEffect(() => {
     const loadTenant = async () => {
       try {
-        // Extract tenant slug from URL (e.g., /mbpr/dashboard -> mbpr)
         const pathParts = location.pathname.split('/').filter(Boolean);
         const slug = pathParts[0];
 
@@ -26,23 +25,22 @@ export const useTenant = (): TenantContext & { loading: boolean; error: string |
           return;
         }
 
-        console.log('🔍 Loading tenant:', slug);
-
         const org: Organization = await fetchOrganizationBySlug(slug);
 
         if (org) {
-          setTenant({
-            slug,
-            orgId: org.id,
-            organization: org,
-          });
-          console.log('✅ Tenant loaded:', org.org);
+          setTenant({ slug, orgId: org.id, organization: org });
         } else {
+          // Graceful fallback — don't crash the UI
+          setTenant({ slug, orgId: 0, organization: null });
           setError(`Organization not found: ${slug}`);
         }
       } catch (err) {
         console.error('❌ Error loading tenant:', err);
-        setError('Failed to load organization');
+        // Extract slug for partial context even on failure
+        const pathParts = location.pathname.split('/').filter(Boolean);
+        const slug = pathParts[0] || '';
+        setTenant({ slug, orgId: 0, organization: null });
+        setError('Failed to load organization — Xano may be unavailable');
       } finally {
         setLoading(false);
       }

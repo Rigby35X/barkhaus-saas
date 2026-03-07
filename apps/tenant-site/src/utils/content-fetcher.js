@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 /**
  * Content Fetcher Utility
  * Fetches dynamic content from Xano directly — no self-referencing proxy calls.
@@ -177,14 +179,11 @@ const DEFAULT_ORG = {
   socialMedia: { facebook: '', instagram: '', twitter: '' }
 };
 
-import https from 'node:https';
-const _tlsAgent = new https.Agent({ rejectUnauthorized: false });
-
 // Make an authenticated GET request to Xano
 async function xanoGet(url, token) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(url, { headers, agent: _tlsAgent });
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`Xano ${res.status}: ${res.statusText}`);
   return res.json();
 }
