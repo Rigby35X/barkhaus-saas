@@ -14,6 +14,7 @@ export default {
         'stone': '#bfae9b',
         'dove': '#e2d4c6',
         'cloud': '#e9e8e6',
+        'charcoal': '#4d4c4c',
       },
       fontFamily: {
         'serif': ['Noto Serif Display', 'serif'],
