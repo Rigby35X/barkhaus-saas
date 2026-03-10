@@ -187,18 +187,6 @@ function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
               </button>
             </div>
 
-            {/* Credentials hint */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-              <p className="text-xs font-semibold text-blue-800 mb-2">Available Organizations:</p>
-              <div className="space-y-1 text-xs text-blue-700">
-                {Object.entries(ORGANIZATIONS).map(([id, org]) => (
-                  <div key={id} className={`flex justify-between ${org.isAdmin ? 'bg-blue-100 px-1 py-0.5 rounded font-semibold' : ''}`}>
-                    <span>ID {id}: {org.name}</span>
-                    <span className="font-mono">{org.accessCode}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </>
         )}
       </div>
