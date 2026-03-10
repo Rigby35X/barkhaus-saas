@@ -1,0 +1,961 @@
+// for dynamic services
+table services {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int? org? {
+      table = "organizations"
+    }
+  
+    // Name of the service
+    text name? filters=trim
+  
+    // Description of the service
+    text description? filters=trim
+  
+    // URL for an icon representing the service
+    text icon_url? filters=trim
+  
+    // Indicates if the service is active and visible
+    bool is_active?
+  
+    // Order in which the service should appear
+    int sort_order?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table Dogs {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int org? {
+      table = "organizations"
+    }
+  
+    text? Code?
+    text? Main_Photo?
+    image? main_image?
+    image? additional_image_1?
+    image? additional_image_2?
+    image? additional_image_3?
+    image? additional_image_4?
+    text? Dog_Name?
+    text? Microchip_Number?
+    bool? Is_Dog_Fixed?
+    text? Reason_for_Delay_in_Spaying_Neutering?
+    bool? Required_Spay_Neuter?
+    text? SpayNeuterVoucher_Signature?
+    text? Spay_Neuter_Voucher_Date?
+    bool? Deposit_Waived?
+    bool? Deposit_Received?
+    bool? Deposit_Returned?
+    text? Vaccinations?
+    text? Veterinary_Approval?
+    int[]? Shelter? {
+      table = "Shelters"
+    }
+  
+    int[]? Health? {
+      table = "Health Records"
+    }
+  
+    text? Financial_Responsibility?
+    text? Microchip?
+    text? Bathing?
+    text? Introductions?
+    text? Food?
+    text? Treats?
+    text? Frozen_Marrow_Bones?
+    text? Acceptable_Toys?
+    text? Kennel?
+    text? Fecal_Test_Poop?
+    text? Warning_Signs?
+    text? Call_Us?
+    text? AdoptionContract_Signature?
+    text? AdoptionContract_Date?
+    text? Dog_s_Original_Name?
+    text? Kennel_Shelter_ID_Information?
+    text? DogID?
+    text? Litter_Name?
+    text? Chip_Manufacturer?
+    bool? Registered?
+    timestamp? Pup_Birthday?
+    decimal? Pup_is_currently_this_many_weeks_old?
+    timestamp? Estimated_Adoption_Date?
+    timestamp? Adoption_Date_Calculation?
+    timestamp? Today_s_Date?
+    timestamp? Intake_Date?
+    enum? Gender? {
+      values = ["Female", "Male"]
+    }
+  
+    enum? Estimated_Size_When_Grown? {
+      values = ["Large: 50-80 lbs", "Medium: 25-50 lbs"]
+    }
+  
+    text? Breed?
+    text? Markings?
+    text? My_Story?
+    int[]? Adoption_Record?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table Adoptions {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    text? Adopter_Name?
+    timestamp? Adoption_Date?
+    int[]? Dog?
+    decimal? Adoption_Fee?
+    enum? Payment_Method? {
+      values = ["Cash", "Check", "Credit Card", "Online Payment"]
+    }
+  
+    attachment[]? Adoption_Contract_Photo?
+    text? Notes?
+    int[]? Shelter? {
+      table = "Shelters"
+    }
+  
+    text? Adoption_Fee_Paid?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table Shelters {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    text? Shelter_Name?
+    text? Location?
+    text? Contact_Name?
+    text? Contact_Phone?
+    text? Contact_Email?
+    decimal? Capacity?
+    attachment[]? Photos?
+    text? Notes?
+    int[]? Dogs? {
+      table = "Dogs"
+    }
+  
+    int? Current_Dog_Count?
+    text? Occupancy_Rate?
+    text? Most_Recent_Intake_Date?
+    int[]? Adoptions? {
+      table = "Adoptions"
+    }
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table "Health Records" {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    text? Name?
+    int[]? Dog? {
+      table = "Dogs"
+    }
+  
+    timestamp? Health_Check_Date?
+    bool? Veterinary_Approval?
+    enum? Spay_Neuter_Status? {
+      values = ["Intact", "Spayed"]
+    }
+  
+    enum[]? Vaccinations? {
+      values = ["Distemper", "Leptospirosis", "Parvovirus", "Rabies"]
+    }
+  
+    text? Medical_Notes?
+    attachment[]? Health_Photos?
+    timestamp? Next_Checkup_Due?
+    text? Allergies_Chronic_Conditions?
+    text? Upcoming_Checkup_in_Days?
+    text? Is_Overdue_for_Checkup?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table website_content {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+  
+    // Links to organizations table
+    int org_id? {
+      table = "organizations"
+    }
+  
+    // Page identifier (homepage, about, contact)
+    text page_slug? filters=trim
+  
+    // Section identifier (hero, about_us, cta, etc.)
+    text section_key? filters=trim
+  
+    // Main headline/title
+    text headline? filters=trim
+  
+    // Subtitle or tagline
+    text subheadline? filters=trim
+  
+    // Main content/description
+    text body_text? filters=trim
+  
+    // Call-to-action button text
+    text button_text? filters=trim
+  
+    // Button URL/link
+    text button_link? filters=trim
+  
+    text button2_text? filters=trim
+    text button2_link? filters=trim
+  
+    // Background image URL
+    text background_image_url? filters=trim
+  
+    // Main featured image URL
+    text featured_image_url? filters=trim
+  
+    // Second image URL
+    text secondary_image_url? filters=trim
+  
+    // Whether section shows on website
+    bool is_visible?
+  
+    // Display order of sections
+    int sort_order?
+  
+    // Timestamp of the last update
+    timestamp updated_at?
+  
+    // Title or name of service 1
+    text service_1? filters=trim
+  
+    // Description for service 1
+    text service_1_description? filters=trim
+  
+    // Title or name of service 2
+    text service_2? filters=trim
+  
+    // Description for service 2
+    text service_2_description? filters=trim
+  
+    // Title or name of service 3
+    text service_3? filters=trim
+  
+    // Description for service 3
+    text service_3_description? filters=trim
+  
+    // First frequently asked question
+    text faq_question_1? filters=trim
+  
+    // Answer to the first FAQ
+    text faq_answer_1? filters=trim
+  
+    // Second frequently asked question
+    text faq_question_2? filters=trim
+  
+    // Answer to the second FAQ
+    text faq_answer_2? filters=trim
+  
+    // Third frequently asked question
+    text faq_question_3? filters=trim
+  
+    // Answer to the third FAQ
+    text faq_answer_3? filters=trim
+  
+    // Fourth frequently asked question
+    text faq_question_4? filters=trim
+  
+    // Answer to the fourth FAQ
+    text faq_answer_4? filters=trim
+  
+    // Fifth frequently asked question
+    text faq_question_5? filters=trim
+  
+    // Answer to the fifth FAQ
+    text faq_answer_5? filters=trim
+  
+    // Indicates if Google Reviews section is enabled
+    bool google_reviews_enabled?
+  
+    // Google My Business ID for reviews integration
+    text google_business_id? filters=trim
+  
+    text footer_organization_name? filters=trim
+    text footer_address_line_one? filters=trim
+    text footer_address_line_two? filters=trim
+    text footer_address_city? filters=trim
+    text footer_address_state? filters=trim
+    text footer_address_zip? filters=trim
+    text footer_phone?
+    email footer_email? filters=trim|lower
+    text footer_copyright? filters=trim
+    text footer_ein? filters=trim
+    text meta_title? filters=trim
+    text meta_description? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table user {
+  auth = true
+
+  schema {
+    int id
+    int? org? {
+      table = "organizations"
+    }
+  
+    email? email filters=trim|lower
+    password? password filters=min:8|minAlpha:1|minDigit:1
+    text first_name filters=trim
+    text last_Name? filters=trim
+    text role? filters=trim
+    timestamp created_at?=now
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree|unique", field: [{name: "email", op: "asc"}]}
+  ]
+}table animals {
+  auth = false
+
+  schema {
+    int id
+    int? org? {
+      table = "organizations"
+    }
+  
+    // Dog's name
+    text name? filters=trim
+  
+    text litter_name? filters=trim
+    text species? filters=trim
+  
+    // Dog's Breed
+    text breed? filters=trim
+  
+    text description? filters=trim
+    text status? filters=trim
+  
+    // date the dog arrived
+    date? intake_date?
+  
+    text image_url? filters=trim
+    image? main_image?
+    image? additional_image_1?
+    image? additional_image_2?
+    image? additional_image_3?
+    image? additional_image_4?
+  
+    // Timestamp of the last update to the animal record
+    timestamp updated_at?
+  
+    // Age of the animal (e.g., "2 years", "6 months")
+    text age? filters=trim
+  
+    // Gender of the animal (Male, Female, Unknown)
+    text gender? filters=trim
+  
+    // Weight of the animal (e.g., "45 lbs", "12 kg")
+    text weight? filters=trim
+  
+    // Color of the animal
+    text color? filters=trim
+  
+    timestamp created_at?=now
+  
+    // Size of the animal (Small, Medium, Large, Extra Large)
+    text size? filters=trim
+  
+    // Array of additional images for the animal [{url: "..."}, ...]
+    json images?
+  
+    // Detailed description for the animal's detail page
+    text description_long? filters=trim
+  
+    // Current location of the animal (e.g., Foster home, shelter)
+    text location? filters=trim
+  
+    // Indicates if the animal is vaccinated
+    bool vaccinated?
+  
+    // Indicates if the animal is spayed or neutered
+    bool spayed_neutered?
+  
+    // Indicates if the animal has a microchip registered
+    bool microchip?
+  
+    // Notes regarding the animal's medical history
+    text medical_notes? filters=trim
+  
+    // Information about any special needs the animal may have
+    text special_needs? filters=trim
+  
+    // Indicates if the animal is house-trained
+    bool house_trained?
+  
+    // Energy level of the animal (Low, Medium, High)
+    text energy_level? filters=trim
+  
+    // Indicates if the animal is good with kids
+    bool good_with_kids?
+  
+    // Custom organization notes about this animal
+    text org_description? filters=trim
+  
+    // Indicates if the animal is good with other dogs
+    bool good_with_dogs?
+  
+    // Indicates if the animal is good with cats
+    bool good_with_cats?
+  
+    // Notes regarding the animal's training
+    text training_notes? filters=trim
+  
+    // Notes from playgroup interactions
+    text playgroup_notes? filters=trim
+  
+    // Adoption fee for the animal
+    decimal adoption_fee?
+  
+    // Currency of the adoption fee (default: USD)
+    text adoption_fee_currency? filters=trim
+  
+    // Additional organization-specific details
+    text org_details? filters=trim
+  
+    // Indicates if the animal is featured for highlighting
+    bool is_featured?
+  
+    // Priority for sorting (higher = more urgent)
+    int priority?
+  
+    // Staff-only internal notes about the animal
+    text internal_notes? filters=trim
+  
+    // Custom SEO title for the animal's detail page
+    text meta_title? filters=trim
+  
+    // Custom SEO description for social sharing
+    text meta_description? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table linked_accounts {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+  
+    // Links to the organization (tenant)
+    int org? {
+      table = "organizations"
+    }
+  
+    // E.g. google, mailchimp, givebutter
+    text provider? filters=trim
+  
+    // Authentication type: oauth, api_key, etc.
+    text auth_type? filters=trim
+  
+    // Access token (should be stored encrypted)
+    text access_token? filters=trim
+  
+    // Refresh token (optional, for long-lived access)
+    text refresh_token? filters=trim
+  
+    // Permissions granted to the token (e.g. gmail.send)
+    text scope? filters=trim
+  
+    // Timestamp when the token expires
+    timestamp expires_at?
+  
+    // Optional: stores raw token response or other relevant data
+    json metadata?
+  
+    // Timestamp of the last update to the record
+    timestamp updated_at?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table tokens_table {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+  
+    // References the organization (tenant)
+    int org? {
+      table = "organizations"
+    }
+  
+    // References the authenticated user
+    int user_id? {
+      table = "user"
+    }
+  
+    // Short-lived access token (should be stored encrypted)
+    text access_token? filters=trim
+  
+    // Used to renew access tokens (should be stored encrypted)
+    text refresh_token? filters=trim
+  
+    // Timestamp when the access token expires
+    timestamp token_expiry?
+  
+    // Timestamp of the last update to the record
+    timestamp updated_at?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table google_reviews {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    text author_name? filters=trim
+    int rating?
+    text review_text? filters=trim
+    timestamp? review_time?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table organizations {
+  auth = false
+
+  schema {
+    int id
+    text org? filters=trim
+    text slug? filters=trim
+    email email? filters=trim|lower
+    text phone? filters=trim
+    text address? filters=trim
+    text city? filters=trim
+    text state? filters=trim
+    text zip_code? filters=trim
+  
+    // Unique subdomain for multi-tenant routing
+    text subdomain? filters=trim
+  
+    // Custom domain name associated with the organization
+    text custom_domain? filters=trim
+  
+    // Official website URL of the organization
+    text website? filters=trim
+  
+    // Tax identification number of the organization
+    text ein? filters=trim
+  
+    // Boolean indicating if the organization is active
+    bool is_active?
+  
+    timestamp created_at?=now
+  
+    // URL to organization's logo image
+    text logo_light_url? filters=trim
+  
+    text logo_dark_url? filters=trim
+    text favicon_url? filters=trim
+    text heading_font? filters=trim
+    text body_font? filters=trim
+  
+    // Main brand color (hex code)
+    text primary_color? filters=trim
+  
+    // Secondary brand color (hex code)
+    text secondary_color? filters=trim
+  
+    // Accent color for highlights (hex code)
+    text accent_color? filters=trim
+  
+    text text_color? filters=trim
+    text background_color? filters=trim
+  
+    // Facebook page URL
+    text facebook_url? filters=trim
+  
+    // Instagram profile URL
+    text instagram_url? filters=trim
+  
+    // Twitter profile URL
+    text twitter_url? filters=trim
+  
+    // YouTube channel URL
+    text youtube_url? filters=trim
+  
+    // LinkedIn page URL
+    text linkedin_url? filters=trim
+  
+    // Main contact email address
+    text contact_email? filters=trim
+  
+    // Support/help email address
+    text support_email? filters=trim
+  
+    // Organization's email domain (e.g., @mbpr.org)
+    text email_domain? filters=trim
+  
+    // Organization's mission statement
+    text mission_statement? filters=trim
+  
+    // Year the organization was founded
+    int founded_year?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table pages {
+  auth = false
+
+  schema {
+    int id
+    int? org? {
+      table = "organizations"
+    }
+  
+    text path? filters=trim
+    text title? filters=trim
+    timestamp created_at?=now
+  
+    // Stores the content of the page, potentially in JSON format (GrapesJS export)
+    text content_json? filters=trim
+  
+    text key? filters=trim
+    text status? filters=trim
+    int sort_order?
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table site_config {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int? org? {
+      table = "organizations"
+    }
+  
+    // The name of the website
+    text orgName? filters=trim
+  
+    text slug? filters=trim
+    email email? filters=trim|lower
+    int phone?
+  
+    // URL for the site's logo image
+    text logoUrl? filters=trim
+  
+    // The mission statement for the organization's site
+    text mission_statement? filters=trim
+  
+    text tagline? filters=trim
+  
+    // The primary color used for the site's branding (e.g., hex code)
+    text primaryColor? filters=trim
+  
+    text secondaryColor? filters=trim
+    text fontHeading? filters=trim
+    text fontBody? filters=trim
+    text addressLine1? filters=trim
+    text addressLine2? filters=trim
+  
+    // Optional custom domain name for the site
+    text custom_domain? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table Templates {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+  
+    // Name of the template, e.g., 'Modern Rescue'
+    text name? filters=trim
+  
+    // A short summary of the template
+    text description? filters=trim
+  
+    // URL for a preview image of the template
+    text thumbnail_url? filters=trim
+  
+    // GrapesJS component JSON export for the template
+    text skeleton_json? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table site_content {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int? org? {
+      table = "organizations"
+    }
+  
+    // Name of the live website (e.g., 'Mission Bay Puppy Rescue')
+    text site_name? filters=trim
+  
+    // A short, catchy phrase describing the organization
+    text tagline? filters=trim
+  
+    // Phone number for the organization
+    text phone? filters=trim
+  
+    // Contact email address for the organization
+    text email? filters=trim
+  
+    // Operating hours in JSON format (e.g., { 'mon': '9–5' })
+    json hours_json?
+  
+    // URL for the organization's Facebook page
+    text facebook_url? filters=trim
+  
+    // URL for the organization's Instagram profile
+    text instagram_url? filters=trim
+  
+    // Link to the organization's donation page or campaign
+    text donation_link? filters=trim
+  
+    // Indicates if Petfinder integration is enabled for the live site
+    bool petfinder_enabled?
+  
+    // Indicates if Adopt-a-Pet integration is enabled for the live site
+    bool adoptapet_enabled?
+  
+    // Indicates if Givebutter integration is enabled
+    bool givebutter_enabled?
+  
+    // URL for the Givebutter campaign or profile
+    text givebutter_url? filters=trim
+  
+    // Indicates if Donorbox integration is enabled
+    bool donorbox_enabled?
+  
+    // URL for the Donorbox campaign or profile
+    text donorbox_url? filters=trim
+  
+    // Indicates if GoFundMe integration is enabled
+    bool gofundme_enabled?
+  
+    // URL for the GoFundMe campaign or profile
+    text gofundme_url? filters=trim
+  
+    // Indicates if Bloomerang integration is enabled
+    bool bloomerang_enabled?
+  
+    // Indicates if Petfundr integration is enabled
+    bool petfundr_enabled?
+  
+    // Indicates if Cuddly integration is enabled
+    bool cuddly_enabled?
+  
+    // Detailed mission statement for the organization
+    text mission_statement? filters=trim
+  
+    // First line of the physical address of the organization
+    text address_line1? filters=trim
+  
+    // Second line of the physical address of the organization
+    text address_line2? filters=trim
+  
+    // URL for the organization's Twitter profile
+    text twitter_url? filters=trim
+  
+    // URL for the organization's TikTok profile
+    text tiktok_url? filters=trim
+  
+    // Google Analytics tracking ID for the site
+    text google_analytics_id? filters=trim
+  
+    // Custom meta description for SEO and social sharing
+    text meta_description? filters=trim
+  
+    // Custom meta keywords for SEO
+    text meta_keywords? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table design_settings {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int? org? {
+      table = "organizations"
+    }
+  
+    // Name of the design template (e.g., 'BarkhausClassic', 'Minimal')
+    text template_name? filters=trim
+  
+    // Font family used for headings
+    text heading_font? filters=trim
+  
+    // Font family used for body text
+    text body_font? filters=trim
+  
+    // Google Fonts link for auto-filling font imports
+    text google_heading_font_link? filters=trim
+  
+    text google_body_font_link? filters=trim
+  
+    // Primary color of the design (HEX value)
+    text primary_color? filters=trim
+  
+    // Secondary color of the design (HEX value)
+    text secondary_color? filters=trim
+  
+    // Background color of the design (HEX value)
+    text background_color? filters=trim
+  
+    // Text/font color of the design (HEX value)
+    text font_color? filters=trim
+  
+    json enabled_sections?
+  
+    // Accent color of the design (HEX value)
+    text accent_color? filters=trim
+  
+    // Color for buttons in the design (HEX value)
+    text button_color? filters=trim
+  
+    // Color for links in the design (HEX value)
+    text link_color? filters=trim
+  
+    // Style type for the site's header (e.g., 'classic', 'minimal')
+    text header_style? filters=trim
+  
+    // Style type for the site's footer (e.g., 'simple', 'detailed')
+    text footer_style? filters=trim
+  
+    // URL for the site's main logo image
+    text logo_url? filters=trim
+  
+    // URL for the site's favicon image
+    text favicon_url? filters=trim
+  
+    // Custom CSS overrides for the design
+    text custom_css? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}table page_sections {
+  auth = false
+
+  schema {
+    int id
+    timestamp created_at?=now
+    int? org? {
+      table = "organizations"
+    }
+  
+    // Name of the section (e.g., 'hero', 'about', 'services')
+    text section_name? filters=trim
+  
+    // Indicates if the section is enabled/visible
+    bool is_enabled?
+  
+    // Order in which the section should appear on the page
+    int sort_order?
+  
+    // Flexible content structure for the section, typically JSON
+    json content_json?
+  
+    // Custom CSS overrides for this specific section
+    text custom_css? filters=trim
+  
+    // Styling preset or custom style identifier for the section
+    text section_style? filters=trim
+  }
+
+  index = [
+    {type: "primary", field: [{name: "id"}]}
+    {type: "gin", field: [{name: "xdo", op: "jsonb_path_op"}]}
+    {type: "btree", field: [{name: "created_at", op: "desc"}]}
+  ]
+}

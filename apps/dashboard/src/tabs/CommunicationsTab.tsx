@@ -1,34 +1,16 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import Modal from '../components/Modal';
 import StatusBadge from '../components/StatusBadge';
+import { fetchApplications, updateApplicationStatus } from '../lib/api';
+import type { Application } from '../lib/api';
 
 interface CommunicationsTabProps {
   orgId: number;
 }
 
-interface Submission {
-  id: number;
-  org_id: number;
-  form_type: 'contact' | 'waitlist' | string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
+type Submission = Application & {
   message?: string;
-  status: 'new' | 'read' | 'replied' | 'archived' | string;
-  admin_notes?: string;
-  created_at?: string;
-  [key: string]: unknown;
-}
-
-const SUBMISSIONS_BASE = 'https://xz6u-fpaz-praf.n7e.xano.io/api:0Mx5oX0z';
-const TOKEN = import.meta.env.VITE_XANO_ANIMALS_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
-
-const xanoSubmissions = axios.create({
-  baseURL: SUBMISSIONS_BASE,
-  headers: { Authorization: `Bearer ${TOKEN}` },
-});
+};
 
 const FORM_TYPES = ['', 'contact', 'waitlist'];
 const STATUSES = ['', 'new', 'read', 'replied', 'archived'];
@@ -53,13 +35,14 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
     setLoading(true);
     setError('');
     try {
-      const params: Record<string, string> = { org_id: String(orgId) };
-      if (filterType) params.form_type = filterType;
-      if (filterStatus) params.status = filterStatus;
-      const res = await xanoSubmissions.get<Submission[]>('/submissions', { params });
-      setSubmissions(Array.isArray(res.data) ? res.data : []);
+      const data = await fetchApplications({
+        org_id: orgId,
+        form_type: filterType || undefined,
+        status: filterStatus || undefined,
+      });
+      setSubmissions(data as Submission[]);
     } catch {
-      setError('Could not load submissions. Endpoint may not be live yet.');
+      setError('Could not load submissions.');
       setSubmissions([]);
     } finally {
       setLoading(false);
@@ -75,16 +58,15 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
   const openSubmission = (sub: Submission) => {
     setSelected(sub);
     setReplyText(sub.admin_notes ?? '');
-    setNewStatus(sub.status === 'new' ? 'read' : sub.status);
+    setNewStatus(sub.status === 'new' ? 'read' : (sub.status ?? 'read'));
     setSaveMsg('');
-    // mark as read if new
     if (sub.status === 'new') {
       void patchStatus(sub.id, 'read', sub.admin_notes ?? '');
     }
   };
 
   const patchStatus = async (id: number, status: string, notes: string) => {
-    await xanoSubmissions.patch(`/submissions/${id}`, { status, admin_notes: notes });
+    await updateApplicationStatus(id, status, notes);
   };
 
   const handleSave = async () => {
@@ -178,7 +160,6 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
               <p className="text-4xl mb-3">📭</p>
               <p className="font-serif font-semibold text-deep-taupe">Submissions Inbox</p>
               <p className="text-sm text-stone mt-1 max-w-sm mx-auto">{error}</p>
-              <p className="text-xs text-stone mt-2 font-mono">{SUBMISSIONS_BASE}/submissions</p>
             </div>
           )}
 
@@ -224,7 +205,7 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
                     <span className="text-stone text-xs">
                       {sub.created_at ? new Date(sub.created_at).toLocaleDateString() : '—'}
                     </span>
-                    <span><StatusBadge status={sub.status} /></span>
+                    <span><StatusBadge status={sub.status ?? ''} /></span>
                   </div>
                 ))}
               </div>
@@ -273,7 +254,7 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
               <div><span className="text-stone font-medium">Phone:</span><br /><span className="text-deep-taupe">{selected.phone ?? '—'}</span></div>
               <div><span className="text-stone font-medium">Form:</span><br /><span className="text-deep-taupe capitalize">{selected.form_type}</span></div>
               <div><span className="text-stone font-medium">Date:</span><br /><span className="text-deep-taupe">{selected.created_at ? new Date(selected.created_at).toLocaleString() : '—'}</span></div>
-              <div><span className="text-stone font-medium">Status:</span><br /><StatusBadge status={selected.status} /></div>
+              <div><span className="text-stone font-medium">Status:</span><br /><StatusBadge status={selected.status ?? ''} /></div>
             </div>
 
             {/* Message */}

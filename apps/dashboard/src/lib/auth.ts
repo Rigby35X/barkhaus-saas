@@ -3,8 +3,6 @@ import { ORGANIZATIONS, type OrgConfig } from './api';
 const STORAGE_KEY = 'barkhausAdminSession';
 export const TOKEN_KEY = 'barkhausAuthToken';
 
-const AUTH_API = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_XANO_AUTH_URL) ?? '';
-
 export interface Session {
   orgId: number;
   accessCode: string;
@@ -71,7 +69,7 @@ export async function initSession(): Promise<JwtSession | null> {
   const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return null;
   try {
-    const res = await fetch(`${AUTH_API}/api/auth/me`, {
+    const res = await fetch('/api/auth/me', {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
@@ -89,7 +87,7 @@ export async function initSession(): Promise<JwtSession | null> {
 
 /** Calls POST /api/auth/login, returns authToken or throws */
 export async function jwtLogin(email: string, password: string): Promise<string> {
-  const res = await fetch(`${AUTH_API}/api/auth/login`, {
+  const res = await fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),

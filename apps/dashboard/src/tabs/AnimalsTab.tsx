@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  fetchAnimals, fetchAnimalsOrg9, fetchAnimalById,
+  getAnimals, getAnimalById,
   createAnimal, updateAnimal, deleteAnimal,
   type Animal,
 } from '../lib/api';
@@ -28,7 +28,7 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
     setLoading(true);
     setError('');
     try {
-      const data = isMBPR ? await fetchAnimalsOrg9() : await fetchAnimals(orgId);
+      const data = await getAnimals(orgId);
       setAnimals(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load animals.');
@@ -74,7 +74,7 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
 
   const handleEdit = async (id: number) => {
     try {
-      const animal = await fetchAnimalById(id);
+      const animal = await getAnimalById(id);
       setEditingAnimal(animal);
       setModalOpen(true);
     } catch {

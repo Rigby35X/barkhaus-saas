@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '../components/Layout';
 import { useTenant } from '../hooks/useTenant';
-import { fetchAllWebsiteContent, updateWebsiteSection } from '../lib/xano';
+import { fetchWebsiteContent, updateWebsiteSection } from '../lib/api';
 
 const PAGES = ['homepage', 'about', 'contact', 'animals', 'donate', 'events'];
 const EDITABLE_FIELDS = ['headline', 'subheadline', 'body_text', 'button_text', 'button_link'];
@@ -17,7 +17,7 @@ export default function Content() {
 
   const { data: allSections = [], isLoading } = useQuery({
     queryKey: ['website-content', orgId],
-    queryFn: () => fetchAllWebsiteContent(orgId),
+    queryFn: () => fetchWebsiteContent(orgId),
     enabled: !!orgId,
   });
 

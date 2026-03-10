@@ -1,66 +1,5 @@
-import axios from 'axios';
+import { supabase } from './supabase';
 import { getCached, setCached } from './apiCache';
-
-// Duplicated here to avoid circular dependency with auth.ts
-const _TOKEN_KEY = 'barkhausAuthToken';
-const _ADMIN_SESSION_KEY = 'barkhausAdminSession';
-
-// ─── Xano clients ───────────────────────────────────────────────────────────
-
-const xanoAnimals = axios.create({
-  baseURL: import.meta.env.VITE_XANO_ANIMALS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:Od874PbA',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${import.meta.env.VITE_XANO_ANIMALS_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ'}`,
-  },
-});
-
-const xanoContent = axios.create({
-  baseURL: import.meta.env.VITE_XANO_CONTENT_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:MU8UozDK',
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${import.meta.env.VITE_XANO_CONTENT_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ'}`,
-  },
-});
-
-const xanoBase = axios.create({
-  headers: { 'Content-Type': 'application/json' },
-});
-
-// ─── Auth helpers ────────────────────────────────────────────────────────────
-
-/** Returns Authorization Bearer header if JWT token is present */
-export function getAuthHeaders(): Record<string, string> {
-  try {
-    const token = localStorage.getItem(_TOKEN_KEY);
-    if (token) return { Authorization: `Bearer ${token}` };
-  } catch {
-    // localStorage may not be available in SSR
-  }
-  return {};
-}
-
-/** 401 response interceptor — clears session tokens and redirects to login */
-function handle401(error: unknown): Promise<never> {
-  if (axios.isAxiosError(error) && error.response?.status === 401) {
-    try {
-      localStorage.removeItem(_TOKEN_KEY);
-      localStorage.removeItem(_ADMIN_SESSION_KEY);
-    } catch {
-      // ignore
-    }
-    window.location.href = 'https://barkhaus.io/login';
-  }
-  return Promise.reject(error);
-}
-
-// Attach auth headers and 401 handling to xanoBase
-xanoBase.interceptors.request.use((config) => {
-  const headers = getAuthHeaders();
-  Object.assign(config.headers, headers);
-  return config;
-});
-xanoBase.interceptors.response.use((r) => r, handle401);
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -89,6 +28,7 @@ export interface Animal {
   spayed_neutered?: boolean;
   vaccinated?: boolean;
   microchip?: boolean;
+  org_id?: number;
   // MBPR (org 9) fields
   mbpr_internal_id?: string;
   estimated_adoption_date?: string;
@@ -124,6 +64,7 @@ export interface OrgConfig {
   contact: { email: string; phone: string; address: string };
   social: { facebook: string; instagram: string; twitter: string };
   isAdmin?: boolean;
+  siteUrl?: string;
 }
 
 export interface WebsiteSection {
@@ -137,6 +78,34 @@ export interface WebsiteSection {
   button_url?: string;
   image_url?: string;
   [key: string]: unknown;
+}
+
+export interface Application {
+  id: number;
+  org_id: number;
+  form_type: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  status?: string;
+  admin_notes?: string;
+  created_at?: string;
+  form_data?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+// ─── Auth helpers ────────────────────────────────────────────────────────────
+
+/** Returns Authorization Bearer header if JWT token is present */
+export function getAuthHeaders(): Record<string, string> {
+  try {
+    const token = localStorage.getItem('barkhausAuthToken');
+    if (token) return { Authorization: `Bearer ${token}` };
+  } catch {
+    // localStorage may not be available in SSR
+  }
+  return {};
 }
 
 // ─── Org configs ─────────────────────────────────────────────────────────────
@@ -198,6 +167,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpr.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
     social: { facebook: 'https://facebook.com/missionbaypuppyrescue', instagram: 'https://instagram.com/missionbaypuppyrescue', twitter: '' },
+    siteUrl: 'https://missionbaypuppyrescue.org',
   },
   10: {
     name: 'MB Pups',
@@ -211,58 +181,64 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
 
 // ─── Animals ─────────────────────────────────────────────────────────────────
 
-/** For org 9 – hits PAWS Xano directly */
-export async function fetchAnimalsOrg9(status?: string): Promise<Animal[]> {
-  const cacheKey = `animals_org9_${status ?? 'all'}`;
+export async function getAnimals(orgId: number, status?: string): Promise<Animal[]> {
+  const cacheKey = `animals_org_${orgId}_${status ?? 'all'}`;
   const cached = getCached<Animal[]>(cacheKey);
   if (cached) return cached;
 
-  const q = new URLSearchParams({ org: '9' });
-  if (status) q.append('status', status);
-  const res = await xanoAnimals.get<Animal[] | { animals: Animal[] }>(`/dogs?${q}`);
-  const data = res.data;
-  const result = Array.isArray(data) ? data : data?.animals ?? [];
+  let query = supabase.from('animals').select('*').eq('org_id', orgId);
+  if (status) query = query.eq('status', status);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  const result = data ?? [];
   setCached(cacheKey, result);
   return result;
 }
 
-/** For other orgs – hits Xano orgs API */
+/** Backwards-compat alias */
 export async function fetchAnimals(orgId: number): Promise<Animal[]> {
-  if (orgId === 9) return fetchAnimalsOrg9();
-
-  const cacheKey = `animals_org_${orgId}`;
-  const cached = getCached<Animal[]>(cacheKey);
-  if (cached) return cached;
-
-  const url = `${import.meta.env.VITE_XANO_ANIMALS_URL}/animals?organization_id=${orgId}`;
-  const res = await xanoBase.get<Animal[]>(url);
-  const result = Array.isArray(res.data) ? res.data : [];
-  setCached(cacheKey, result);
-  return result;
+  return getAnimals(orgId);
 }
 
-export async function fetchAnimalById(id: number): Promise<Animal> {
-  const res = await xanoAnimals.get<Animal>(`/dogs/${id}`);
-  return res.data;
+export async function getAnimalById(id: number): Promise<Animal> {
+  const { data, error } = await supabase.from('animals').select('*').eq('id', id).single();
+  if (error) throw error;
+  return data;
 }
 
 export async function createAnimal(data: Partial<Animal>): Promise<Animal> {
-  const res = await xanoAnimals.post<Animal>('/dogs', data);
-  return res.data;
+  const { data: result, error } = await supabase.from('animals').insert(data).select().single();
+  if (error) throw error;
+  return result;
 }
 
 export async function updateAnimal(id: number, data: Partial<Animal>): Promise<Animal> {
-  const res = await xanoAnimals.patch<Animal>(`/dogs/${id}`, data);
-  return res.data;
+  const { data: result, error } = await supabase
+    .from('animals')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return result;
 }
 
-export async function deleteAnimal(id: number): Promise<void> {
-  await xanoAnimals.delete(`/dogs/${id}`);
+export async function deleteAnimal(id: number, orgId?: number): Promise<void> {
+  let query = supabase.from('animals').delete().eq('id', id);
+  if (orgId) query = query.eq('org_id', orgId);
+  const { error } = await query;
+  if (error) throw error;
 }
 
 export async function sendAnimalEmail(animalId: number, templateName: string): Promise<{ confirmation_message?: string }> {
-  const res = await xanoAnimals.post<{ confirmation_message?: string }>(`/dogs/${animalId}/send_email`, { template_name: templateName });
-  return res.data;
+  const res = await fetch(`/api/animals/${animalId}/send_email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ template_name: templateName }),
+  });
+  if (!res.ok) throw new Error('Email send failed');
+  return res.json() as Promise<{ confirmation_message?: string }>;
 }
 
 // ─── Image upload ─────────────────────────────────────────────────────────────
@@ -282,46 +258,143 @@ export async function uploadImage(file: File, orgId: number, section = 'animals'
 
 // ─── Website content ──────────────────────────────────────────────────────────
 
+export async function getWebsiteContent(orgId: number, pageSlug?: string): Promise<WebsiteSection[]> {
+  let query = supabase.from('website_content').select('*').eq('org_id', orgId);
+  if (pageSlug) query = query.eq('page_slug', pageSlug);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** Backwards-compat alias */
 export async function fetchWebsiteContent(orgId: number): Promise<WebsiteSection[]> {
-  const res = await xanoContent.get<WebsiteSection[]>(`/website_content/${orgId}?id=1`);
-  return Array.isArray(res.data) ? res.data : [];
+  return getWebsiteContent(orgId);
+}
+
+export async function saveWebsiteContentSection(
+  orgId: number,
+  pageSlug: string,
+  sectionKey: string,
+  content: Record<string, unknown>,
+): Promise<WebsiteSection> {
+  const { data, error } = await supabase
+    .from('website_content')
+    .upsert({ org_id: orgId, page_slug: pageSlug, section_key: sectionKey, ...content, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 export async function updateWebsiteSection(sectionId: number, content: Record<string, unknown>): Promise<WebsiteSection> {
-  const res = await xanoContent.patch<WebsiteSection>(`/website_content/${sectionId}`, {
-    ...content,
-    updated_at: new Date().toISOString(),
-  });
-  return res.data;
+  const { data, error } = await supabase
+    .from('website_content')
+    .update({ ...content, updated_at: new Date().toISOString() })
+    .eq('id', sectionId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 // ─── Organization ─────────────────────────────────────────────────────────────
 
-export async function fetchOrganizationById(orgId: number): Promise<Record<string, unknown> | null> {
-  try {
-    const url = `${import.meta.env.VITE_XANO_ORGANIZATIONS_URL}/organizations/${orgId}`;
-    const res = await xanoBase.get<Record<string, unknown>>(url);
-    return res.data;
-  } catch {
-    return null;
-  }
+export async function getOrganization(orgId: number): Promise<Record<string, unknown> | null> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('id', orgId)
+    .single();
+  if (error) return null;
+  return data;
 }
 
-// ─── Applications (form submissions) ─────────────────────────────────────────
+/** Backwards-compat alias */
+export async function fetchOrganizationById(orgId: number): Promise<Record<string, unknown> | null> {
+  return getOrganization(orgId);
+}
 
-export interface Application {
-  id: number;
-  org_id: number;
-  form_type: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  status?: string;
-  admin_notes?: string;
-  created_at?: string;
-  form_data?: Record<string, unknown>;
-  [key: string]: unknown;
+export async function updateOrganization(orgId: number, updates: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .update(updates)
+    .eq('id', orgId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchOrganizationBySlug(slug: string): Promise<Record<string, unknown> | null> {
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+  if (error) return null;
+  return data;
+}
+
+// ─── Branding ─────────────────────────────────────────────────────────────────
+
+export async function getBranding(orgId: number): Promise<Record<string, unknown> | null> {
+  const { data, error } = await supabase.from('branding').select('*').eq('org_id', orgId).single();
+  if (error) return null;
+  return data;
+}
+
+export async function saveBranding(orgId: number, updates: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase
+    .from('branding')
+    .upsert({ org_id: orgId, ...updates, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ─── Applications / Form Submissions ─────────────────────────────────────────
+
+export async function getApplications(orgId: number): Promise<Application[]> {
+  const { data, error } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('org_id', orgId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateApplication(id: number, updates: Partial<Application>): Promise<Application> {
+  const { data, error } = await supabase
+    .from('applications')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getFormSubmissions(orgId: number): Promise<Application[]> {
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .select('*')
+    .eq('org_id', orgId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function updateFormSubmission(id: number, updates: Partial<Application>): Promise<Application> {
+  const { data, error } = await supabase
+    .from('form_submissions')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 export async function fetchApplications(params: {
@@ -331,25 +404,20 @@ export async function fetchApplications(params: {
   limit?: number;
   offset?: number;
 }): Promise<Application[]> {
-  const baseUrl =
-    import.meta.env.VITE_XANO_FORM_SUBMISSIONS_URL ||
-    `${import.meta.env.VITE_XANO_BASE_URL}/form_submissions`;
-
-  const q = new URLSearchParams({ org_id: String(params.org_id) });
-  if (params.form_type) q.append('form_type', params.form_type);
-  if (params.status) q.append('status', params.status);
-  if (params.limit) q.append('limit', String(params.limit));
-  if (params.offset) q.append('offset', String(params.offset));
-
-  const res = await xanoBase.get<Application[]>(`${baseUrl}?${q}`);
-  return Array.isArray(res.data) ? res.data : [];
+  let query = supabase
+    .from('form_submissions')
+    .select('*')
+    .eq('org_id', params.org_id)
+    .order('created_at', { ascending: false });
+  if (params.form_type) query = query.eq('form_type', params.form_type);
+  if (params.status) query = query.eq('status', params.status);
+  if (params.limit) query = query.limit(params.limit);
+  if (params.offset && params.limit) query = query.range(params.offset, params.offset + params.limit - 1);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
 }
 
 export async function updateApplicationStatus(id: number, status: string, adminNotes?: string): Promise<Application> {
-  const baseUrl =
-    import.meta.env.VITE_XANO_FORM_SUBMISSIONS_URL ||
-    `${import.meta.env.VITE_XANO_BASE_URL}/form_submissions`;
-
-  const res = await xanoBase.patch<Application>(`${baseUrl}/${id}`, { status, admin_notes: adminNotes });
-  return res.data;
+  return updateFormSubmission(id, { status, admin_notes: adminNotes });
 }

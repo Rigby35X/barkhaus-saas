@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '../components/Layout';
 import { useTenant } from '../hooks/useTenant';
-import { fetchFormSubmissions, updateFormSubmissionStatus } from '../lib/xano';
+import { fetchApplications, updateApplicationStatus } from '../lib/api';
 
 type FormSubmission = {
   id: number;
@@ -29,7 +29,7 @@ export default function Communications() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['form_submissions', orgId, filterType, filterStatus],
-    queryFn: () => fetchFormSubmissions({
+    queryFn: () => fetchApplications({
       org_id: orgId,
       form_type: filterType === 'all' ? undefined : filterType,
       status: filterStatus === 'all' ? undefined : filterStatus,
@@ -40,14 +40,14 @@ export default function Communications() {
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status, notes }: { id: number; status: string; notes?: string }) =>
-      updateFormSubmissionStatus(id, status, notes),
+      updateApplicationStatus(id, status, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['form_submissions'] });
       setSelectedSubmission(null);
     },
   });
 
-  const submissions = data?.submissions || [];
+  const submissions = (data as unknown as FormSubmission[]) || [];
 
   if (tenantLoading || isLoading) {
     return <Layout><div>Loading submissions...</div></Layout>;

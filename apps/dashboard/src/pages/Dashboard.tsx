@@ -2,26 +2,19 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../components/Layout';
 import { useTenant } from '../hooks/useTenant';
-import { fetchPawsAnimals, fetchAnimalsByOrg } from '../lib/xano';
+import { getAnimals } from '../lib/api';
 
 export default function Dashboard() {
   const { tenantSlug } = useParams();
   const navigate = useNavigate();
   const { orgId, loading: tenantLoading } = useTenant();
-  const isOrg9 = orgId === 9;
-
   const { data: animalsData } = useQuery({
-    queryKey: isOrg9 ? ['paws-animals', orgId] : ['animals', orgId],
-    queryFn: () =>
-      isOrg9
-        ? fetchPawsAnimals({ org: orgId }).catch(() => ({ animals: [] }))
-        : fetchAnimalsByOrg(orgId).catch(() => []),
+    queryKey: ['animals', orgId],
+    queryFn: () => getAnimals(orgId).catch(() => []),
     enabled: !!orgId,
   });
 
-  const animals: any[] = isOrg9
-    ? (animalsData as any)?.animals || []
-    : (animalsData as any[]) || [];
+  const animals: any[] = (animalsData as any[]) || [];
 
   const totalAnimals = animals.length;
   const available = animals.filter(

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchAnimals, fetchAnimalsOrg9, type Animal } from '../lib/api';
+import { getAnimals, type Animal } from '../lib/api';
 import type { TabKey } from '../components/Sidebar';
 import StatusBadge from '../components/StatusBadge';
 
@@ -15,7 +15,7 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
   useEffect(() => {
     const load = async () => {
       try {
-        const data = orgId === 9 ? await fetchAnimalsOrg9() : await fetchAnimals(orgId);
+        const data = await getAnimals(orgId);
         setAnimals(data);
       } catch {
         setAnimals([]);

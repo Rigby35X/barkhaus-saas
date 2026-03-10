@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { fetchOrganizationBySlug } from '../lib/xano';
+import { fetchOrganizationBySlug } from '../lib/api';
 import type { TenantContext, Organization } from '../types';
 
 export const useTenant = (): TenantContext & { loading: boolean; error: string | null } => {
@@ -25,7 +25,7 @@ export const useTenant = (): TenantContext & { loading: boolean; error: string |
           return;
         }
 
-        const org: Organization = await fetchOrganizationBySlug(slug);
+        const org = await fetchOrganizationBySlug(slug) as Organization | null;
 
         if (org) {
           setTenant({ slug, orgId: org.id, organization: org });
@@ -40,7 +40,7 @@ export const useTenant = (): TenantContext & { loading: boolean; error: string |
         const pathParts = location.pathname.split('/').filter(Boolean);
         const slug = pathParts[0] || '';
         setTenant({ slug, orgId: 0, organization: null });
-        setError('Failed to load organization — Xano may be unavailable');
+        setError('Failed to load organization');
       } finally {
         setLoading(false);
       }

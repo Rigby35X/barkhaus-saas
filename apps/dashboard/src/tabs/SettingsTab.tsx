@@ -431,10 +431,8 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
             {activeSection === 'api' && (
               <div className="space-y-3 text-sm">
                 {[
-                  ['VITE_XANO_ANIMALS_URL', import.meta.env.VITE_XANO_ANIMALS_URL],
-                  ['VITE_XANO_CONTENT_URL', import.meta.env.VITE_XANO_CONTENT_URL],
-                  ['VITE_XANO_ORGANIZATIONS_URL', import.meta.env.VITE_XANO_ORGANIZATIONS_URL],
-                  ['VITE_XANO_BASE_URL', import.meta.env.VITE_XANO_BASE_URL],
+                  ['VITE_SUPABASE_URL', import.meta.env.VITE_SUPABASE_URL],
+                  ['VITE_SUPABASE_ANON_KEY', import.meta.env.VITE_SUPABASE_ANON_KEY],
                 ].map(([key, val]) => (
                   <div key={key} className="flex justify-between items-center bg-cloud rounded-xl px-4 py-3">
                     <span className="font-mono text-xs text-stone">{key}</span>

@@ -64,6 +64,16 @@ export default function Layout({ children, activeTab = 'overview', onTabChange, 
               <span className="text-xs text-stone hidden md:inline">
                 Org: <span className="font-semibold">{orgId || '—'}</span>
               </span>
+              {config.siteUrl && (
+                <a
+                  href={config.siteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-medium px-3 py-2 rounded-lg bg-warm-brown text-white hover:opacity-90 transition"
+                >
+                  View Website
+                </a>
+              )}
               {onLogout && (
                 <button
                   onClick={onLogout}

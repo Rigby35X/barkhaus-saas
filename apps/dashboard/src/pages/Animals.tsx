@@ -3,14 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '../components/Layout';
 import { useTenant } from '../hooks/useTenant';
 import {
-  fetchAnimalsByOrg,
-  fetchPawsAnimals,
-  fetchPawsAnimalById,
-  createPawsAnimal,
-  updatePawsAnimal,
-  deletePawsAnimal,
-  sendPawsEmail,
-} from '../lib/xano';
+  getAnimals,
+  getAnimalById,
+  createAnimal,
+  updateAnimal,
+  deleteAnimal,
+  sendAnimalEmail,
+} from '../lib/api';
 import MBPRPuppyForm from '../components/MBPRPuppyForm';
 import PawsAnimalList from '../components/PawsAnimalList';
 
@@ -26,21 +25,17 @@ export default function Animals() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  // Fetch animals - different endpoints based on org
+  // Fetch animals
   const { data: animalsData, isLoading } = useQuery({
-    queryKey: isOrg9 ? ['paws-animals', orgId, statusFilter] : ['animals', orgId],
-    queryFn: () =>
-      isOrg9
-        ? fetchPawsAnimals({ org: orgId, status: statusFilter || undefined })
-        : fetchAnimalsByOrg(orgId),
+    queryKey: ['animals', orgId, statusFilter],
+    queryFn: () => getAnimals(orgId, statusFilter || undefined),
     enabled: !!orgId,
   });
 
-  // PAWS mutations (Org 9 only)
   const createMutation = useMutation({
-    mutationFn: createPawsAnimal,
+    mutationFn: createAnimal,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['paws-animals'] });
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
       setIsFormOpen(false);
       setSelectedAnimal(null);
     },
@@ -48,24 +43,24 @@ export default function Animals() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
-      updatePawsAnimal(id, data),
+      updateAnimal(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['paws-animals'] });
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
       setIsFormOpen(false);
       setSelectedAnimal(null);
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deletePawsAnimal,
+    mutationFn: (id: number) => deleteAnimal(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['paws-animals'] });
+      queryClient.invalidateQueries({ queryKey: ['animals'] });
     },
   });
 
   const emailMutation = useMutation({
     mutationFn: ({ animalId, templateName }: { animalId: number; templateName: string }) =>
-      sendPawsEmail(animalId, templateName),
+      sendAnimalEmail(animalId, templateName),
   });
 
   // PAWS handlers (Org 9 only)
@@ -75,7 +70,7 @@ export default function Animals() {
   };
 
   const handleEditAnimal = async (id: number) => {
-    const animal = await fetchPawsAnimalById(id);
+    const animal = await getAnimalById(id);
     setSelectedAnimal(animal);
     setIsFormOpen(true);
   };
@@ -113,7 +108,7 @@ export default function Animals() {
 
   // For Org 9 - Show PAWS system with all 218 fields
   if (isOrg9) {
-    const animals = animalsData?.animals || [];
+    const animals = (animalsData as any[]) || [];
 
     return (
       <Layout>

@@ -2,14 +2,12 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Modal from '../components/Modal';
 import type { OrgConfig, Animal } from '../lib/api';
+import { getAnimals } from '../lib/api';
 
 interface SocialMediaTabProps {
   orgId: number;
   orgConfig: OrgConfig;
 }
-
-const XANO_BASE = import.meta.env.VITE_XANO_ANIMALS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:Od874PbA';
-const TOKEN = import.meta.env.VITE_XANO_ANIMALS_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
 
 const PLATFORMS = [
   { key: 'facebook',  label: 'Facebook',   specs: '1200 × 630 px' },
@@ -88,18 +86,7 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
   const [genError, setGenError] = useState('');
 
   useEffect(() => {
-    axios
-      .get<Animal[] | { items?: Animal[]; animals?: Animal[] }>(`${XANO_BASE}/dogs`, {
-        headers: { Authorization: `Bearer ${TOKEN}` },
-        params: { org: orgId, status: 'Available' },
-      })
-      .then((res) => {
-        const d = res.data;
-        if (Array.isArray(d)) setAnimals(d);
-        else if (d.items) setAnimals(d.items);
-        else if (d.animals) setAnimals(d.animals);
-      })
-      .catch(() => {});
+    getAnimals(orgId, 'Available').then(setAnimals).catch(() => {});
   }, [orgId]);
 
   const openTemplate = (t: typeof TEMPLATES[number]) => {
@@ -149,8 +136,7 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
             tone,
             context: customContext,
             org_name: orgConfig.name,
-          },
-          { headers: { Authorization: `Bearer ${TOKEN}` } }
+          }
         );
         const content = res.data.content ?? res.data.text ?? res.data.post ?? '';
         generated.push({ platform, content, copied: false, showSpecs: false });
