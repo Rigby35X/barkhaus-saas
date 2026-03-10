@@ -229,6 +229,7 @@ function App() {
         const orgId = 8;
         const orgConfig = ORGANIZATIONS[orgId] ?? Object.values(ORGANIZATIONS)[0];
         setSession({ orgId, orgConfig });
+        if (!isOnboardingComplete()) setShowOnboarding(true);
         return;
       }
 
@@ -236,12 +237,14 @@ function App() {
       const restored = restoreSession();
       if (restored) {
         setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
+        if (!isOnboardingComplete()) setShowOnboarding(true);
       }
     }).catch(() => {
       // If initSession throws, fall back to legacy
       const restored = restoreSession();
       if (restored) {
         setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
+        if (!isOnboardingComplete()) setShowOnboarding(true);
       }
     });
   }, []);
