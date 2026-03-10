@@ -49,6 +49,10 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
             <meta name="robots" content="index, follow">
             <link rel="canonical" href={`https://missionbaypuppyrescue.org${Astro.url.pathname}`}>
 
+            <!-- Performance: preconnect to key origins -->
+            <link rel="preconnect" href="https://xz6u-fpaz-praf.n7e.xano.io">
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
             <!-- If present, preloads the image passed as a prop -->
             {preloadedImage && <link rel="preload" href={preloadedImage.src} as="image" />}
 
@@ -102,7 +106,6 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
 
             <!-- Sitewide Scripts -->
             <script src="/src/js/nav.js"></script>
-            <script src="/src/js/paragon.js"></script>
             <script src="/src/js/auth.js"></script>
         </head>
         <body>

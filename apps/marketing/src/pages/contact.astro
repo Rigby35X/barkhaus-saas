@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Contact" description="Get in touch with the Barkhaus team.">
+  <Navbar currentPage="/contact" />
+
+  <div class="pt-28 pb-20 bg-cloud min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <div class="text-center mb-14">
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">Get in touch</h1>
+        <p class="text-lg text-stone max-w-2xl mx-auto">Our team is ready to help you transform your rescue operations and save more lives.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-10">
+
+        <!-- Contact info -->
+        <div class="space-y-6">
+          {[
+            { icon: '📧', label: 'Email', value: 'support@barkhaus.com', href: 'mailto:support@barkhaus.com' },
+            { icon: '📞', label: 'Phone', value: '+1 (888) BARK-HELP', href: 'tel:+18882275435' },
+            { icon: '📍', label: 'Office', value: '123 Rescue Lane, San Francisco, CA 94105', href: null },
+          ].map(({ icon, label, value, href }) => (
+            <div class="flex items-start gap-4 bg-white rounded-2xl border border-dove p-6">
+              <span class="text-2xl">{icon}</span>
+              <div>
+                <p class="text-xs font-semibold uppercase tracking-wider text-stone mb-1">{label}</p>
+                {href ? (
+                  <a href={href} class="font-semibold text-warm-brown hover:underline">{value}</a>
+                ) : (
+                  <p class="font-medium text-deep-taupe">{value}</p>
+                )}
+              </div>
+            </div>
+          ))}
+
+          <div class="bg-warm-brown/10 rounded-2xl border border-warm-brown/20 p-6">
+            <p class="text-sm font-semibold text-warm-brown mb-1">Looking to get early access?</p>
+            <p class="text-sm text-stone">
+              <a href="/waitlist" class="text-warm-brown hover:underline font-semibold">Join our waitlist</a> to be first in line when we launch.
+            </p>
+          </div>
+        </div>
+
+        <!-- Contact form -->
+        <div class="bg-white rounded-2xl border border-dove shadow-sm p-8">
+          <h2 class="font-serif text-xl font-semibold text-deep-taupe mb-6">Send us a message</h2>
+          <form class="space-y-5" id="contact-form">
+            <div class="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">First name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  required
+                  class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe"
+                  placeholder="Jane"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Last name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  required
+                  class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe"
+                  placeholder="Doe"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Email</label>
+              <input
+                type="email"
+                name="email"
+                required
+                class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe"
+                placeholder="jane@rescue.org"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Organization</label>
+              <input
+                type="text"
+                name="organization"
+                class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe"
+                placeholder="Happy Paws Rescue"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Message</label>
+              <textarea
+                name="message"
+                required
+                rows="4"
+                class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe resize-none"
+                placeholder="Tell us how we can help..."
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition"
+            >
+              Send message
+            </button>
+            <div id="form-success" class="hidden text-sm text-green-700 bg-green-50 rounded-xl px-4 py-3">
+              Thanks! We'll be in touch within 1 business day.
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  const success = document.getElementById('form-success')!;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // In production this would POST to a backend / form service
+    success.classList.remove('hidden');
+    form.reset();
+  });
+</script>

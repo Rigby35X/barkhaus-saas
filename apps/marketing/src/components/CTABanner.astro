@@ -1,0 +1,50 @@
+---
+export interface Props {
+  headline: string;
+  subtext?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  dark?: boolean;
+}
+
+const {
+  headline,
+  subtext,
+  primaryCta = { label: 'Get started free', href: '/waitlist' },
+  secondaryCta,
+  dark = true,
+} = Astro.props;
+---
+
+<section class={`py-20 ${dark ? 'bg-deep-taupe' : 'bg-dove'}`}>
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <h2 class={`font-serif text-3xl sm:text-4xl font-bold mb-4 ${dark ? 'text-white' : 'text-deep-taupe'}`}>
+      {headline}
+    </h2>
+    {subtext && (
+      <p class={`text-lg mb-8 max-w-2xl mx-auto ${dark ? 'text-dove/80' : 'text-stone'}`}>{subtext}</p>
+    )}
+    <div class="flex flex-wrap justify-center gap-4">
+      <a
+        href={primaryCta.href}
+        class={`px-7 py-3 rounded-xl font-semibold text-base transition ${
+          dark ? 'bg-warm-brown text-white hover:opacity-90' : 'bg-warm-brown text-white hover:opacity-90'
+        }`}
+      >
+        {primaryCta.label}
+      </a>
+      {secondaryCta && (
+        <a
+          href={secondaryCta.href}
+          class={`px-7 py-3 rounded-xl font-semibold text-base transition border-2 ${
+            dark
+              ? 'border-dove/40 text-dove hover:border-dove hover:text-white'
+              : 'border-stone text-deep-taupe hover:bg-cloud'
+          }`}
+        >
+          {secondaryCta.label}
+        </a>
+      )}
+    </div>
+  </div>
+</section>

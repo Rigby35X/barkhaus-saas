@@ -1,0 +1,258 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import FeatureCard from '../components/FeatureCard.astro';
+import TestimonialCard from '../components/TestimonialCard.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Footer from '../components/Footer.astro';
+
+const coreFeatures = [
+  {
+    icon: '🐾',
+    eyebrow: 'Animals',
+    title: 'Comprehensive animal management',
+    description: 'Track every animal from intake to forever home. Manage profiles, medical histories, photos, and adoption status in one place.',
+    href: '/features',
+  },
+  {
+    icon: '📋',
+    eyebrow: 'Applications',
+    title: 'Smart adoption applications',
+    description: 'Receive, review, and approve adoption, foster, and volunteer applications online — with a full audit trail.',
+    href: '/features',
+  },
+  {
+    icon: '🌐',
+    eyebrow: 'Website',
+    title: 'Instant public website',
+    description: 'Your animals go live on a beautiful public website the moment you add them. Edit all content from the dashboard — no code needed.',
+    href: '/features',
+  },
+  {
+    icon: '📣',
+    eyebrow: 'Marketing',
+    title: 'AI-powered social posts',
+    description: 'Generate compelling Instagram and Facebook captions in seconds. Choose tone, platform, and copy in one click.',
+    href: '/features',
+  },
+  {
+    icon: '💬',
+    eyebrow: 'Communications',
+    title: 'Inbox for inquiries',
+    description: 'All contact form submissions land in one clean inbox. Read, reply, and track every conversation with your community.',
+    href: '/features',
+  },
+  {
+    icon: '⚙️',
+    eyebrow: 'Settings',
+    title: 'Branded & customizable',
+    description: 'Set your logo, colors, fonts, and domain. Barkhaus wraps around your brand, not the other way around.',
+    href: '/features',
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Barkhaus has transformed our ability to match animals with loving homes faster than ever before. What used to take hours now takes minutes.",
+    name: 'Sarah Martinez',
+    role: 'Executive Director, Paws Hope Rescue',
+  },
+  {
+    quote: "The platform's intuitive design has cut our administrative work in half. Our volunteers love it too — onboarding new team members is a breeze.",
+    name: 'Michael Chen',
+    role: 'Operations Manager, Urban Animal Shelter',
+  },
+  {
+    quote: "We increased our adoption rates by 40% since implementing Barkhaus. The public website and social media tools have been game-changers.",
+    name: 'Elena Rodriguez',
+    role: 'Founder, Rescue Friends Network',
+  },
+];
+
+const howItWorks = [
+  {
+    step: '1',
+    title: 'Create your shelter profile',
+    description: 'Sign up, enter your org details, upload your logo, and set your brand colors. Takes under 5 minutes.',
+  },
+  {
+    step: '2',
+    title: 'Add your animals',
+    description: 'Import existing records via CSV or add animals one by one. Upload photos and set availability — they go live instantly.',
+  },
+  {
+    step: '3',
+    title: 'Share & connect',
+    description: 'Your public site is ready to share. Receive applications, generate social posts, and track every adoption from one dashboard.',
+  },
+];
+---
+
+<BaseLayout title="Rescue tech simplified" description="Streamline your shelter's operations, boost marketing, and connect more animals with loving homes.">
+  <Navbar currentPage="/" />
+
+  <!-- Hero -->
+  <Hero
+    headline="Rescue tech simplified"
+    subheadline="Streamline your shelter's operations, boost marketing efforts, and connect more animals with loving homes — all from one beautiful dashboard."
+    primaryCta={{ label: 'Get started free', href: '/waitlist' }}
+    secondaryCta={{ label: 'See the features', href: '#features' }}
+    imageSrc="/images/barkhaus_dog_and_bone.png"
+    imageAlt="Animal management dashboard"
+  />
+
+  <!-- Stats bar -->
+  <div class="bg-warm-brown text-white py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {[
+          { value: '500+', label: 'Animals helped' },
+          { value: '12', label: 'Rescue orgs' },
+          { value: '40%', label: 'Avg adoption increase' },
+          { value: '50%', label: 'Less admin time' },
+        ].map(({ value, label }) => (
+          <div>
+            <div class="text-3xl font-bold font-serif">{value}</div>
+            <div class="text-sm text-dove/80 mt-1">{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <!-- Features grid -->
+  <section id="features" class="py-20 bg-cloud">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">
+          Everything a rescue needs
+        </h2>
+        <p class="text-lg text-stone max-w-2xl mx-auto">
+          One platform to manage animals, applications, your website, marketing, and communications.
+        </p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {coreFeatures.map((f) => (
+          <FeatureCard {...f} linkLabel="Learn more" />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">
+          Get started in minutes
+        </h2>
+        <p class="text-lg text-stone">Three steps to transform your rescue operations</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-8">
+        {howItWorks.map(({ step, title, description }) => (
+          <div class="text-center">
+            <div class="w-12 h-12 rounded-full bg-warm-brown text-white font-bold text-xl font-serif flex items-center justify-center mx-auto mb-4">
+              {step}
+            </div>
+            <h3 class="font-serif text-lg font-semibold text-deep-taupe mb-2">{title}</h3>
+            <p class="text-sm text-stone leading-relaxed">{description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature split: Animal management -->
+  <section class="py-20 bg-cloud">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Animal Management</p>
+          <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">
+            Every animal's journey, tracked
+          </h2>
+          <p class="text-stone leading-relaxed mb-6">
+            From intake to adoption, manage detailed profiles, medical histories, photos, and foster assignments. Set availability and watch updates go live on your public site instantly.
+          </p>
+          <ul class="space-y-3 mb-8">
+            {['Detailed profiles with photos & medical history', 'Real-time status updates on your public site', 'MBPR & PAWS integration support', 'Bulk CSV import for existing records'].map((item) => (
+              <li class="flex items-start gap-2 text-sm text-stone">
+                <svg class="w-5 h-5 text-warm-brown flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <a href="/features" class="px-6 py-3 bg-warm-brown text-white rounded-xl text-sm font-semibold hover:opacity-90 transition inline-block">
+            Explore features
+          </a>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-0 bg-warm-brown/10 rounded-3xl transform -rotate-2"></div>
+          <img src="/images/barkhaus_dog_and_bone.png" alt="Animal management" class="relative rounded-3xl shadow-xl w-full" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature split: Adoption tracking -->
+  <section class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="order-2 lg:order-1 relative">
+          <div class="absolute inset-0 bg-warm-brown/10 rounded-3xl transform rotate-2"></div>
+          <img src="/images/barkhaus_dog_happy_family.png" alt="Adoption tracking" class="relative rounded-3xl shadow-xl w-full" />
+        </div>
+        <div class="order-1 lg:order-2">
+          <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Applications</p>
+          <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">
+            Adoption applications made easy
+          </h2>
+          <p class="text-stone leading-relaxed mb-6">
+            Receive applications online, review them from your inbox, and mark them approved, denied, or pending — all with admin notes. No paperwork, no email chaos.
+          </p>
+          <ul class="space-y-3 mb-8">
+            {['Adoption, foster & volunteer applications', 'Status tracking with admin notes', 'Filter by type, status, and date', 'Automated confirmation emails'].map((item) => (
+              <li class="flex items-start gap-2 text-sm text-stone">
+                <svg class="w-5 h-5 text-warm-brown flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <a href="/features" class="px-6 py-3 bg-warm-brown text-white rounded-xl text-sm font-semibold hover:opacity-90 transition inline-block">
+            See how it works
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="py-20 bg-cloud">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">Real stories</h2>
+        <p class="text-lg text-stone">Shelters changing lives with Barkhaus</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {testimonials.map((t) => (
+          <TestimonialCard {...t} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <CTABanner
+    headline="Ready to save more lives?"
+    subtext="Join the waitlist and be first to transform your rescue operations with Barkhaus."
+    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    secondaryCta={{ label: 'Contact us', href: '/contact' }}
+  />
+
+  <Footer />
+</BaseLayout>

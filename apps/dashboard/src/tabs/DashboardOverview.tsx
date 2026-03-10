@@ -52,7 +52,7 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
   return (
     <div className="space-y-6">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="stat-cards">
         {stats.map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-6 shadow-sm border border-silver-gray">
             <p className="text-sm font-medium text-gray-500">{s.label}</p>

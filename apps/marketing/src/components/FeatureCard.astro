@@ -1,0 +1,31 @@
+---
+export interface Props {
+  icon?: string;
+  eyebrow?: string;
+  title: string;
+  description: string;
+  href?: string;
+  linkLabel?: string;
+}
+
+const { icon, eyebrow, title, description, href, linkLabel = 'Learn more' } = Astro.props;
+---
+
+<div class="bg-white rounded-2xl border border-dove p-6 hover:shadow-md transition-shadow flex flex-col">
+  {icon && (
+    <div class="text-3xl mb-4">{icon}</div>
+  )}
+  {eyebrow && (
+    <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-2">{eyebrow}</p>
+  )}
+  <h3 class="font-serif text-xl font-semibold text-deep-taupe mb-3">{title}</h3>
+  <p class="text-sm text-stone leading-relaxed flex-1">{description}</p>
+  {href && (
+    <a href={href} class="mt-4 text-sm font-semibold text-warm-brown hover:underline inline-flex items-center gap-1">
+      {linkLabel}
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </a>
+  )}
+</div>

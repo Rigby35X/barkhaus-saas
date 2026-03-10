@@ -11,9 +11,10 @@ interface LayoutProps {
   orgConfig?: OrgConfig;
   onLogout?: () => void;
   onOrgSwitch?: (orgId: number) => void;
+  onRestartTour?: () => void;
 }
 
-export default function Layout({ children, activeTab = 'overview', onTabChange, orgId = 0, orgConfig, onLogout, onOrgSwitch }: LayoutProps) {
+export default function Layout({ children, activeTab = 'overview', onTabChange, orgId = 0, orgConfig, onLogout, onOrgSwitch, onRestartTour }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const config = orgConfig ?? ORGANIZATIONS[orgId] ?? {
@@ -86,6 +87,7 @@ export default function Layout({ children, activeTab = 'overview', onTabChange, 
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
             onOrgSwitch={onOrgSwitch}
+            onRestartTour={onRestartTour}
           />
         )}
 

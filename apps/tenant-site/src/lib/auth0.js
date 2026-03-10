@@ -1,4 +1,4 @@
-// lib/auth0.js - Simplified authentication for Paragon integration
+// lib/auth0.js - Simplified authentication
 
 // Simple authentication configuration
 const authConfig = {
@@ -9,7 +9,7 @@ const authConfig = {
   scope: 'openid profile email',
 };
 
-// Simplified auth functions for Paragon integration
+// Simplified auth functions
 export const auth0 = {
   // Generate login URL (simplified)
   getLoginUrl(returnTo = '/') {

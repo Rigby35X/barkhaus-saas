@@ -1,8 +1,6 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import AuthButton from "@components/AuthButton.astro";
-import MailchimpConnector from "@components/MailchimpConnector.astro";
-import MailchimpActions from "@components/MailchimpActions.astro";
 ---
 
 <BaseLayout
@@ -15,7 +13,7 @@ import MailchimpActions from "@components/MailchimpActions.astro";
         <!-- Page Header -->
         <div class="page-header">
           <div class="header-content">
-            <h1 class="cs-title">📧 Communications</h1>
+            <h1 class="cs-title">Communications</h1>
             <p class="page-description">
               Manage your email marketing campaigns, newsletters, and communication integrations.
             </p>
@@ -23,73 +21,39 @@ import MailchimpActions from "@components/MailchimpActions.astro";
           <AuthButton />
         </div>
 
-        <!-- Integration Tabs -->
+        <!-- Coming Soon Section -->
         <div class="integration-tabs">
-          <div class="tabs-header">
-            <button class="tab-button active" data-tab="mailchimp">
-              📧 Mailchimp
-            </button>
-            <button class="tab-button" data-tab="coming-soon">
-              🔜 More Integrations
-            </button>
-          </div>
+          <div class="coming-soon-section">
+            <h2>More Integrations Coming Soon</h2>
+            <p>We're working on adding more communication integrations to help you reach your audience effectively.</p>
 
-          <!-- Mailchimp Tab -->
-          <div id="tab-mailchimp" class="tab-content active">
-            <div class="integration-section">
-              <div class="integration-header">
-                <h2>📧 Mailchimp Integration</h2>
-                <p>Connect your Mailchimp account to manage email campaigns, subscriber lists, and automated workflows.</p>
+            <div class="upcoming-integrations">
+              <div class="upcoming-card">
+                <div class="upcoming-icon">📬</div>
+                <h3>Constant Contact</h3>
+                <p>Email marketing and automation platform</p>
+                <span class="status-badge">Coming Soon</span>
               </div>
 
-              <!-- Step 1: Connect Mailchimp Account -->
-              <div class="integration-step">
-                <h3>Step 1: Connect Your Account</h3>
-                <MailchimpConnector />
+              <div class="upcoming-card">
+                <div class="upcoming-icon">📱</div>
+                <h3>Twilio SMS</h3>
+                <p>SMS messaging and notifications</p>
+                <span class="status-badge">Coming Soon</span>
               </div>
 
-              <!-- Step 2: Manage Campaigns and Lists -->
-              <div class="integration-step">
-                <h3>Step 2: Manage Your Campaigns</h3>
-                <MailchimpActions />
+              <div class="upcoming-card">
+                <div class="upcoming-icon">📢</div>
+                <h3>Social Media</h3>
+                <p>Facebook, Instagram, and Twitter posting</p>
+                <span class="status-badge">Coming Soon</span>
               </div>
-            </div>
-          </div>
 
-          <!-- Coming Soon Tab -->
-          <div id="tab-coming-soon" class="tab-content">
-            <div class="coming-soon-section">
-              <h2>🚀 More Integrations Coming Soon</h2>
-              <p>We're working on adding more communication integrations to help you reach your audience effectively.</p>
-              
-              <div class="upcoming-integrations">
-                <div class="upcoming-card">
-                  <div class="upcoming-icon">📬</div>
-                  <h3>Constant Contact</h3>
-                  <p>Email marketing and automation platform</p>
-                  <span class="status-badge">Coming Soon</span>
-                </div>
-                
-                <div class="upcoming-card">
-                  <div class="upcoming-icon">📱</div>
-                  <h3>Twilio SMS</h3>
-                  <p>SMS messaging and notifications</p>
-                  <span class="status-badge">Coming Soon</span>
-                </div>
-                
-                <div class="upcoming-card">
-                  <div class="upcoming-icon">📢</div>
-                  <h3>Social Media</h3>
-                  <p>Facebook, Instagram, and Twitter posting</p>
-                  <span class="status-badge">Coming Soon</span>
-                </div>
-                
-                <div class="upcoming-card">
-                  <div class="upcoming-icon">📊</div>
-                  <h3>Analytics</h3>
-                  <p>Google Analytics and campaign tracking</p>
-                  <span class="status-badge">Coming Soon</span>
-                </div>
+              <div class="upcoming-card">
+                <div class="upcoming-icon">📊</div>
+                <h3>Analytics</h3>
+                <p>Google Analytics and campaign tracking</p>
+                <span class="status-badge">Coming Soon</span>
               </div>
             </div>
           </div>
@@ -97,22 +61,22 @@ import MailchimpActions from "@components/MailchimpActions.astro";
 
         <!-- Help Section -->
         <div class="help-section">
-          <h2>❓ Need Help?</h2>
+          <h2>Need Help?</h2>
           <div class="help-cards">
             <div class="help-card">
-              <h3>🔗 Setting Up Integrations</h3>
+              <h3>Setting Up Integrations</h3>
               <p>Learn how to connect your accounts and configure integrations for your organization.</p>
               <a href="#" class="help-link">View Guide</a>
             </div>
-            
+
             <div class="help-card">
-              <h3>📋 Best Practices</h3>
+              <h3>Best Practices</h3>
               <p>Tips and strategies for effective email marketing and donor communication.</p>
               <a href="#" class="help-link">Read More</a>
             </div>
-            
+
             <div class="help-card">
-              <h3>🛠️ Troubleshooting</h3>
+              <h3>Troubleshooting</h3>
               <p>Common issues and solutions for integration problems.</p>
               <a href="#" class="help-link">Get Help</a>
             </div>
@@ -174,77 +138,7 @@ import MailchimpActions from "@components/MailchimpActions.astro";
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     margin-bottom: 3rem;
-  }
-
-  .tabs-header {
-    display: flex;
-    border-bottom: 1px solid #e5e7eb;
-    background: #f9fafb;
-  }
-
-  .tab-button {
-    flex: 1;
-    padding: 1rem 1.5rem;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-weight: 500;
-    color: #6b7280;
-    transition: all 0.2s ease;
-    border-bottom: 3px solid transparent;
-  }
-
-  .tab-button.active {
-    color: var(--primary, #059669);
-    background: white;
-    border-bottom-color: var(--primary, #059669);
-  }
-
-  .tab-button:hover:not(.active) {
-    color: #374151;
-    background: #f3f4f6;
-  }
-
-  .tab-content {
-    display: none;
     padding: 2rem;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-
-  .integration-section {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .integration-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .integration-header h2 {
-    margin: 0 0 1rem 0;
-    color: #1f2937;
-  }
-
-  .integration-header p {
-    margin: 0;
-    color: #6b7280;
-    line-height: 1.6;
-  }
-
-  .integration-step {
-    margin-bottom: 3rem;
-  }
-
-  .integration-step h3 {
-    margin: 0 0 1.5rem 0;
-    color: #1f2937;
-    font-size: 1.25rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e5e7eb;
   }
 
   .coming-soon-section {
@@ -264,10 +158,22 @@ import MailchimpActions from "@components/MailchimpActions.astro";
 
   .upcoming-integrations {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     max-width: 800px;
     margin: 0 auto;
+  }
+
+  @media (max-width: 640px) {
+    .upcoming-integrations {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .upcoming-integrations {
+      grid-template-columns: 1fr;
+    }
   }
 
   .upcoming-card {
@@ -330,6 +236,15 @@ import MailchimpActions from "@components/MailchimpActions.astro";
     gap: 1.5rem;
   }
 
+  @media (max-width: 640px) {
+    .help-cards {
+      grid-template-columns: 1fr;
+    }
+    .cs-title {
+      font-size: 1.75rem;
+    }
+  }
+
   .help-card {
     padding: 1.5rem;
     border: 1px solid #e5e7eb;
@@ -361,29 +276,3 @@ import MailchimpActions from "@components/MailchimpActions.astro";
     text-decoration: underline;
   }
 </style>
-
-<script>
-  // Tab switching functionality
-  document.addEventListener('astro:page-load', () => {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    tabButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const targetTab = button.dataset.tab;
-
-        // Update button states
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-
-        // Update content visibility
-        tabContents.forEach(content => {
-          content.classList.remove('active');
-          if (content.id === `tab-${targetTab}`) {
-            content.classList.add('active');
-          }
-        });
-      });
-    });
-  });
-</script>

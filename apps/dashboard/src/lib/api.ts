@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCached, setCached } from './apiCache';
 
 // ─── Xano clients ───────────────────────────────────────────────────────────
 
@@ -153,7 +154,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   9: {
     name: 'Mission Bay Puppy Rescue',
-    accessCode: 'rangers789',
+    accessCode: 'mbpr2024',
     logo: '/assets/images/MBPR-Dark.png',
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpr.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
@@ -173,19 +174,32 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
 
 /** For org 9 – hits PAWS Xano directly */
 export async function fetchAnimalsOrg9(status?: string): Promise<Animal[]> {
+  const cacheKey = `animals_org9_${status ?? 'all'}`;
+  const cached = getCached<Animal[]>(cacheKey);
+  if (cached) return cached;
+
   const q = new URLSearchParams({ org: '9' });
   if (status) q.append('status', status);
   const res = await xanoAnimals.get<Animal[] | { animals: Animal[] }>(`/dogs?${q}`);
   const data = res.data;
-  return Array.isArray(data) ? data : data?.animals ?? [];
+  const result = Array.isArray(data) ? data : data?.animals ?? [];
+  setCached(cacheKey, result);
+  return result;
 }
 
 /** For other orgs – hits Xano orgs API */
 export async function fetchAnimals(orgId: number): Promise<Animal[]> {
   if (orgId === 9) return fetchAnimalsOrg9();
+
+  const cacheKey = `animals_org_${orgId}`;
+  const cached = getCached<Animal[]>(cacheKey);
+  if (cached) return cached;
+
   const url = `${import.meta.env.VITE_XANO_ANIMALS_URL}/animals?organization_id=${orgId}`;
   const res = await xanoBase.get<Animal[]>(url);
-  return Array.isArray(res.data) ? res.data : [];
+  const result = Array.isArray(res.data) ? res.data : [];
+  setCached(cacheKey, result);
+  return result;
 }
 
 export async function fetchAnimalById(id: number): Promise<Animal> {

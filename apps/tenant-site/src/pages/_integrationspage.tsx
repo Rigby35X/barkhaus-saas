@@ -44,7 +44,6 @@ export default function IntegrationsPage(){
   const cards = [
     { provider: 'google', title: 'Gmail', desc: 'Send replies, manage threads, label messages from Barkhaus.' },
     { provider: 'givebutter', title: 'Givebutter', desc: 'Sync donations into Barkhaus automatically.' },
-    { provider: 'mailchimp', title: 'Mailchimp', desc: 'Add subscribers and trigger welcome campaigns.' },
     { provider: 'klaviyo', title: 'Klaviyo', desc: 'Add profiles and post events for flows.' },
     { provider: 'brevo', title: 'Brevo', desc: 'Transactional emails & contact lists.' },
     { provider: 'canva', title: 'Canva', desc: 'Import brand assets into your Media tab.' },

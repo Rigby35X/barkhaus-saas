@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Join the Waitlist" description="Be first to get access to Barkhaus — rescue tech simplified.">
+  <Navbar />
+
+  <div class="min-h-screen pt-28 pb-20 bg-cloud flex items-start justify-center">
+    <div class="max-w-2xl w-full mx-auto px-4">
+
+      <div class="text-center mb-10">
+        <div class="text-5xl mb-4">🐾</div>
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">
+          Join the waitlist
+        </h1>
+        <p class="text-lg text-stone max-w-lg mx-auto">
+          Barkhaus is in early access. Sign up below to be first in line when we open the doors — and get an exclusive founder discount.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-dove shadow-sm p-8">
+        <form id="waitlist-form" class="space-y-5">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">First name *</label>
+              <input
+                type="text"
+                name="firstName"
+                required
+                class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                placeholder="Jane"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Last name *</label>
+              <input
+                type="text"
+                name="lastName"
+                required
+                class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                placeholder="Doe"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Email *</label>
+            <input
+              type="email"
+              name="email"
+              required
+              class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+              placeholder="jane@rescue.org"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Organization name</label>
+            <input
+              type="text"
+              name="organization"
+              class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+              placeholder="Happy Paws Rescue"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">How many animals do you rescue per year?</label>
+            <select
+              name="volume"
+              class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown text-deep-taupe bg-white"
+            >
+              <option value="">Select range</option>
+              <option>1–25</option>
+              <option>26–100</option>
+              <option>101–500</option>
+              <option>500+</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-stone uppercase tracking-wider mb-1.5">Biggest pain point today?</label>
+            <textarea
+              name="painPoint"
+              rows="3"
+              class="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown resize-none"
+              placeholder="Spreadsheets, email chaos, no public website…"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition text-base"
+          >
+            Secure my spot
+          </button>
+        </form>
+
+        <div id="waitlist-success" class="hidden text-center py-8">
+          <div class="text-4xl mb-4">🎉</div>
+          <h3 class="font-serif text-2xl font-semibold text-deep-taupe mb-2">You're on the list!</h3>
+          <p class="text-stone text-sm">We'll reach out as soon as early access opens. Watch your inbox.</p>
+          <a href="/" class="mt-6 inline-block text-sm text-warm-brown hover:underline">Back to home</a>
+        </div>
+      </div>
+
+      <!-- Perks -->
+      <div class="mt-8 grid sm:grid-cols-3 gap-4 text-center">
+        {[
+          { icon: '🎯', label: 'Founder pricing', sub: '50% off first year' },
+          { icon: '🚀', label: 'Early access', sub: 'Before public launch' },
+          { icon: '💬', label: 'Direct line', sub: 'Shape the product' },
+        ].map(({ icon, label, sub }) => (
+          <div class="bg-white rounded-xl border border-dove p-4">
+            <div class="text-2xl mb-1">{icon}</div>
+            <p class="text-sm font-semibold text-deep-taupe">{label}</p>
+            <p class="text-xs text-stone">{sub}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <Footer />
+</BaseLayout>
+
+<script>
+  const form = document.getElementById('waitlist-form') as HTMLFormElement;
+  const success = document.getElementById('waitlist-success')!;
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    form.classList.add('hidden');
+    success.classList.remove('hidden');
+  });
+</script>

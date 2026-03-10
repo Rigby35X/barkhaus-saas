@@ -122,9 +122,10 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onOrgSwitch?: (orgId: number) => void;
+  onRestartTour?: () => void;
 }
 
-export default function Sidebar({ activeTab, onTabChange, orgConfig, orgId, isOpen, onClose, onOrgSwitch }: SidebarProps) {
+export default function Sidebar({ activeTab, onTabChange, orgConfig, orgId, isOpen, onClose, onOrgSwitch, onRestartTour }: SidebarProps) {
   const [switcherOpen, setSwitcherOpen] = useState(false);
 
   const handleTabClick = (key: TabKey) => {
@@ -153,13 +154,13 @@ export default function Sidebar({ activeTab, onTabChange, orgConfig, orgId, isOp
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-16 left-0 z-40 w-64 h-[calc(100vh-4rem)] transition-transform lg:translate-x-0 lg:relative lg:top-0 lg:h-auto ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 transition-transform lg:static lg:translate-x-0 lg:w-64 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="h-full overflow-y-auto" style={{ backgroundColor: '#ffffff', borderRight: '1px solid #d8c8b6' }}>
           {/* Logo area */}
-          <div className="flex items-center justify-center px-4 py-6">
+          <div className="flex items-center justify-center px-4 py-6" data-tour="sidebar-header">
             {orgConfig.logo && !orgConfig.logo.endsWith('.svg') ? (
               <img src={orgConfig.logo} alt={orgConfig.name} className="h-12 w-auto object-contain" />
             ) : (
@@ -211,13 +212,14 @@ export default function Sidebar({ activeTab, onTabChange, orgConfig, orgId, isOp
           )}
 
           {/* Nav */}
-          <nav className="px-3 pb-4 space-y-1">
+          <nav className="px-3 pb-2 space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive = activeTab === item.key;
               return (
                 <button
                   key={item.key}
                   onClick={() => handleTabClick(item.key)}
+                  data-tour={`tab-${item.key}`}
                   className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-left ${
                     isActive ? 'text-warm-brown' : 'text-deep-taupe hover:bg-cloud'
                   }`}
@@ -229,6 +231,22 @@ export default function Sidebar({ activeTab, onTabChange, orgConfig, orgId, isOp
               );
             })}
           </nav>
+
+          {/* Tour Guide button */}
+          {onRestartTour && (
+            <div className="px-3 pb-4">
+              <button
+                onClick={onRestartTour}
+                data-tour="tour-guide-btn"
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-stone hover:text-deep-taupe hover:bg-cloud rounded-lg transition"
+              >
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Tour Guide
+              </button>
+            </div>
+          )}
         </div>
       </aside>
     </>

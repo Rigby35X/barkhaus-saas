@@ -158,7 +158,8 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
           )}
 
           {!loading && !error && filtered.length > 0 && (
-            <div className="rounded-xl border border-silver-gray overflow-hidden">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="rounded-xl border border-silver-gray overflow-hidden min-w-[600px] mx-4 sm:mx-0">
               <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 grid grid-cols-6 gap-3 text-xs font-semibold text-stone uppercase tracking-wider">
                 <span>Applicant</span>
                 <span>Email</span>
@@ -186,6 +187,7 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           )}
         </div>

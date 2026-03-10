@@ -1,0 +1,72 @@
+---
+export interface Props {
+  tier: string;
+  price: string;
+  period?: string;
+  description: string;
+  features: string[];
+  cta: string;
+  ctaHref?: string;
+  featured?: boolean;
+  badge?: string;
+}
+
+const {
+  tier,
+  price,
+  period = '/month',
+  description,
+  features,
+  cta,
+  ctaHref = '/waitlist',
+  featured = false,
+  badge,
+} = Astro.props;
+---
+
+<div class={`relative rounded-2xl p-8 flex flex-col ${
+  featured
+    ? 'bg-deep-taupe text-white shadow-2xl ring-2 ring-warm-brown scale-105'
+    : 'bg-white border border-dove shadow-sm'
+}`}>
+  {badge && (
+    <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+      <span class="bg-warm-brown text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+        {badge}
+      </span>
+    </div>
+  )}
+
+  <div class="mb-6">
+    <h3 class={`font-serif text-xl font-semibold mb-1 ${featured ? 'text-white' : 'text-deep-taupe'}`}>{tier}</h3>
+    <p class={`text-sm mb-4 ${featured ? 'text-dove/80' : 'text-stone'}`}>{description}</p>
+    <div class="flex items-end gap-1">
+      <span class={`text-4xl font-bold ${featured ? 'text-white' : 'text-deep-taupe'}`}>{price}</span>
+      {price !== 'Free' && price !== 'Custom' && (
+        <span class={`text-sm pb-1 ${featured ? 'text-dove/70' : 'text-stone'}`}>{period}</span>
+      )}
+    </div>
+  </div>
+
+  <ul class="space-y-3 mb-8 flex-1">
+    {features.map((f) => (
+      <li class="flex items-start gap-2 text-sm">
+        <svg class={`w-5 h-5 flex-shrink-0 mt-0.5 ${featured ? 'text-sand' : 'text-warm-brown'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        <span class={featured ? 'text-dove/90' : 'text-stone'}>{f}</span>
+      </li>
+    ))}
+  </ul>
+
+  <a
+    href={ctaHref}
+    class={`block text-center px-6 py-3 rounded-xl font-semibold text-sm transition ${
+      featured
+        ? 'bg-warm-brown text-white hover:opacity-90'
+        : 'bg-cloud text-deep-taupe border border-stone hover:bg-dove'
+    }`}
+  >
+    {cta}
+  </a>
+</div>

@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import PricingCard from '../components/PricingCard.astro';
+import FAQItem from '../components/FAQItem.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Footer from '../components/Footer.astro';
+
+const plans = [
+  {
+    tier: 'Starter',
+    price: 'Free',
+    description: 'Perfect for small rescues just getting started.',
+    features: [
+      'Up to 25 active animals',
+      'Public website',
+      'Online applications',
+      'Unified inbox',
+      'Basic analytics',
+      'Community support',
+    ],
+    cta: 'Get started free',
+    ctaHref: '/waitlist',
+  },
+  {
+    tier: 'Growth',
+    price: '$49',
+    description: 'For growing rescues that need more power.',
+    features: [
+      'Unlimited animals',
+      'AI social post generator',
+      'Custom domain',
+      'Events management',
+      'Donation tracking',
+      'Priority support',
+      'CSV bulk import',
+    ],
+    cta: 'Join waitlist',
+    ctaHref: '/waitlist',
+    featured: true,
+    badge: 'Most Popular',
+  },
+  {
+    tier: 'Pro',
+    price: '$99',
+    description: 'For large organizations and multi-location shelters.',
+    features: [
+      'Everything in Growth',
+      'Multi-org access',
+      'Advanced analytics',
+      'API access',
+      'Dedicated onboarding',
+      'Phone support',
+      'Custom integrations',
+    ],
+    cta: 'Contact us',
+    ctaHref: '/contact',
+  },
+];
+
+const faqs = [
+  {
+    question: 'Is there a free trial?',
+    answer: "Yes! The Starter plan is free forever for small rescues with up to 25 animals. No credit card required.",
+  },
+  {
+    question: 'Can I change plans at any time?',
+    answer: "Absolutely. You can upgrade or downgrade your plan at any time. Changes take effect at the start of your next billing cycle.",
+  },
+  {
+    question: 'What payment methods do you accept?',
+    answer: "We accept all major credit cards via Stripe. Annual billing is available at a 20% discount.",
+  },
+  {
+    question: 'Do you offer nonprofit discounts?',
+    answer: "Yes — registered nonprofits receive 30% off all paid plans. Contact us with your 501(c)(3) documentation.",
+  },
+  {
+    question: 'Is my data safe?',
+    answer: "Each organization has completely isolated data. We use encrypted connections and industry-standard security practices throughout.",
+  },
+  {
+    question: 'Can I import my existing animal records?',
+    answer: "Yes. All plans support CSV bulk import. Map your columns, preview the data, and import in seconds.",
+  },
+];
+---
+
+<BaseLayout title="Pricing" description="Simple, transparent pricing for animal rescue organizations of all sizes.">
+  <Navbar currentPage="/pricing" />
+
+  <!-- Header -->
+  <div class="pt-28 pb-16 bg-cloud text-center">
+    <div class="max-w-3xl mx-auto px-4">
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">Simple, honest pricing</h1>
+      <p class="text-lg text-stone">No surprise fees. No locked-in contracts. Start free, grow when you're ready.</p>
+    </div>
+  </div>
+
+  <!-- Plans -->
+  <section class="py-20 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-3 gap-8 items-start">
+        {plans.map((plan) => (
+          <PricingCard {...plan} />
+        ))}
+      </div>
+      <p class="text-center text-sm text-stone mt-8">
+        All plans include SSL, daily backups, and 99.9% uptime SLA.
+        <a href="/contact" class="text-warm-brown hover:underline ml-1">Have questions? Talk to us.</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="py-20 bg-cloud">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6">
+      <h2 class="font-serif text-3xl font-bold text-deep-taupe text-center mb-12">Frequently asked questions</h2>
+      <div class="bg-white rounded-2xl shadow-sm border border-dove divide-y divide-dove px-6">
+        {faqs.map((faq, i) => (
+          <FAQItem question={faq.question} answer={faq.answer} open={i === 0} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CTABanner
+    headline="Start saving lives today"
+    subtext="Join our waitlist for early access. Starter plan is free forever."
+    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    secondaryCta={{ label: 'Contact sales', href: '/contact' }}
+  />
+
+  <Footer />
+</BaseLayout>

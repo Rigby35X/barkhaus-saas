@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Footer from '../components/Footer.astro';
+
+const values = [
+  {
+    icon: '🐾',
+    title: 'Animals first',
+    description: 'Every product decision starts with one question: does this help more animals find loving homes?',
+  },
+  {
+    icon: '🛠️',
+    title: 'Built for rescuers',
+    description: 'We work with real rescue organizations to build tools that solve real problems — not imagined ones.',
+  },
+  {
+    icon: '💚',
+    title: 'Accessible & affordable',
+    description: 'Nonprofits and small rescues deserve great software too. We keep pricing fair and offer a free tier.',
+  },
+  {
+    icon: '🔒',
+    title: 'Private & secure',
+    description: 'Your data — animals, donors, adopters — is yours. We isolate every organization and encrypt everything.',
+  },
+];
+---
+
+<BaseLayout title="About" description="We built Barkhaus because rescue organizations deserve better software.">
+  <Navbar currentPage="/about" />
+
+  <!-- Header -->
+  <div class="pt-28 pb-16 bg-cloud">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-6">
+        Built by animal lovers, for animal rescuers
+      </h1>
+      <p class="text-lg text-stone max-w-2xl mx-auto leading-relaxed">
+        We started Barkhaus because we watched incredible rescue organizations struggle with spreadsheets, email chains, and clunky legacy tools. They deserved better.
+      </p>
+    </div>
+  </div>
+
+  <!-- Story -->
+  <section class="py-20 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">Our story</h2>
+          <p class="text-stone leading-relaxed mb-4">
+            Barkhaus was founded after spending time volunteering with local rescue organizations. We saw first-hand how much time went into paperwork, social media, website updates, and application management — time that could be spent caring for animals.
+          </p>
+          <p class="text-stone leading-relaxed mb-4">
+            We built the platform we wish existed: one that handles all the operational complexity of running a rescue, so your team can focus on what matters most.
+          </p>
+          <p class="text-stone leading-relaxed">
+            Today, Barkhaus powers rescue organizations across the country — from small foster networks to large municipal shelters — helping them move faster, reach more adopters, and save more lives.
+          </p>
+        </div>
+        <div class="relative">
+          <div class="absolute inset-0 bg-warm-brown/10 rounded-3xl transform rotate-2"></div>
+          <img src="/images/barkhaus_dog_and_vet.png" alt="Our mission" class="relative rounded-3xl shadow-xl w-full" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="py-20 bg-cloud">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="font-serif text-3xl font-bold text-deep-taupe text-center mb-12">What we stand for</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {values.map(({ icon, title, description }) => (
+          <div class="bg-white rounded-2xl border border-dove p-6 text-center">
+            <div class="text-3xl mb-4">{icon}</div>
+            <h3 class="font-serif text-lg font-semibold text-deep-taupe mb-2">{title}</h3>
+            <p class="text-sm text-stone leading-relaxed">{description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission statement -->
+  <section class="py-20 bg-white">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+      <blockquote class="font-serif text-2xl sm:text-3xl font-semibold text-deep-taupe leading-relaxed">
+        "Every animal deserves a second chance. Every rescue deserves the tools to make it happen."
+      </blockquote>
+      <p class="mt-6 text-stone text-sm">— The Barkhaus Team</p>
+    </div>
+  </section>
+
+  <CTABanner
+    headline="Join us in saving more lives"
+    subtext="Get early access to Barkhaus and see what your rescue can accomplish."
+    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    secondaryCta={{ label: 'Contact us', href: '/contact' }}
+  />
+
+  <Footer />
+</BaseLayout>

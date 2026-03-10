@@ -1,0 +1,106 @@
+---
+export interface Props {
+  currentPage?: string;
+}
+const { currentPage = '' } = Astro.props;
+
+const links = [
+  { href: '/features', label: 'Features' },
+  { href: '/pricing',  label: 'Pricing' },
+  { href: '/about',    label: 'About' },
+  { href: '/contact',  label: 'Contact' },
+];
+---
+
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white/90 backdrop-blur border-b border-transparent" data-navbar>
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2 font-serif font-bold text-xl text-deep-taupe hover:text-warm-brown transition-colors">
+        🐾 Barkhaus
+      </a>
+
+      <!-- Desktop nav -->
+      <div class="hidden md:flex items-center gap-6">
+        {links.map(({ href, label }) => (
+          <a
+            href={href}
+            class={`text-sm font-medium transition-colors hover:text-warm-brown ${
+              currentPage === href ? 'text-warm-brown' : 'text-deep-taupe'
+            }`}
+          >
+            {label}
+          </a>
+        ))}
+        <a href="/waitlist" class="ml-2 px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition">
+          Get started
+        </a>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button
+        id="mobile-menu-btn"
+        class="md:hidden p-2 rounded-lg text-deep-taupe hover:bg-cloud transition"
+        aria-label="Open menu"
+        aria-expanded="false"
+      >
+        <svg id="icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        <svg id="icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-cloud bg-white">
+    <div class="px-4 py-4 space-y-1">
+      {links.map(({ href, label }) => (
+        <a
+          href={href}
+          class={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-cloud hover:text-warm-brown ${
+            currentPage === href ? 'text-warm-brown bg-dove' : 'text-deep-taupe'
+          }`}
+        >
+          {label}
+        </a>
+      ))}
+      <a href="/waitlist" class="block mt-2 px-3 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl text-center">
+        Get started
+      </a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // Transparent → solid scroll effect
+  const navbar = document.querySelector('[data-navbar]') as HTMLElement;
+  const updateNavbar = () => {
+    if (window.scrollY > 40) {
+      navbar.classList.add('shadow-sm', 'border-cloud');
+      navbar.classList.remove('border-transparent');
+    } else {
+      navbar.classList.remove('shadow-sm', 'border-cloud');
+      navbar.classList.add('border-transparent');
+    }
+  };
+  window.addEventListener('scroll', updateNavbar, { passive: true });
+  updateNavbar();
+
+  // Mobile toggle
+  const btn = document.getElementById('mobile-menu-btn')!;
+  const menu = document.getElementById('mobile-menu')!;
+  const iconOpen = document.getElementById('icon-open')!;
+  const iconClose = document.getElementById('icon-close')!;
+
+  btn.addEventListener('click', () => {
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden', isOpen);
+    iconOpen.classList.toggle('hidden', !isOpen);
+    iconClose.classList.toggle('hidden', isOpen);
+    btn.setAttribute('aria-expanded', String(!isOpen));
+  });
+</script>

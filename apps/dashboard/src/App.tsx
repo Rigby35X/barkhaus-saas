@@ -1,29 +1,39 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, lazy, Suspense, type FormEvent } from 'react';
 import { validateLogin, saveSession, clearSession, restoreSession } from './lib/auth';
 import { ORGANIZATIONS, type OrgConfig } from './lib/api';
 import Layout from './components/Layout';
+import Onboarding from './components/Onboarding';
+import { isOnboardingComplete, resetOnboarding } from './lib/onboarding';
 import type { TabKey } from './components/Sidebar';
 
-// Tabs
-import DashboardOverview from './tabs/DashboardOverview';
-import AnimalsTab from './tabs/AnimalsTab';
-import ApplicationsTab from './tabs/ApplicationsTab';
-import WebsiteContentTab from './tabs/WebsiteContentTab';
-import SettingsTab from './tabs/SettingsTab';
-import CommunicationsTab from './tabs/CommunicationsTab';
-import SocialMediaTab from './tabs/SocialMediaTab';
-import EventsTab from './tabs/EventsTab';
-import DonationsTab from './tabs/DonationsTab';
-import IntegrationsTab from './tabs/IntegrationsTab';
+// Lazy-loaded tabs
+const DashboardOverview = lazy(() => import('./tabs/DashboardOverview'));
+const AnimalsTab = lazy(() => import('./tabs/AnimalsTab'));
+const ApplicationsTab = lazy(() => import('./tabs/ApplicationsTab'));
+const WebsiteContentTab = lazy(() => import('./tabs/WebsiteContentTab'));
+const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
+const CommunicationsTab = lazy(() => import('./tabs/CommunicationsTab'));
+const SocialMediaTab = lazy(() => import('./tabs/SocialMediaTab'));
+const EventsTab = lazy(() => import('./tabs/EventsTab'));
+const DonationsTab = lazy(() => import('./tabs/DonationsTab'));
+const IntegrationsTab = lazy(() => import('./tabs/IntegrationsTab'));
 
 interface Session {
   orgId: number;
   orgConfig: OrgConfig;
 }
 
+function TabSpinner() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="w-8 h-8 border-4 border-silver-gray border-t-warm-brown rounded-full animate-spin" />
+    </div>
+  );
+}
+
 function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
   const [orgIdInput, setOrgIdInput] = useState('9');
-  const [accessCode, setAccessCode] = useState('rangers789');
+  const [accessCode, setAccessCode] = useState('mbpr2024');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -102,19 +112,34 @@ function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const restored = restoreSession();
     if (restored) {
       setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
+      // Don't auto-start tour for restored sessions
     }
   }, []);
 
-  const handleLogin = (s: Session) => setSession(s);
+  const handleLogin = (s: Session) => {
+    setSession(s);
+    // Auto-start tour on first-ever login
+    if (!isOnboardingComplete()) {
+      setShowOnboarding(true);
+    }
+  };
 
   const handleLogout = () => {
     clearSession();
     setSession(null);
+    setShowOnboarding(false);
+  };
+
+  const handleRestartTour = () => {
+    resetOnboarding();
+    setActiveTab('overview');
+    setShowOnboarding(true);
   };
 
   const handleOrgSwitch = (newOrgId: number) => {
@@ -158,16 +183,28 @@ function App() {
   };
 
   return (
-    <Layout
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-      orgId={session.orgId}
-      orgConfig={session.orgConfig}
-      onLogout={handleLogout}
-      onOrgSwitch={session.orgConfig.isAdmin ? handleOrgSwitch : undefined}
-    >
-      {tabContent()}
-    </Layout>
+    <>
+      <Layout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        orgId={session.orgId}
+        orgConfig={session.orgConfig}
+        onLogout={handleLogout}
+        onOrgSwitch={session.orgConfig.isAdmin ? handleOrgSwitch : undefined}
+        onRestartTour={handleRestartTour}
+      >
+        <Suspense fallback={<TabSpinner />}>
+          {tabContent()}
+        </Suspense>
+      </Layout>
+
+      {showOnboarding && (
+        <Onboarding
+          onComplete={() => setShowOnboarding(false)}
+          onNavigateTab={setActiveTab}
+        />
+      )}
+    </>
   );
 }
 

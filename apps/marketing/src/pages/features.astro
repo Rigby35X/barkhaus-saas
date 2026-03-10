@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import FeatureCard from '../components/FeatureCard.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Footer from '../components/Footer.astro';
+
+const features = [
+  {
+    icon: '🐾',
+    eyebrow: 'Animals',
+    title: 'Animal profiles & tracking',
+    description: 'Create rich profiles with photos, medical history, breed info, and behavioral notes. Track every animal from intake through adoption.',
+  },
+  {
+    icon: '📋',
+    eyebrow: 'Applications',
+    title: 'Online application management',
+    description: 'Receive adoption, foster, and volunteer applications directly through your public site. Review and update status with one click.',
+  },
+  {
+    icon: '🌐',
+    eyebrow: 'Website',
+    title: 'Instant public website',
+    description: 'Your branded public site goes live the moment you create your account. Edit hero text, about sections, FAQs, and more — no code.',
+  },
+  {
+    icon: '📣',
+    eyebrow: 'Social Media',
+    title: 'AI social post generator',
+    description: 'Generate platform-optimized captions for Instagram, Facebook, and Twitter in seconds. Choose your tone and copy in one click.',
+  },
+  {
+    icon: '💬',
+    eyebrow: 'Communications',
+    title: 'Unified inbox',
+    description: 'All contact form submissions land in one inbox. Read, reply, and track conversations with your community from the dashboard.',
+  },
+  {
+    icon: '🎨',
+    eyebrow: 'Branding',
+    title: 'Full brand customization',
+    description: 'Set your logo, primary colors, fonts, and domain. Your dashboard and public site reflect your brand — not ours.',
+  },
+  {
+    icon: '📊',
+    eyebrow: 'Overview',
+    title: 'Dashboard analytics',
+    description: 'See real-time stats: total animals, pending applications, recent activity. Make data-driven decisions at a glance.',
+  },
+  {
+    icon: '📅',
+    eyebrow: 'Events',
+    title: 'Events management',
+    description: 'Create adoption events, fundraisers, and volunteer drives. Publish them to your public site and track RSVPs.',
+  },
+  {
+    icon: '💰',
+    eyebrow: 'Donations',
+    title: 'Donation tracking',
+    description: 'Log and track donations, generate receipts, and see your fundraising progress — all in one place.',
+  },
+  {
+    icon: '📁',
+    eyebrow: 'Import',
+    title: 'CSV bulk import',
+    description: "Already have animal records? Import them via CSV in seconds. Map fields, preview the import, and confirm.",
+  },
+  {
+    icon: '🔒',
+    eyebrow: 'Security',
+    title: 'Secure org access',
+    description: 'Each organization gets isolated data and secure access codes. No shared databases, no data leaks.',
+  },
+  {
+    icon: '🔌',
+    eyebrow: 'Integrations',
+    title: 'Integrations (coming soon)',
+    description: 'Stripe donations, Petfinder listings, and more are coming in future releases.',
+  },
+];
+---
+
+<BaseLayout title="Features" description="Everything a rescue org needs — animals, applications, website, marketing, and more.">
+  <Navbar currentPage="/features" />
+
+  <Hero
+    headline="Every tool your rescue needs"
+    subheadline="From animal intake to adoption day — manage your entire operation from one beautiful, easy-to-use dashboard."
+    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
+  />
+
+  <section class="py-20 bg-cloud">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {features.map((f) => (
+          <FeatureCard {...f} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CTABanner
+    headline="Ready to simplify your rescue?"
+    subtext="Join the waitlist today and get early access to Barkhaus."
+    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
+  />
+
+  <Footer />
+</BaseLayout>

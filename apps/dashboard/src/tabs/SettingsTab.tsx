@@ -7,7 +7,7 @@ interface SettingsTabProps {
 }
 
 const FONT_OPTIONS = ['Noto Serif Display', 'Poppins', 'Inter', 'Playfair Display', 'Merriweather', 'Lato', 'Open Sans', 'Raleway'];
-const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Mailchimp', 'Custom SMTP'];
+const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Custom SMTP'];
 const DOMAIN_PROVIDERS = ['None', 'GoDaddy', 'Namecheap', 'Google Domains', 'Cloudflare', 'Other'];
 const SECURITY_OPTIONS = ['TLS', 'SSL', 'None'];
 
@@ -161,7 +161,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
         <div className="flex flex-col md:flex-row" style={{ minHeight: 560 }}>
           {/* Section nav */}
-          <nav className="w-full md:w-48 border-b md:border-b-0 md:border-r border-silver-gray p-3 space-y-1 flex-shrink-0">
+          <nav className="w-full md:w-48 border-b md:border-b-0 md:border-r border-silver-gray p-3 flex-shrink-0 flex md:flex-col overflow-x-auto gap-1 md:space-y-1">
             {SECTIONS.map((s) => (
               <button
                 key={s.key}

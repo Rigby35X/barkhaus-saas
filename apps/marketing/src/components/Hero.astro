@@ -1,0 +1,57 @@
+---
+export interface Props {
+  headline: string;
+  subheadline: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  imageSrc?: string;
+  imageAlt?: string;
+}
+
+const {
+  headline,
+  subheadline,
+  primaryCta = { label: 'Get started', href: '/waitlist' },
+  secondaryCta = { label: 'Learn more', href: '#features' },
+  imageSrc,
+  imageAlt = '',
+} = Astro.props;
+---
+
+<section class="pt-32 pb-20 bg-gradient-to-br from-cloud via-white to-dove overflow-hidden">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class={`grid gap-12 items-center ${imageSrc ? 'lg:grid-cols-2' : ''}`}>
+
+      <!-- Text -->
+      <div class={imageSrc ? '' : 'max-w-3xl mx-auto text-center'}>
+        <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-deep-taupe leading-tight mb-6">
+          {headline}
+        </h1>
+        <p class="text-lg sm:text-xl text-stone leading-relaxed mb-8 max-w-2xl">
+          {subheadline}
+        </p>
+        <div class="flex flex-wrap gap-4 justify-start">
+          <a href={primaryCta.href} class="px-7 py-3 text-base font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition shadow-lg">
+            {primaryCta.label}
+          </a>
+          <a href={secondaryCta.href} class="px-7 py-3 text-base font-semibold border-2 border-stone text-deep-taupe rounded-xl hover:bg-cloud transition">
+            {secondaryCta.label}
+          </a>
+        </div>
+      </div>
+
+      <!-- Image -->
+      {imageSrc && (
+        <div class="relative">
+          <div class="absolute inset-0 bg-warm-brown/10 rounded-3xl transform rotate-3"></div>
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            class="relative rounded-3xl shadow-2xl w-full object-cover"
+            loading="eager"
+          />
+        </div>
+      )}
+    </div>
+  </div>
+</section>

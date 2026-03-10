@@ -195,6 +195,7 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
 
           {/* Table */}
           {!loading && !error && submissions.length > 0 && (
+            <div className="overflow-x-auto">
             <div className="rounded-xl border border-silver-gray overflow-hidden">
               <div className="hidden sm:grid grid-cols-5 gap-3 bg-gray-50 border-b border-silver-gray px-4 py-3 text-xs font-semibold text-stone uppercase tracking-wider">
                 <span>From</span>
@@ -227,6 +228,7 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
                   </div>
                 ))}
               </div>
+            </div>
             </div>
           )}
         </div>

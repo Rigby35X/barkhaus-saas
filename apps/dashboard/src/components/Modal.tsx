@@ -26,24 +26,24 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
   if (!isOpen) return null;
 
   const sizeClass = {
-    sm: 'max-w-sm',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
+    sm: 'sm:max-w-sm',
+    md: 'sm:max-w-lg',
+    lg: 'sm:max-w-2xl',
+    xl: 'sm:max-w-4xl',
   }[size];
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className={`bg-white rounded-2xl shadow-2xl w-full ${sizeClass} max-h-[90vh] flex flex-col`}
+        className={`bg-white w-full ${sizeClass} flex flex-col max-h-[95vh] sm:max-h-[90vh] rounded-t-2xl sm:rounded-2xl shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-silver-gray flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-silver-gray flex-shrink-0">
           <h2 className="text-lg font-serif font-semibold text-deep-taupe">{title}</h2>
           <button
             onClick={onClose}
@@ -60,11 +60,11 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-silver-gray flex justify-end gap-3 flex-shrink-0">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-silver-gray flex justify-end gap-3 flex-shrink-0 sticky bottom-0 bg-white sm:relative">
             {footer}
           </div>
         )}

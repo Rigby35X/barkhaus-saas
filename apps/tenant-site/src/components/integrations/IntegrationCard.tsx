@@ -1,7 +1,7 @@
 import React from "react";
 
 type Props = {
-  provider: 'google'|'mailchimp'|'klaviyo'|'brevo'|'givebutter'|'canva'|'petfinder';
+  provider: 'google'|'klaviyo'|'brevo'|'givebutter'|'canva'|'petfinder';
   title: string;
   description: string;
   status?: 'connected'|'disconnected'|'error';

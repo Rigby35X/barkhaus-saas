@@ -1,4 +1,4 @@
-// API endpoint to get Auth0 token for use as Paragon user token
+// API endpoint to get Auth0 user token
 import { auth0 } from '../../../lib/auth0.js';
 
 export async function GET(request) {
@@ -12,7 +12,7 @@ export async function GET(request) {
       });
     }
 
-    // Return the Auth0 access token to use as Paragon user token
+    // Return the Auth0 access token
     const userToken = session.accessToken || session.idToken || session.user.sub;
     
     if (!userToken) {

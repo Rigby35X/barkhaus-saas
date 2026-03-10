@@ -118,6 +118,7 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
             </div>
             <button
               onClick={handleAdd}
+              data-tour="add-animal-btn"
               className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold bg-warm-brown text-white shadow-sm hover:opacity-90 transition"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
