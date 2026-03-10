@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import SignupForm from '../components/SignupForm.tsx';
+---
+
+<BaseLayout title="Sign Up" description="Create your Barkhaus account and start managing your rescue organization today.">
+  <Navbar currentPage="/signup" />
+
+  <main class="min-h-screen bg-cloud pt-24 pb-16 px-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-3xl mx-auto p-8 mt-8">
+      <div class="text-center mb-6">
+        <a href="/" class="font-serif font-bold text-2xl text-deep-taupe hover:text-warm-brown transition-colors">
+          🐾 Barkhaus
+        </a>
+      </div>
+      <SignupForm client:load />
+    </div>
+  </main>
+
+  <Footer />
+</BaseLayout>

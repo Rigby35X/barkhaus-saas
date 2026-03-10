@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { getCached, setCached } from './apiCache';
 
+// Duplicated here to avoid circular dependency with auth.ts
+const _TOKEN_KEY = 'barkhausAuthToken';
+const _ADMIN_SESSION_KEY = 'barkhausAdminSession';
+
 // ─── Xano clients ───────────────────────────────────────────────────────────
 
 const xanoAnimals = axios.create({
@@ -22,6 +26,41 @@ const xanoContent = axios.create({
 const xanoBase = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
+
+// ─── Auth helpers ────────────────────────────────────────────────────────────
+
+/** Returns Authorization Bearer header if JWT token is present */
+export function getAuthHeaders(): Record<string, string> {
+  try {
+    const token = localStorage.getItem(_TOKEN_KEY);
+    if (token) return { Authorization: `Bearer ${token}` };
+  } catch {
+    // localStorage may not be available in SSR
+  }
+  return {};
+}
+
+/** 401 response interceptor — clears session tokens and redirects to login */
+function handle401(error: unknown): Promise<never> {
+  if (axios.isAxiosError(error) && error.response?.status === 401) {
+    try {
+      localStorage.removeItem(_TOKEN_KEY);
+      localStorage.removeItem(_ADMIN_SESSION_KEY);
+    } catch {
+      // ignore
+    }
+    window.location.href = 'https://barkhaus.io/login';
+  }
+  return Promise.reject(error);
+}
+
+// Attach auth headers and 401 handling to xanoBase
+xanoBase.interceptors.request.use((config) => {
+  const headers = getAuthHeaders();
+  Object.assign(config.headers, headers);
+  return config;
+});
+xanoBase.interceptors.response.use((r) => r, handle401);
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,13 @@
 import { useState, useEffect, lazy, Suspense, type FormEvent } from 'react';
-import { validateLogin, saveSession, clearSession, restoreSession } from './lib/auth';
+import {
+  validateLogin,
+  saveSession,
+  logout,
+  restoreSession,
+  loginUnified,
+  initSession,
+  TOKEN_KEY,
+} from './lib/auth';
 import { ORGANIZATIONS, type OrgConfig } from './lib/api';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
@@ -32,17 +40,48 @@ function TabSpinner() {
 }
 
 function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
+  // Primary: email + password
+  const [email, setEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+
+  // Legacy toggle
+  const [showLegacy, setShowLegacy] = useState(false);
   const [orgIdInput, setOrgIdInput] = useState('9');
   const [accessCode, setAccessCode] = useState('mbpr2024');
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleEmailSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    const orgId = parseInt(orgIdInput);
+    try {
+      const result = await loginUnified(email, emailPassword);
+      if (result.type === 'jwt') {
+        localStorage.setItem(TOKEN_KEY, result.token);
+        // For JWT logins default to admin org view
+        const orgId = 8;
+        const orgConfig = ORGANIZATIONS[orgId] ?? Object.values(ORGANIZATIONS)[0];
+        saveSession(orgId, orgConfig.accessCode);
+        onLogin({ orgId, orgConfig });
+      } else {
+        saveSession(result.orgId, result.orgConfig.accessCode);
+        onLogin({ orgId: result.orgId, orgConfig: result.orgConfig });
+      }
+    } catch {
+      setError('Invalid email or password.');
+    }
+    setLoading(false);
+  };
+
+  const handleLegacySubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const orgId = parseInt(orgIdInput, 10);
     const config = validateLogin(orgId, accessCode);
     if (config) {
       saveSession(orgId, accessCode);
@@ -61,49 +100,107 @@ function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
           <p className="text-stone mt-2">Animal Rescue Management</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Organization ID</label>
-            <input
-              type="number"
-              value={orgIdInput}
-              onChange={(e) => setOrgIdInput(e.target.value)}
-              className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Access Code</label>
-            <input
-              type="password"
-              value={accessCode}
-              onChange={(e) => setAccessCode(e.target.value)}
-              className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-              required
-            />
-          </div>
-          {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
-          >
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
-
-        {/* Credentials hint */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-          <p className="text-xs font-semibold text-blue-800 mb-2">Available Organizations:</p>
-          <div className="space-y-1 text-xs text-blue-700">
-            {Object.entries(ORGANIZATIONS).map(([id, org]) => (
-              <div key={id} className={`flex justify-between ${org.isAdmin ? 'bg-blue-100 px-1 py-0.5 rounded font-semibold' : ''}`}>
-                <span>ID {id}: {org.name}</span>
-                <span className="font-mono">{org.accessCode}</span>
+        {!showLegacy ? (
+          <>
+            <form onSubmit={handleEmailSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="jane@happypaws.org"
+                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                  required
+                />
               </div>
-            ))}
-          </div>
-        </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Password</label>
+                <input
+                  type="password"
+                  value={emailPassword}
+                  onChange={(e) => setEmailPassword(e.target.value)}
+                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
+              >
+                {loading ? 'Signing in…' : 'Sign In'}
+              </button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => { setShowLegacy(true); setError(''); }}
+                className="text-xs text-stone hover:text-warm-brown underline"
+              >
+                Use Org ID instead
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <form onSubmit={handleLegacySubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Organization ID</label>
+                <input
+                  type="number"
+                  value={orgIdInput}
+                  onChange={(e) => setOrgIdInput(e.target.value)}
+                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Access Code</label>
+                <input
+                  type="password"
+                  value={accessCode}
+                  onChange={(e) => setAccessCode(e.target.value)}
+                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                  required
+                />
+              </div>
+              {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
+              >
+                {loading ? 'Signing in…' : 'Sign In'}
+              </button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => { setShowLegacy(false); setError(''); }}
+                className="text-xs text-stone hover:text-warm-brown underline"
+              >
+                Use email instead
+              </button>
+            </div>
+
+            {/* Credentials hint */}
+            <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+              <p className="text-xs font-semibold text-blue-800 mb-2">Available Organizations:</p>
+              <div className="space-y-1 text-xs text-blue-700">
+                {Object.entries(ORGANIZATIONS).map(([id, org]) => (
+                  <div key={id} className={`flex justify-between ${org.isAdmin ? 'bg-blue-100 px-1 py-0.5 rounded font-semibold' : ''}`}>
+                    <span>ID {id}: {org.name}</span>
+                    <span className="font-mono">{org.accessCode}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -115,23 +212,49 @@ function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    const restored = restoreSession();
-    if (restored) {
-      setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
-      // Don't auto-start tour for restored sessions
+    // Check URL for ?token= parameter (from marketing signup/login redirect)
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    if (urlToken) {
+      localStorage.setItem(TOKEN_KEY, urlToken);
+      // Clean the URL
+      const cleanUrl = window.location.pathname + window.location.hash;
+      history.replaceState(null, '', cleanUrl);
     }
+
+    // Try JWT session first
+    initSession().then((jwtSession) => {
+      if (jwtSession) {
+        // JWT login: map to default org or admin
+        const orgId = 8;
+        const orgConfig = ORGANIZATIONS[orgId] ?? Object.values(ORGANIZATIONS)[0];
+        setSession({ orgId, orgConfig });
+        return;
+      }
+
+      // Fall back to legacy session
+      const restored = restoreSession();
+      if (restored) {
+        setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
+      }
+    }).catch(() => {
+      // If initSession throws, fall back to legacy
+      const restored = restoreSession();
+      if (restored) {
+        setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
+      }
+    });
   }, []);
 
   const handleLogin = (s: Session) => {
     setSession(s);
-    // Auto-start tour on first-ever login
     if (!isOnboardingComplete()) {
       setShowOnboarding(true);
     }
   };
 
   const handleLogout = () => {
-    clearSession();
+    logout();
     setSession(null);
     setShowOnboarding(false);
   };
