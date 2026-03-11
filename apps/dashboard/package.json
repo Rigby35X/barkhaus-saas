@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf dist && mkdir dist && cp -r public/* dist/",
-    "build:react": "tsc -b && vite build",
+    "build": "vite build",
+    "build:legacy": "rm -rf dist && mkdir dist && cp -r public/* dist/",
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -182,14 +182,20 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
 // ─── Animals ─────────────────────────────────────────────────────────────────
 
 export async function getAnimals(orgId: number, status?: string): Promise<Animal[]> {
+  console.log('[getAnimals] orgId:', orgId, '| type:', typeof orgId, '| status:', status ?? 'all');
+
   const cacheKey = `animals_org_${orgId}_${status ?? 'all'}`;
   const cached = getCached<Animal[]>(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log('[getAnimals] returning cached result, count:', cached.length);
+    return cached;
+  }
 
   let query = supabase.from('animals').select('*').eq('org_id', orgId);
   if (status) query = query.eq('status', status);
 
   const { data, error } = await query;
+  console.log('[getAnimals] supabase response — data count:', data?.length ?? 0, '| error:', error);
   if (error) throw error;
   const result = data ?? [];
   setCached(cacheKey, result);
