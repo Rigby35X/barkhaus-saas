@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from './supabase';
+import { supabase } from './supabase';
 import { getCached, setCached } from './apiCache';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

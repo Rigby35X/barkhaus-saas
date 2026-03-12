@@ -17,57 +17,29 @@ const adoptionProcessContent = content.adoption_process || {};
 const moreInfoContent = content.more_info || {};
 const adoptedGalleryContent = content.adopted_gallery || {};
 
-// Fetch animals directly from Xano (no self-referencing proxy)
+// Fetch animals from Supabase
 let animals: any[] = [];
 let error = null;
 
 try {
-  const xanoBase = (import.meta.env.PUBLIC_XANO_ANIMALS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:Od874PbA').replace(/\/$/, '');
-  const xanoToken = import.meta.env.PUBLIC_XANO_ANIMALS_TOKEN || '165XkoniNXylFdNKgO_aCvmAIcQ';
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (xanoToken) headers['Authorization'] = `Bearer ${xanoToken}`;
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  console.log('🐕 Fetching animals from Supabase for org:', orgId);
 
-  if (orgId === '9') {
-    // MBPR uses the legacy dogs table with its own field names
-    const dogsUrl = `${xanoBase}/dogs`;
-    console.log('🐕 Fetching dogs from:', dogsUrl);
-    const dogsData = await fetch(dogsUrl, { headers }).then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status} from ${dogsUrl}`);
-      return r.json();
-    });
-    animals = dogsData.map((dog: any) => ({
-      id: dog.id,
-      org: dog.org,
-      name: dog.Dog_Name,
-      species: 'dog',
-      breed: dog.Breed || '',
-      description: dog.My_Story || '',
-      status: dog.Code || 'Available',
-      image_url: dog.main_image?.url || '',
-      main_image: dog.main_image,
-      additional_image_1: dog.additional_image_1,
-      additional_image_2: dog.additional_image_2,
-      additional_image_3: dog.additional_image_3,
-      additional_image_4: dog.additional_image_4,
-      age: dog.Pup_is_currently_this_many_weeks_old
-        ? Math.floor(dog.Pup_is_currently_this_many_weeks_old / 52) + ' years'
-        : '',
-      gender: dog.Gender || '',
-      size: dog.Estimated_Size_When_Grown?.includes('Large') ? 'Large'
-          : dog.Estimated_Size_When_Grown?.includes('Medium') ? 'Medium' : 'Small',
-      good_with_kids: false,
-      good_with_cats: false,
-      good_with_dogs: false,
-    }));
-  } else {
-    animals = await fetch(`${xanoBase}/animals?organization_id=${orgId}`, { headers }).then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.json();
-    });
-  }
-  console.log('✅ Direct Xano fetch successful:', animals.length, 'animals');
+  const res = await fetch(
+    `${supabaseUrl}/rest/v1/animals?select=*&org_id=eq.${orgId}&order=name.asc`,
+    {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+    }
+  );
+  if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+  animals = await res.json();
+  console.log('✅ Supabase fetch successful:', animals.length, 'animals');
 } catch (e) {
-  console.error('❌ Direct Xano fetch failed:', e);
+  console.error('❌ Supabase fetch failed:', e);
   error = e instanceof Error ? e.message : String(e);
 }
 

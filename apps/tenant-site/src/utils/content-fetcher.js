@@ -1,13 +1,10 @@
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 /**
  * Content Fetcher Utility
- * Fetches dynamic content from Xano directly — no self-referencing proxy calls.
+ * Fetches dynamic content from Supabase directly.
  */
 
 // Default fallback content for different page types
 const DEFAULT_CONTENT = {
-  // Homepage content
   homepage: {
     hero: {
       headline: "Every Dog Deserves a Loving Home",
@@ -60,8 +57,6 @@ const DEFAULT_CONTENT = {
       body_text: "Get answers to common questions about our adoption process."
     }
   },
-
-  // About page content
   about: {
     hero: {
       headline: "About Mission Bay Puppy Rescue",
@@ -80,8 +75,6 @@ const DEFAULT_CONTENT = {
       body_text: "Our dedicated volunteers and staff work tirelessly to give every dog a second chance."
     }
   },
-
-  // Contact page content
   contact: {
     hero: {
       headline: "Get in Touch",
@@ -95,8 +88,6 @@ const DEFAULT_CONTENT = {
       body_text: "Get in touch with us through any of the following methods."
     }
   },
-
-  // Our Animals page content
   animals: {
     hero: {
       headline: "Meet Our Available Dogs",
@@ -110,8 +101,6 @@ const DEFAULT_CONTENT = {
       body_text: "Learn about our simple adoption process and how to welcome a new family member."
     }
   },
-
-  // Donate page content
   donate: {
     hero: {
       headline: "Support Our Mission",
@@ -125,8 +114,6 @@ const DEFAULT_CONTENT = {
       body_text: "See how your contribution directly supports our rescue efforts."
     }
   },
-
-  // Events page content
   events: {
     hero: {
       headline: "Upcoming Events",
@@ -140,8 +127,6 @@ const DEFAULT_CONTENT = {
       body_text: "Don't miss our upcoming adoption events and fundraisers."
     }
   },
-
-  // Global content (appears on all pages)
   global: {
     footer: {
       content: {
@@ -160,7 +145,6 @@ const DEFAULT_CONTENT = {
   }
 };
 
-// Default organization fallback
 const DEFAULT_ORG = {
   id: 9,
   org: 'Mission Bay Puppy Rescue',
@@ -179,16 +163,6 @@ const DEFAULT_ORG = {
   socialMedia: { facebook: '', instagram: '', twitter: '' }
 };
 
-// Make an authenticated GET request to Xano
-async function xanoGet(url, token) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`Xano ${res.status}: ${res.statusText}`);
-  return res.json();
-}
-
-// Safely parse JSON content stored as a string in Xano
 function parseSectionContent(rawContent) {
   if (!rawContent) return {};
   if (typeof rawContent === 'object') return rawContent;
@@ -196,18 +170,11 @@ function parseSectionContent(rawContent) {
 }
 
 function normalizeFaqSection(faqSection) {
-  if (!faqSection || typeof faqSection !== 'object') {
-    return {};
-  }
+  if (!faqSection || typeof faqSection !== 'object') return {};
 
   const nestedContent = typeof faqSection.content === 'object' && faqSection.content !== null
-    ? faqSection.content
-    : {};
-
-  const merged = {
-    ...nestedContent,
-    ...faqSection
-  };
+    ? faqSection.content : {};
+  const merged = { ...nestedContent, ...faqSection };
 
   if (Array.isArray(merged.faqs)) {
     merged.faqs.forEach((item, index) => {
@@ -216,29 +183,17 @@ function normalizeFaqSection(faqSection) {
       const slot = index + 1;
       merged[`faq_question_${slot}`] = question;
       merged[`faq_answer_${slot}`] = answer;
-      merged[`faq_${slot}_question`] = merged[`faq_${slot}_question`] || question;
-      merged[`faq_${slot}_answer`] = merged[`faq_${slot}_answer`] || answer;
     });
   }
 
   const extractedFaqs = [];
   for (let i = 1; i <= 10; i++) {
-    const question =
-      merged[`faq_question_${i}`] ??
-      merged[`faq_${i}_question`] ??
-      null;
-    const answer =
-      merged[`faq_answer_${i}`] ??
-      merged[`faq_${i}_answer`] ??
-      null;
-
+    const question = merged[`faq_question_${i}`] ?? merged[`faq_${i}_question`] ?? null;
+    const answer = merged[`faq_answer_${i}`] ?? merged[`faq_${i}_answer`] ?? null;
     if (question || answer) {
       merged[`faq_question_${i}`] = question || '';
       merged[`faq_answer_${i}`] = answer || '';
-      extractedFaqs.push({
-        question: question || '',
-        answer: answer || ''
-      });
+      extractedFaqs.push({ question: question || '', answer: answer || '' });
     }
   }
 
@@ -250,25 +205,31 @@ function normalizeFaqSection(faqSection) {
 }
 
 /**
- * Fetch dynamic website content directly from Xano.
- * @param {string} pageSlug
- * @param {string} orgId
- * @param {string} origin - unused, kept for backward compatibility
+ * Fetch dynamic website content from Supabase.
  */
 export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origin = '') {
   let websiteContent = {};
 
   try {
-    const contentUrl = import.meta.env.VITE_XANO_CONTENT_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:MU8UozDK';
-    const token = import.meta.env.VITE_XANO_CONTENT_TOKEN;
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-    const sections = await xanoGet(`${contentUrl}/website_content/${orgId}?id=1`, token);
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        }
+      }
+    );
+    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+    const sections = await res.json();
     console.log(`✅ Fetched ${sections.length} content sections for page: ${pageSlug}, org: ${orgId}`);
 
-    // Organize sections by section_key — same logic as the website-content.js GET handler
     const organizedContent = {};
     sections.forEach(section => {
-      if ((section.page_slug === pageSlug || section.page_slug === 'global') && section.is_visible) {
+      if (section.page_slug === pageSlug || section.page_slug === 'global') {
         if (section.section_key === 'footer') {
           organizedContent['footer'] = {
             content: {
@@ -312,7 +273,6 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
             Object.assign(combinedSection, normalizedFaq);
           }
 
-          // Preserve faq_question_N / faq_answer_N at the top level
           Object.keys(parsedContent)
             .filter(k => k.startsWith('faq_question_') || k.startsWith('faq_answer_'))
             .forEach(k => { combinedSection[k] = parsedContent[k]; });
@@ -335,55 +295,60 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
   const pageDefaults = DEFAULT_CONTENT[pageSlug] || {};
   const globalDefaults = DEFAULT_CONTENT.global || {};
 
-  return {
-    ...pageDefaults,
-    ...globalDefaults,
-    ...websiteContent
-  };
+  return { ...pageDefaults, ...globalDefaults, ...websiteContent };
 }
 
 /**
- * Fetch organization data directly from Xano.
- * @param {string} orgId
- * @param {string} origin - unused, kept for backward compatibility
+ * Fetch organization data from Supabase.
  */
 export async function fetchOrganizationData(orgId = '9', origin = '') {
   try {
-    const orgsUrl = import.meta.env.VITE_XANO_ORGANIZATIONS_URL || 'https://xz6u-fpaz-praf.n7e.xano.io/api:siXQEdjz';
-    const token = import.meta.env.VITE_XANO_ORGANIZATIONS_TOKEN;
+    const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+    const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
-    const xanoData = await xanoGet(`${orgsUrl}/organizations/${orgId}`, token);
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/organizations?select=*&id=eq.${orgId}`,
+      {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+        }
+      }
+    );
+    if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows || rows.length === 0) throw new Error('Organization not found');
+    const data = rows[0];
     console.log(`✅ Fetched organization data for org ${orgId}`);
 
-    // Same field mapping as client-data.js GET handler
     return {
-      id: xanoData.id || orgId,
-      org: xanoData.name,
-      name: xanoData.name,
-      slug: xanoData.slug,
-      email: xanoData.email,
-      phone: xanoData.phone,
-      phoneForTel: xanoData.phone,
-      phoneFormatted: xanoData.phone,
+      id: data.id || orgId,
+      org: data.name,
+      name: data.name,
+      slug: data.slug,
+      email: data.email,
+      phone: data.phone,
+      phoneForTel: data.phone,
+      phoneFormatted: data.phone,
       address: {
-        lineOne: xanoData.address,
+        lineOne: data.address,
         lineTwo: '',
-        city: xanoData.city,
-        state: xanoData.state,
-        zip: xanoData.zip_code,
+        city: data.city,
+        state: data.state,
+        zip: data.zip_code,
       },
-      domain: xanoData.custom_domain || xanoData.website,
-      website: xanoData.website,
-      ein: xanoData.ein,
+      domain: data.custom_domain || data.website,
+      website: data.website,
+      ein: data.ein,
       orgId: orgId,
-      logo_url: xanoData.logo_light_url,
-      primary_color: xanoData.primary_color,
-      secondary_color: xanoData.secondary_color,
-      accent_color: xanoData.accent_color,
+      logo_url: data.logo_light_url,
+      primary_color: data.primary_color,
+      secondary_color: data.secondary_color,
+      accent_color: data.accent_color,
       socialMedia: {
-        facebook: xanoData.facebook_url || '',
-        instagram: xanoData.instagram_url || '',
-        twitter: xanoData.twitter_url || ''
+        facebook: data.facebook_url || '',
+        instagram: data.instagram_url || '',
+        twitter: data.twitter_url || ''
       }
     };
   } catch (error) {
@@ -395,9 +360,6 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
 
 /**
  * Fetch both page content and organization data in parallel.
- * @param {string} pageSlug
- * @param {string} orgId
- * @param {string} origin - unused, kept for backward compatibility
  */
 export async function fetchAllPageData(pageSlug = 'homepage', orgId = '9', origin = '') {
   const [content, organization] = await Promise.all([

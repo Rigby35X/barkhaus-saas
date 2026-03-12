@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const tokens = await tokenRes.json();
     if (!tokenRes.ok) throw new Error(JSON.stringify(tokens));
 
-    // Save per-tenant in Xano
+    // Save per-tenant in Supabase
     await saveLinkedAccountToXano({
       tenant_id,
       provider: 'google',

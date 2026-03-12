@@ -1,24 +1,9 @@
-export * from '@barkhaus/xano-client';
-import { configure } from '@barkhaus/xano-client';
-configure({ baseUrl: import.meta.env.PUBLIC_XANO_BASE_URL });
+import { supabase } from './supabase';
 
-export async function xanoFetch(path: string, init?: RequestInit) {
-  const base = import.meta.env.PUBLIC_XANO_BASE_URL;
-  const res = await fetch(`${base}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {})
-    }
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return res.json();
-}
-
-// Save linked account to Xano
 export async function saveLinkedAccountToXano(payload: any) {
-  return xanoFetch('/integrations/link', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+  const { data, error } = await supabase
+    .from('linked_accounts')
+    .upsert({ ...payload, updated_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+  return data;
 }

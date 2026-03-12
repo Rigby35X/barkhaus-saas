@@ -18,6 +18,7 @@ export interface JwtSession {
   userName: string;
   email: string;
   plan: string;
+  orgId?: number;
 }
 
 export function getSession(): Session | null {
@@ -73,12 +74,13 @@ export async function initSession(): Promise<JwtSession | null> {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    const data = await res.json() as { id?: number; name?: string; email?: string; plan?: string };
+    const data = await res.json() as { id?: number; name?: string; email?: string; plan?: string; org_id?: number };
     return {
       userId: data.id ?? 0,
       userName: data.name ?? '',
       email: data.email ?? '',
       plan: data.plan ?? '',
+      orgId: data.org_id,
     };
   } catch {
     return null;

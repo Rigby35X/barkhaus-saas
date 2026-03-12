@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@barkhaus/xano-client": "*",
-    "@rollup/rollup-linux-x64-gnu": "4.52.4",
-    "@astrojs/sitemap": "^3.6.0",
+    "@supabase/supabase-js": "^2.99.0",
+"@astrojs/sitemap": "^3.6.0",
     "@astrojs/vercel": "^8.0.4",
     "@useparagon/connect": "^2.1.1",
     "astro": "^5.14.1",

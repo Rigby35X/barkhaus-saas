@@ -61,9 +61,9 @@ function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
       const result = await loginUnified(email, emailPassword);
       if (result.type === 'jwt') {
         localStorage.setItem(TOKEN_KEY, result.token);
-        // For JWT logins default to admin org view
-        const orgId = 8;
-        const orgConfig = ORGANIZATIONS[orgId] ?? Object.values(ORGANIZATIONS)[0];
+        const jwtSession = await initSession();
+        const orgId = jwtSession?.orgId ?? 8;
+        const orgConfig = ORGANIZATIONS[orgId] ?? ORGANIZATIONS[8] ?? Object.values(ORGANIZATIONS)[0];
         saveSession(orgId, orgConfig.accessCode);
         onLogin({ orgId, orgConfig });
       } else {
@@ -213,9 +213,9 @@ function App() {
     // Try JWT session first
     initSession().then((jwtSession) => {
       if (jwtSession) {
-        // JWT login: map to default org or admin
-        const orgId = 8;
-        const orgConfig = ORGANIZATIONS[orgId] ?? Object.values(ORGANIZATIONS)[0];
+        // Use org from JWT if available, otherwise default to admin (8)
+        const orgId = jwtSession.orgId ?? 8;
+        const orgConfig = ORGANIZATIONS[orgId] ?? ORGANIZATIONS[8] ?? Object.values(ORGANIZATIONS)[0];
         setSession({ orgId, orgConfig });
         if (!isOnboardingComplete()) setShowOnboarding(true);
         return;
