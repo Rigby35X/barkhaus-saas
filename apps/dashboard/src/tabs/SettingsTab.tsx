@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
+import { getOrganization, updateOrganization } from '../lib/api';
 
 interface SettingsTabProps {
   orgId: number;
@@ -76,13 +77,90 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
 
+  // Load live org data on mount
+  useEffect(() => {
+    getOrganization(orgId).then((data) => {
+      if (!data) return;
+      setOrg((prev) => ({
+        ...prev,
+        name: (data.name as string) || prev.name,
+        ein_tax_id: (data.ein as string) || prev.ein_tax_id,
+        phone: (data.phone as string) || prev.phone,
+        email: (data.email as string) || prev.email,
+        contact_email: (data.contact_email as string) || prev.contact_email,
+        address: (data.address as string) || prev.address,
+        city: (data.city as string) || prev.city,
+        state: (data.state as string) || prev.state,
+        zip: (data.zip_code as string) || prev.zip,
+        website: (data.website as string) || prev.website,
+        facebook: (data.facebook_url as string) || prev.facebook,
+        instagram: (data.instagram_url as string) || prev.instagram,
+      }));
+      setBranding((prev) => ({
+        ...prev,
+        heading_font: (data.heading_font as string) || prev.heading_font,
+        body_font: (data.body_font as string) || prev.body_font,
+        color_primary: (data.primary_color as string) || prev.color_primary,
+        color_secondary: (data.secondary_color as string) || prev.color_secondary,
+        color_accent: (data.accent_color as string) || prev.color_accent,
+        color_text: (data.text_color as string) || prev.color_text,
+        color_background: (data.background_color as string) || prev.color_background,
+        logo_dark_url: (data.logo_dark_url as string) || prev.logo_dark_url,
+        logo_light_url: (data.logo_light_url as string) || prev.logo_light_url,
+        favicon_url: (data.favicon_url as string) || prev.favicon_url,
+      }));
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId]);
+
   const save = async () => {
     setSaving(true);
     setSaveMsg('');
     try {
-      await new Promise((r) => setTimeout(r, 600));
+      let updates: Record<string, unknown> = {};
+      if (activeSection === 'organization') {
+        updates = {
+          name: org.name,
+          ein: org.ein_tax_id,
+          phone: org.phone,
+          email: org.email,
+          contact_email: org.contact_email,
+          address: org.address,
+          city: org.city,
+          state: org.state,
+          zip_code: org.zip,
+          website: org.website,
+          facebook_url: org.facebook,
+          instagram_url: org.instagram,
+        };
+      } else if (activeSection === 'branding') {
+        updates = {
+          heading_font: branding.heading_font,
+          body_font: branding.body_font,
+          primary_color: branding.color_primary,
+          secondary_color: branding.color_secondary,
+          accent_color: branding.color_accent,
+          text_color: branding.color_text,
+          background_color: branding.color_background,
+          logo_dark_url: branding.logo_dark_url,
+          logo_light_url: branding.logo_light_url,
+          favicon_url: branding.favicon_url,
+        };
+      } else if (activeSection === 'social') {
+        updates = {
+          facebook_url: org.facebook,
+          instagram_url: org.instagram,
+        };
+      } else if (activeSection === 'domain') {
+        updates = { custom_domain: domain.domain_name };
+      }
+      await updateOrganization(orgId, updates);
       setSaveMsg('Saved!');
       setTimeout(() => setSaveMsg(''), 2500);
+    } catch (err) {
+      console.error('Settings save error:', err);
+      setSaveMsg('Failed to save.');
+      setTimeout(() => setSaveMsg(''), 3000);
     } finally {
       setSaving(false);
     }

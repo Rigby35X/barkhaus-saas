@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchWebsiteContent, updateWebsiteSection, type WebsiteSection } from '../lib/api';
+import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, type WebsiteSection } from '../lib/api';
 
 interface WebsiteContentTabProps {
   orgId: number;
@@ -224,7 +224,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
         const data = await fetchWebsiteContent(orgId);
         setSections(data);
       } catch {
-        setError('Could not load website content. Check your Xano configuration.');
+        setError('Could not load website content.');
       } finally {
         setLoading(false);
       }
@@ -259,13 +259,19 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setSaved(false);
     try {
       if (liveSection) {
+        console.log('[WebsiteContentTab] updating existing section id:', liveSection.id, editing);
         const updated = await updateWebsiteSection(liveSection.id, editing);
         setSections((prev) => prev.map((s) => (s.id === liveSection.id ? { ...s, ...updated } : s)));
+      } else {
+        console.log('[WebsiteContentTab] creating new section:', activePage, currentSectionDef?.key, editing);
+        const created = await saveWebsiteContentSection(orgId, activePage, currentSectionDef?.key ?? '', editing);
+        setSections((prev) => [...prev, created]);
       }
       setEditing({});
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
+    } catch (err) {
+      console.error('[WebsiteContentTab] save error:', err);
       alert('Failed to save. Please try again.');
     } finally {
       setSaving(false);
@@ -282,9 +288,19 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="bg-white rounded-2xl border border-silver-gray shadow-sm">
-        <div className="px-6 py-5 border-b border-silver-gray">
-          <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Website Content</h2>
-          <p className="text-sm text-stone mt-1">Edit each section of your public-facing website.</p>
+        <div className="px-6 py-5 border-b border-silver-gray flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Website Content</h2>
+            <p className="text-sm text-stone mt-1">Edit each section of your public-facing website.</p>
+          </div>
+          <a
+            href="https://mbpr.preview.barkhaus.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition"
+          >
+            View Website ↗
+          </a>
         </div>
 
         {loading && <p className="p-6 text-stone text-center">Loading content…</p>}
@@ -293,7 +309,6 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
             <p className="text-4xl mb-3">🌐</p>
             <p className="font-serif font-semibold text-deep-taupe">Content Not Available</p>
             <p className="text-sm text-stone mt-1">{error}</p>
-            <p className="text-xs text-stone mt-2">Section fields are displayed below — connect Xano to save changes.</p>
           </div>
         )}
 
@@ -343,7 +358,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <div>
                   <h3 className="text-lg font-serif font-semibold text-deep-taupe">{currentSectionDef?.label}</h3>
                   {!liveSection && !error && (
-                    <p className="text-xs text-stone mt-0.5">No Xano data for this section yet.</p>
+                    <p className="text-xs text-stone mt-0.5">No content saved for this section yet.</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">

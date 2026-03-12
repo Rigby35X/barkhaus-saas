@@ -25,6 +25,7 @@ const SocialMediaTab = lazy(() => import('./tabs/SocialMediaTab'));
 const EventsTab = lazy(() => import('./tabs/EventsTab'));
 const DonationsTab = lazy(() => import('./tabs/DonationsTab'));
 const IntegrationsTab = lazy(() => import('./tabs/IntegrationsTab'));
+const PoliciesTab = lazy(() => import('./tabs/PoliciesTab'));
 
 interface Session {
   orgId: number;
@@ -283,6 +284,8 @@ function App() {
         return <SettingsTab orgId={session.orgId} orgConfig={session.orgConfig} />;
       case 'communications':
         return <CommunicationsTab orgId={session.orgId} />;
+      case 'policies':
+        return <PoliciesTab orgId={session.orgId} />;
       case 'social-media':
         return <SocialMediaTab orgId={session.orgId} orgConfig={session.orgConfig} />;
       case 'events':

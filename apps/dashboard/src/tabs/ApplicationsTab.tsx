@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchApplications, updateApplicationStatus, type Application } from '../lib/api';
+import { getApplications, updateApplication, type Application } from '../lib/api';
 import StatusBadge from '../components/StatusBadge';
 import Modal from '../components/Modal';
 
@@ -36,7 +36,7 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
     setLoading(true);
     setError('');
     try {
-      const data = await fetchApplications({ org_id: orgId, form_type: filterType || undefined });
+      const data = await getApplications(orgId);
       setApps(data);
     } catch {
       setError('Could not load applications. API may not be configured yet.');
@@ -50,7 +50,7 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
     if (orgId) void load();
     else setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, filterType]);
+  }, [orgId]);
 
   const filtered = apps.filter((a) => {
     const term = search.toLowerCase();
@@ -76,7 +76,7 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
     setSaving(true);
     setSaveMsg('');
     try {
-      await updateApplicationStatus(selectedApp.id, newStatus, noteText);
+      await updateApplication(selectedApp.id, { status: newStatus, admin_notes: noteText });
       setApps((prev) => prev.map((a) => a.id === selectedApp.id ? { ...a, status: newStatus, admin_notes: noteText } : a));
       setSaveMsg('Saved!');
       setSelectedApp((prev) => prev ? { ...prev, status: newStatus, admin_notes: noteText } : prev);

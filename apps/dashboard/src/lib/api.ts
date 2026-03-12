@@ -257,9 +257,9 @@ export async function uploadImage(file: File, orgId: number, section = 'animals'
 
   const res = await fetch('/api/upload-image', { method: 'POST', body: form });
   if (!res.ok) throw new Error('Image upload failed');
-  const json = await res.json() as { success: boolean; imageUrl?: string; error?: string };
+  const json = await res.json() as { success: boolean; url?: string; error?: string };
   if (!json.success) throw new Error(json.error ?? 'Upload failed');
-  return json.imageUrl ?? '';
+  return json.url ?? '';
 }
 
 // ─── Website content ──────────────────────────────────────────────────────────
@@ -283,9 +283,13 @@ export async function saveWebsiteContentSection(
   sectionKey: string,
   content: Record<string, unknown>,
 ): Promise<WebsiteSection> {
+  console.log('[saveWebsiteContentSection] upserting', { orgId, pageSlug, sectionKey, content });
   const { data, error } = await supabase
     .from('website_content')
-    .upsert({ org_id: orgId, page_slug: pageSlug, section_key: sectionKey, ...content, updated_at: new Date().toISOString() })
+    .upsert(
+      { org_id: orgId, page_slug: pageSlug, section_key: sectionKey, ...content, updated_at: new Date().toISOString() },
+      { onConflict: 'org_id,page_slug,section_key' }
+    )
     .select()
     .single();
   if (error) throw error;
