@@ -1,67 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/Navbar.astro';
-import PricingCard from '../components/PricingCard.astro';
 import FAQItem from '../components/FAQItem.astro';
 import CTABanner from '../components/CTABanner.astro';
 import Footer from '../components/Footer.astro';
 
-const plans = [
-  {
-    tier: 'Starter',
-    price: '$49',
-    description: 'Perfect for small rescues just getting started.',
-    features: [
-      'Up to 25 active animals',
-      'Public website',
-      'Online applications',
-      'Unified inbox',
-      'Basic analytics',
-      'Community support',
-    ],
-    cta: 'Get started free',
-    ctaHref: '/waitlist',
-  },
-  {
-    tier: 'Growth',
-    price: '$199',
-    description: 'For growing rescues that need more power.',
-    features: [
-      'Unlimited animals',
-      'AI social post generator',
-      'Custom domain',
-      'Events management',
-      'Donation tracking',
-      'Priority support',
-      'CSV bulk import',
-    ],
-    cta: 'Join waitlist',
-    ctaHref: '/waitlist',
-    featured: true,
-    badge: 'Most Popular',
-  },
-  {
-    tier: 'Pro',
-    price: '$299',
-    description: 'For large organizations and multi-location shelters.',
-    features: [
-      'Everything in Growth',
-      'Multi-org access',
-      'Advanced analytics',
-      'API access',
-      'Dedicated onboarding',
-      'Phone support',
-      'Custom integrations',
-    ],
-    cta: 'Contact us',
-    ctaHref: '/contact',
-  },
-];
-
 const faqs = [
   {
     question: 'Is there a free trial?',
-    answer: "Yes! The Starter plan is free forever for small rescues with up to 25 animals. No credit card required.",
+    answer: "Yes! Every plan includes a 14-day free trial — no credit card required. After your trial, choose the plan that fits your rescue.",
   },
   {
     question: 'Can I change plans at any time?',
@@ -92,31 +39,169 @@ const faqs = [
   <!-- Header -->
   <div class="pt-28 pb-16 bg-cloud text-center">
     <div class="max-w-3xl mx-auto px-4">
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">Simple, honest pricing</h1>
-      <p class="text-lg text-stone">No surprise fees. No locked-in contracts. Start free, grow when you're ready.</p>
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">Simple, Honest Pricing</h1>
+      <p class="text-lg text-stone">No surprise fees. No locked-in contracts. Start free for 14 days.</p>
     </div>
   </div>
 
-  <!-- Plans -->
-  <section class="py-20 bg-white">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid md:grid-cols-3 gap-8 items-start">
-        {plans.map((plan) => (
-          <PricingCard {...plan} />
+  <!-- Why Barkhaus? Cost Comparison Table -->
+  <section class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-3">Why Barkhaus?</h2>
+        <p class="text-stone">See what rescues spend on fragmented tools — and what they save with Barkhaus.</p>
+      </div>
+      <div class="rounded-2xl overflow-hidden border border-dove shadow-sm">
+        <div class="grid grid-cols-3 bg-deep-taupe text-white text-sm font-semibold text-center">
+          <div class="px-4 py-4 text-left">Tool / Category</div>
+          <div class="px-4 py-4 border-l border-white/10">Fragmented Tools</div>
+          <div class="px-4 py-4 border-l border-white/10 text-warm-brown bg-white/5">Barkhaus</div>
+        </div>
+        {[
+          ['Website Builder', '$30–$60/mo', '✓ Included'],
+          ['Adoption Application Software', '$40–$80/mo', '✓ Included'],
+          ['Email / CRM', '$25–$50/mo', '✓ Included'],
+          ['Social Media Scheduling', '$20–$40/mo', '✓ Included'],
+          ['Event Management', '$15–$30/mo', '✓ Included'],
+          ['Analytics & Reporting', '$10–$20/mo', '✓ Included'],
+          ['Total', '$140–$280/mo', 'From $49/mo'],
+        ].map(([tool, fragmented, barkhaus], i) => (
+          <div class={`grid grid-cols-3 text-sm text-center ${i % 2 === 0 ? 'bg-white' : 'bg-cloud'} ${i === 6 ? 'font-bold border-t-2 border-dove' : ''}`}>
+            <div class="px-4 py-3 text-left text-deep-taupe">{tool}</div>
+            <div class="px-4 py-3 border-l border-dove text-stone">{fragmented}</div>
+            <div class={`px-4 py-3 border-l border-dove ${i === 6 ? 'text-warm-brown font-bold text-base' : 'text-warm-brown'}`}>{barkhaus}</div>
+          </div>
         ))}
       </div>
-      <p class="text-center text-sm text-stone mt-8">
-        All plans include SSL, daily backups, and 99.9% uptime SLA.
-        <a href="/contact" class="text-warm-brown hover:underline ml-1">Have questions? Talk to us.</a>
+      <p class="text-center text-xs text-stone mt-4">Estimates based on typical nonprofit software spending. Actual savings vary.</p>
+    </div>
+  </section>
+
+  <!-- Plans with Toggle -->
+  <section class="py-16 bg-cloud" id="plans">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+      <!-- Monthly / Annual toggle -->
+      <div class="flex items-center justify-center gap-4 mb-12">
+        <span id="label-monthly" class="text-sm font-semibold text-deep-taupe">Monthly</span>
+        <button
+          id="billing-toggle"
+          role="switch"
+          aria-checked="false"
+          class="relative w-12 h-6 rounded-full bg-stone transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-warm-brown"
+        >
+          <span id="toggle-dot" class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200"></span>
+        </button>
+        <span id="label-annual" class="text-sm font-semibold text-stone">
+          Annual
+          <span class="ml-1.5 text-xs font-bold bg-warm-brown text-white px-2 py-0.5 rounded-full">Save 20%</span>
+        </span>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 items-start">
+        <!-- Starter -->
+        <div class="relative rounded-2xl p-8 bg-white border border-dove shadow-sm flex flex-col">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="bg-green-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Free 14 Days</span>
+          </div>
+          <div class="mb-6">
+            <h3 class="font-serif text-xl font-semibold text-deep-taupe mb-1">Starter</h3>
+            <p class="text-sm text-stone mb-4">Perfect for small rescues just getting started.</p>
+            <div class="flex items-end gap-1">
+              <span class="text-4xl font-bold text-deep-taupe price-display" data-monthly="$49" data-annual="$39">$49</span>
+              <span class="text-sm pb-1 text-stone">/month</span>
+            </div>
+            <p class="text-xs text-stone mt-1 annual-note hidden">Billed annually ($468/yr)</p>
+          </div>
+          <ul class="space-y-3 mb-8 flex-1">
+            {['Up to 25 active animals', 'Public website', 'Online applications', 'Unified inbox', 'Basic analytics', 'Community support'].map((f) => (
+              <li class="flex items-start gap-2 text-sm">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-warm-brown" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-stone">{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a href="/signup?plan=starter" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
+            Start Free Trial
+          </a>
+        </div>
+
+        <!-- Growth (featured) -->
+        <div class="relative rounded-2xl p-8 bg-deep-taupe text-white shadow-2xl ring-2 ring-warm-brown scale-105 flex flex-col">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="bg-warm-brown text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Most Popular</span>
+          </div>
+          <div class="absolute -top-3 right-4">
+            <span class="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">14 Days Free</span>
+          </div>
+          <div class="mb-6 pt-2">
+            <h3 class="font-serif text-xl font-semibold text-white mb-1">Growth</h3>
+            <p class="text-sm text-dove/80 mb-4">For growing rescues that need more power.</p>
+            <div class="flex items-end gap-1">
+              <span class="text-4xl font-bold text-white price-display" data-monthly="$199" data-annual="$159">$199</span>
+              <span class="text-sm pb-1 text-dove/70">/month</span>
+            </div>
+            <p class="text-xs text-dove/60 mt-1 annual-note hidden">Billed annually ($1,908/yr)</p>
+          </div>
+          <ul class="space-y-3 mb-8 flex-1">
+            {['Unlimited animals', 'AI social post generator', 'Custom domain', 'Events management', 'Donation tracking', 'Priority support', 'CSV bulk import'].map((f) => (
+              <li class="flex items-start gap-2 text-sm">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-stone" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-dove/90">{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a href="/signup?plan=growth" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-warm-brown text-white hover:opacity-90">
+            Start Free Trial
+          </a>
+        </div>
+
+        <!-- Pro -->
+        <div class="relative rounded-2xl p-8 bg-white border border-dove shadow-sm flex flex-col">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2">
+            <span class="bg-green-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Free 14 Days</span>
+          </div>
+          <div class="mb-6">
+            <h3 class="font-serif text-xl font-semibold text-deep-taupe mb-1">Pro</h3>
+            <p class="text-sm text-stone mb-4">For large organizations and multi-location shelters.</p>
+            <div class="flex items-end gap-1">
+              <span class="text-4xl font-bold text-deep-taupe price-display" data-monthly="$299" data-annual="$239">$299</span>
+              <span class="text-sm pb-1 text-stone">/month</span>
+            </div>
+            <p class="text-xs text-stone mt-1 annual-note hidden">Billed annually ($2,868/yr)</p>
+          </div>
+          <ul class="space-y-3 mb-8 flex-1">
+            {['Everything in Growth', 'Multi-org access', 'Advanced analytics', 'API access', 'Dedicated onboarding', 'Phone support', 'Custom integrations'].map((f) => (
+              <li class="flex items-start gap-2 text-sm">
+                <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-warm-brown" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-stone">{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a href="/signup?plan=pro" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
+            Start Free Trial
+          </a>
+        </div>
+      </div>
+
+      <p class="text-center text-sm text-stone mt-10">
+        All plans include SSL, daily backups, 99.9% uptime SLA, and a 14-day free trial — no credit card required.
+        <a href="/contact" class="text-warm-brown hover:underline ml-1">Questions? Talk to us.</a>
       </p>
     </div>
   </section>
 
   <!-- FAQ -->
-  <section class="py-20 bg-cloud">
+  <section class="py-20 bg-white">
     <div class="max-w-3xl mx-auto px-4 sm:px-6">
-      <h2 class="font-serif text-3xl font-bold text-deep-taupe text-center mb-12">Frequently asked questions</h2>
-      <div class="bg-white rounded-2xl shadow-sm border border-dove divide-y divide-dove px-6">
+      <h2 class="font-serif text-3xl font-bold text-deep-taupe text-center mb-12">Frequently Asked Questions</h2>
+      <div class="bg-cloud rounded-2xl shadow-sm border border-dove divide-y divide-dove px-6">
         {faqs.map((faq, i) => (
           <FAQItem question={faq.question} answer={faq.answer} open={i === 0} />
         ))}
@@ -125,11 +210,48 @@ const faqs = [
   </section>
 
   <CTABanner
-    headline="Start saving lives today"
-    subtext="Join our waitlist for early access. Starter plan is free forever."
-    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
-    secondaryCta={{ label: 'Contact sales', href: '/contact' }}
+    headline="Start Saving Lives Today"
+    subtext="14-day free trial on all plans. No credit card required."
+    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+    secondaryCta={{ label: 'Contact Sales', href: '/contact' }}
   />
 
   <Footer />
 </BaseLayout>
+
+<script>
+  const toggle = document.getElementById('billing-toggle')!;
+  const dot = document.getElementById('toggle-dot')!;
+  const labelAnnual = document.getElementById('label-annual')!;
+  const labelMonthly = document.getElementById('label-monthly')!;
+  let isAnnual = false;
+
+  toggle.addEventListener('click', () => {
+    isAnnual = !isAnnual;
+    toggle.setAttribute('aria-checked', String(isAnnual));
+
+    if (isAnnual) {
+      dot.style.transform = 'translateX(24px)';
+      toggle.style.backgroundColor = '#804e3f';
+      labelAnnual.style.color = '#4d4c4c';
+      labelMonthly.style.color = '#bfae9b';
+    } else {
+      dot.style.transform = 'translateX(0)';
+      toggle.style.backgroundColor = '#bfae9b';
+      labelAnnual.style.color = '#bfae9b';
+      labelMonthly.style.color = '#4d4c4c';
+    }
+
+    document.querySelectorAll('.price-display').forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.textContent = isAnnual
+        ? (htmlEl.dataset.annual ?? '')
+        : (htmlEl.dataset.monthly ?? '');
+    });
+
+    document.querySelectorAll('.annual-note').forEach((el) => {
+      if (isAnnual) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    });
+  });
+</script>

@@ -8,10 +8,10 @@ export interface Props {
   linkLabel?: string;
 }
 
-const { icon, eyebrow, title, description, href, linkLabel = 'Learn more' } = Astro.props;
+const { icon, eyebrow, title, description, href, linkLabel = 'Learn More' } = Astro.props;
 ---
 
-<div class="bg-white rounded-2xl border border-dove p-6 hover:shadow-md transition-shadow flex flex-col">
+<div class="feature-card bg-white rounded-2xl border border-dove p-6 flex flex-col transition-all duration-200 ease-in-out hover:scale-[1.03] hover:shadow-xl opacity-0 translate-y-4">
   {icon && (
     <div class="text-3xl mb-4">{icon}</div>
   )}
@@ -21,7 +21,7 @@ const { icon, eyebrow, title, description, href, linkLabel = 'Learn more' } = As
   <h3 class="font-serif text-xl font-semibold text-deep-taupe mb-3">{title}</h3>
   <p class="text-sm text-stone leading-relaxed flex-1">{description}</p>
   {href && (
-    <a href={href} class="mt-4 text-sm font-semibold text-warm-brown hover:underline inline-flex items-center gap-1">
+    <a href={href} class="mt-4 inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:bg-[#6b3f32] transition-colors duration-200 self-start">
       {linkLabel}
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

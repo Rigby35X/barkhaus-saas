@@ -96,7 +96,7 @@ const howItWorks = [
   <Hero
     headline="Rescue Tech Simplified"
     subheadline="Streamline your shelter's operations, boost marketing efforts, and connect more animals with loving homes — all from one beautiful dashboard."
-    primaryCta={{ label: 'Get started free', href: '/waitlist' }}
+    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
     secondaryCta={{ label: 'See the features', href: '#features' }}
     imageSrc="/images/barkhaus_dog_and_bone.png"
     imageAlt="Animal management dashboard"
@@ -132,9 +132,12 @@ const howItWorks = [
           One platform to manage animals, applications, your website, marketing, and communications.
         </p>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Mobile: horizontal scroll; sm+: grid -->
+      <div class="flex gap-5 overflow-x-auto pb-2 sm:pb-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none">
         {coreFeatures.map((f) => (
-          <FeatureCard {...f} linkLabel="Learn more" />
+          <div class="min-w-[280px] sm:min-w-0 snap-start">
+            <FeatureCard {...f} linkLabel="Learn More" />
+          </div>
         ))}
       </div>
     </div>
@@ -248,11 +251,27 @@ const howItWorks = [
 
   <!-- CTA Banner -->
   <CTABanner
-    headline="Ready to save more lives?"
-    subtext="Join the waitlist and be first to transform your rescue operations with Barkhaus."
-    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
-    secondaryCta={{ label: 'Contact us', href: '/contact' }}
+    headline="Ready to Save More Lives?"
+    subtext="Start your free 14-day trial today. No credit card required."
+    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+    secondaryCta={{ label: 'Contact Us', href: '/contact' }}
   />
 
   <Footer />
 </BaseLayout>
+
+<script>
+  // Entrance animations for feature cards
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const el = entry.target as HTMLElement;
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        el.classList.remove('opacity-0', 'translate-y-4');
+        observer.unobserve(el);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature-card').forEach((card) => observer.observe(card));
+</script>
