@@ -210,6 +210,14 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           facebook_url: org.facebook,
           instagram_url: org.instagram,
         };
+      } else if (activeSection === 'email') {
+        updates = {
+          email_provider: emailCfg.provider,
+          primary_email: emailCfg.primary_email,
+          smtp_server: emailCfg.smtp_server,
+          smtp_port: emailCfg.smtp_port,
+          smtp_security: emailCfg.security,
+        };
       } else if (activeSection === 'domain') {
         updates = { custom_domain: domain.domain_name };
       }

@@ -12,7 +12,28 @@ function getSupabase() {
   )
 }
 
+const ALLOWED_ORIGINS = [
+  'https://app.barkhaus.io',
+  'http://localhost:5173',
+  'http://localhost:4321',
+]
+
+function getCorsHeaders(request) {
+  const origin = request?.headers?.get('origin') ?? ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://app.barkhaus.io'
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
+}
+
+export async function OPTIONS({ request }) {
+  return new Response(null, { status: 204, headers: getCorsHeaders(request) })
+}
+
 export async function POST({ request }) {
+  const corsHeaders = getCorsHeaders(request)
   try {
     const body = await request.json()
     const {
@@ -28,7 +49,7 @@ export async function POST({ request }) {
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'OpenAI API key not configured.' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       })
     }
 
@@ -94,25 +115,14 @@ Write only the post content — no labels, no preamble.`
 
     return new Response(JSON.stringify({ content }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })
 
   } catch (error) {
     console.error('generate-social-content error:', error)
     return new Response(JSON.stringify({ error: 'Failed to generate content', details: error.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })
   }
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  })
 }

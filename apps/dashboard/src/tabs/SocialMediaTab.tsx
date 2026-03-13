@@ -125,22 +125,29 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
     const animal = animals.find((a) => String(a.id) === selectedAnimalId);
     const generated: GeneratedResult[] = [];
 
+    const subdomain = orgConfig.subdomain ?? 'mbpr';
+    const endpoint = `https://${subdomain}.preview.barkhaus.io/api/admin/generate-social-content`;
+
     for (const platform of selectedPlatforms) {
+      const payload = {
+        platform,
+        animal_id: selectedAnimalId || undefined,
+        animal_name: animal?.name,
+        tone,
+        context: customContext,
+        org_name: orgConfig.name,
+      };
+      console.log(`[generate-social-content] POST ${endpoint}`, payload);
       try {
         const res = await axios.post<{ content?: string; text?: string; post?: string }>(
-          '/api/admin/generate-social-content',
-          {
-            platform,
-            animal_id: selectedAnimalId || undefined,
-            animal_name: animal?.name,
-            tone,
-            context: customContext,
-            org_name: orgConfig.name,
-          }
+          endpoint,
+          payload
         );
+        console.log(`[generate-social-content] response (${platform}):`, res.data);
         const content = res.data.content ?? res.data.text ?? res.data.post ?? '';
         generated.push({ platform, content, copied: false, showSpecs: false });
-      } catch {
+      } catch (err) {
+        console.error(`[generate-social-content] error (${platform}):`, err);
         generated.push({
           platform,
           content: `[Content generation for ${platform} is not available — connect the AI endpoint to enable this feature.]`,

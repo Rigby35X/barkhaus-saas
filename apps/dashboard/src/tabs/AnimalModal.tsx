@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Modal from '../components/Modal';
 import ImageUpload from '../components/ImageUpload';
 import { type Animal, uploadImage } from '../lib/api';
+import { supabase } from '../lib/supabase';
 
 interface AnimalModalProps {
   isOpen: boolean;
@@ -83,10 +84,16 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
           const url = await uploadImage(file, orgId);
           console.log('Upload response:', url);
           (data as Record<string, unknown>)[field] = url;
+          // Update form preview immediately
+          handleChange(field as keyof Animal, url);
           // Also set photo_url for main image
           if (field === 'image_url') {
             (data as Record<string, unknown>)['photo_url'] = url;
             console.log('Saving photo_url to animals table:', url);
+            // Explicit photo_url save for existing animals
+            if (animalId) {
+              await supabase.from('animals').update({ photo_url: url }).eq('id', animalId);
+            }
           }
         }
       }
