@@ -1,0 +1,78 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import CTABanner from '../../components/CTABanner.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => new Date(b.data.publishDate).getTime() - new Date(a.data.publishDate).getTime()
+);
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title="Blog" description="Insights, tips, and stories for animal rescue organizations.">
+  <Navbar currentPage="/blog" />
+
+  <main class="pt-24">
+
+    <!-- Header -->
+    <div class="bg-cloud py-20 text-center">
+      <div class="max-w-3xl mx-auto px-4">
+        <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Insights & Resources</p>
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-6">The Barkhaus Blog</h1>
+        <p class="text-lg text-stone">
+          Tips, stories, and resources for rescue organizations doing important work.
+        </p>
+      </div>
+    </div>
+
+    <!-- Posts -->
+    <section class="py-20 bg-white">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6">
+        <div class="space-y-8">
+          {posts.map((post) => (
+            <article class="bg-white rounded-2xl border border-dove p-8 hover:shadow-md transition-shadow">
+              <div class="flex flex-wrap gap-2 mb-3">
+                {post.data.tags.map((tag) => (
+                  <span class="text-xs bg-cloud px-2 py-1 rounded-full text-stone capitalize">{tag}</span>
+                ))}
+              </div>
+              <h2 class="font-serif text-2xl font-bold text-deep-taupe mb-3 hover:text-warm-brown transition-colors">
+                <a href={`/blog/${post.slug}`}>{post.data.title}</a>
+              </h2>
+              <p class="text-stone leading-relaxed mb-4">{post.data.description}</p>
+              <div class="flex items-center justify-between">
+                <div class="text-xs text-stone">
+                  {post.data.author} &middot; {formatDate(post.data.publishDate)}
+                </div>
+                <a
+                  href={`/blog/${post.slug}`}
+                  class="text-sm font-semibold text-warm-brown hover:underline inline-flex items-center gap-1"
+                >
+                  Read more
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <CTABanner
+      headline="Put These Ideas to Work"
+      subtext="Barkhaus gives you the tools to run a more effective rescue. Start your free trial today."
+      primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+      secondaryCta={{ label: 'See Features', href: '/features' }}
+    />
+
+  </main>
+
+  <Footer />
+</BaseLayout>

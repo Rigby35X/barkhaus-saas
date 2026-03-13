@@ -1,3 +1,5 @@
+// REQUIRED: Run the policies table migration in Supabase before using this tab.
+// See apps/dashboard/src/lib/api.ts → ensurePoliciesTable() for the SQL.
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 

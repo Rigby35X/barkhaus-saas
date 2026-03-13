@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Signing in…">
+  <div class="min-h-screen bg-cloud flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-dove border-t-warm-brown rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-stone text-sm">Completing sign in…</p>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createClient } from '@supabase/supabase-js';
+
+  const supabaseUrl = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_SUPABASE_URL ?? '';
+  const supabaseAnonKey = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_SUPABASE_ANON_KEY ?? '';
+  const APP_URL = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_APP_URL ?? 'https://app.barkhaus.io';
+
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error || !data.session) {
+    // Try exchanging the code from URL hash
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (accessToken && refreshToken) {
+      const { error: setErr } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      if (!setErr) {
+        window.location.href = APP_URL;
+      } else {
+        window.location.href = '/login?error=auth_failed';
+      }
+    } else {
+      window.location.href = '/login';
+    }
+  } else {
+    window.location.href = APP_URL;
+  }
+</script>

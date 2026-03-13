@@ -65,6 +65,7 @@ export interface OrgConfig {
   social: { facebook: string; instagram: string; twitter: string };
   isAdmin?: boolean;
   siteUrl?: string;
+  subdomain?: string;
 }
 
 export interface WebsiteSection {
@@ -168,6 +169,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
     contact: { email: 'admin@mbpr.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
     social: { facebook: 'https://facebook.com/missionbaypuppyrescue', instagram: 'https://instagram.com/missionbaypuppyrescue', twitter: '' },
     siteUrl: 'https://missionbaypuppyrescue.org',
+    subdomain: 'mbpr',
   },
   10: {
     name: 'MB Pups',
@@ -250,14 +252,30 @@ export async function sendAnimalEmail(animalId: number, templateName: string): P
 // ─── Image upload ─────────────────────────────────────────────────────────────
 
 export async function uploadImage(file: File, orgId: number, section = 'animals'): Promise<string> {
+  // NOTE: animal-images bucket must exist in Supabase Storage and be set to PUBLIC.
+  // Go to Supabase → Storage → New bucket → animal-images → Public
+  const org = ORGANIZATIONS[orgId];
+  const subdomain = org?.subdomain ?? 'mbpr';
+  const tenantUrl = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
+
   const form = new FormData();
   form.append('image', file);
   form.append('section', section);
   form.append('orgId', String(orgId));
 
-  const res = await fetch('/api/upload-image', { method: 'POST', body: form });
-  if (!res.ok) throw new Error('Image upload failed');
-  const json = await res.json() as { success: boolean; url?: string; error?: string };
+  console.log(`Starting upload for org ${orgId}, section: ${section}, endpoint: ${tenantUrl}`);
+  const res = await fetch(tenantUrl, { method: 'POST', body: form });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error('Upload failed:', res.status, text);
+    throw new Error(`Image upload failed: ${res.status}`);
+  }
+
+  const json = await res.json() as { success?: boolean; url?: string; error?: string };
+  console.log('Upload response:', json);
+
+  if (json.url) return json.url;
   if (!json.success) throw new Error(json.error ?? 'Upload failed');
   return json.url ?? '';
 }
@@ -430,4 +448,19 @@ export async function fetchApplications(params: {
 
 export async function updateApplicationStatus(id: number, status: string, adminNotes?: string): Promise<Application> {
   return updateFormSubmission(id, { status, admin_notes: adminNotes });
+}
+
+
+// ─── Policies ────────────────────────────────────────────────────────────────
+
+export async function ensurePoliciesTable() {
+  // This table must exist — run this in Supabase SQL Editor if policies tab errors:
+  // CREATE TABLE IF NOT EXISTS policies (
+  //   id bigserial PRIMARY KEY,
+  //   org_id integer NOT NULL,
+  //   policy_type text NOT NULL,
+  //   content text,
+  //   updated_at timestamptz DEFAULT now(),
+  //   UNIQUE (org_id, policy_type)
+  // );
 }

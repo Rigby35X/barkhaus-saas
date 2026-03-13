@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from '../components/Navbar.astro';
+import CTABanner from '../components/CTABanner.astro';
+import Footer from '../components/Footer.astro';
+
+const partnerTypes = [
+  {
+    icon: '🏥',
+    title: 'Veterinary Clinics',
+    description: 'Partner clinics offer discounted wellness visits for recently adopted animals. Your adopters get cared for; your clinic grows its client base.',
+  },
+  {
+    icon: '🐾',
+    title: 'Pet Supply Brands',
+    description: 'Connect your adopters with premium food, toys, and accessories. Co-branded welcome kits make a lasting first impression.',
+  },
+  {
+    icon: '📱',
+    title: 'Technology Partners',
+    description: 'Integrate your software with Barkhaus. Our API lets you connect microchip registries, lost-pet alerts, and more.',
+  },
+  {
+    icon: '📣',
+    title: 'Media & Press',
+    description: 'Help us spread the word about animal rescue. We love working with journalists, podcasters, and content creators who care about animals.',
+  },
+  {
+    icon: '🏢',
+    title: 'Corporate Sponsors',
+    description: 'Align your brand with a mission that matters. Corporate partnerships fund new features and subsidize costs for small rescues.',
+  },
+  {
+    icon: '🤝',
+    title: 'Rescue Networks',
+    description: 'We work with regional and national rescue networks to onboard member organizations at group rates with dedicated support.',
+  },
+];
+---
+
+<BaseLayout title="Partners" description="Partner with Barkhaus to help more animals find loving homes.">
+  <Navbar currentPage="/partners" />
+
+  <main class="pt-24">
+
+    <!-- Hero -->
+    <div class="bg-cloud py-20 text-center">
+      <div class="max-w-3xl mx-auto px-4">
+        <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Together We Do More</p>
+        <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-6">Partner With Barkhaus</h1>
+        <p class="text-lg text-stone leading-relaxed">
+          We're building an ecosystem around animal rescue — connecting shelters with veterinarians,
+          brands, technology providers, and community organizations who share our mission.
+        </p>
+      </div>
+    </div>
+
+    <!-- Partner types -->
+    <section class="py-20 bg-white">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-14">
+          <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">Partnership Opportunities</h2>
+          <p class="text-stone">Whether you're a local clinic or a national brand, there's a place for you in the Barkhaus ecosystem.</p>
+        </div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {partnerTypes.map(({ icon, title, description }) => (
+            <div class="bg-cloud rounded-2xl p-6 border border-dove hover:shadow-md transition-shadow">
+              <div class="text-3xl mb-4">{icon}</div>
+              <h3 class="font-serif text-lg font-semibold text-deep-taupe mb-2">{title}</h3>
+              <p class="text-sm text-stone leading-relaxed">{description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Current Partners -->
+    <section class="py-20 bg-cloud">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+        <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">Our Partners</h2>
+        <p class="text-stone mb-12">We're building our partner network. Interested in joining?</p>
+        <div class="grid sm:grid-cols-3 gap-6">
+          {['Mission Bay Puppy Rescue', 'Paws & Hope Shelter', 'Urban Animal Rescue'].map((name) => (
+            <div class="bg-white rounded-2xl p-8 border border-dove flex items-center justify-center shadow-sm">
+              <p class="font-serif font-semibold text-deep-taupe text-center">{name}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="py-20 bg-white">
+      <div class="max-w-2xl mx-auto px-4 text-center">
+        <h2 class="font-serif text-3xl font-bold text-deep-taupe mb-4">Let's Work Together</h2>
+        <p class="text-stone mb-8">
+          Tell us about your organization and how you'd like to partner. We respond to all inquiries
+          within 2 business days.
+        </p>
+        <a
+          href="/contact"
+          class="inline-block px-8 py-3 bg-warm-brown text-white rounded-xl font-semibold hover:opacity-90 transition"
+        >
+          Get In Touch
+        </a>
+      </div>
+    </section>
+
+    <CTABanner
+      headline="Ready to Make an Impact?"
+      subtext="Join our growing community of organizations helping animals find loving homes."
+      primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+      secondaryCta={{ label: 'Contact Us', href: '/contact' }}
+    />
+
+  </main>
+
+  <Footer />
+</BaseLayout>

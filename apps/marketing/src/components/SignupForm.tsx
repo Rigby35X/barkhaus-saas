@@ -1,11 +1,19 @@
 import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnonKey = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_SUPABASE_ANON_KEY ?? '';
-const APP_URL = (import.meta as unknown as { env: Record<string, string> }).env.PUBLIC_APP_URL ?? 'https://app.barkhaus.io';
+const getEnv = () => (import.meta as unknown as { env: Record<string, string> }).env;
+const APP_URL = () => getEnv().PUBLIC_APP_URL ?? 'https://app.barkhaus.io';
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+let _supabase: ReturnType<typeof createClient> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient(
+      getEnv().PUBLIC_SUPABASE_URL ?? '',
+      getEnv().PUBLIC_SUPABASE_ANON_KEY ?? ''
+    );
+  }
+  return _supabase;
+}
 
 type Plan = 'starter' | 'growth' | 'pro';
 
@@ -85,7 +93,7 @@ export default function SignupForm() {
 
   const handleGoogleSignup = async () => {
     setGoogleLoading(true);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await getSupabase().auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
@@ -108,7 +116,7 @@ export default function SignupForm() {
     setStep(3);
 
     try {
-      const { data, error: signupError } = await supabase.auth.signUp({
+      const { data, error: signupError } = await getSupabase().auth.signUp({
         email: account.email,
         password: account.password,
         options: {
@@ -124,7 +132,7 @@ export default function SignupForm() {
       if (signupError) throw signupError;
 
       if (data.session) {
-        window.location.href = APP_URL;
+        window.location.href = APP_URL();
       }
       // else: email confirmation sent — show success state
       setProcessing(false);

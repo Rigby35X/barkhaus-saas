@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, type WebsiteSection } from '../lib/api';
+import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
 
 interface WebsiteContentTabProps {
   orgId: number;
@@ -293,14 +293,22 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
             <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Website Content</h2>
             <p className="text-sm text-stone mt-1">Edit each section of your public-facing website.</p>
           </div>
-          <a
-            href="https://mbpr.preview.barkhaus.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition"
-          >
-            View Website ↗
-          </a>
+          {(() => {
+            const org = ORGANIZATIONS[orgId];
+            const previewUrl = org?.subdomain
+              ? `https://${org.subdomain}.preview.barkhaus.io`
+              : org?.siteUrl ?? null;
+            return previewUrl ? (
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition"
+              >
+                View Website ↗
+              </a>
+            ) : null;
+          })()}
         </div>
 
         {loading && <p className="p-6 text-stone text-center">Loading content…</p>}

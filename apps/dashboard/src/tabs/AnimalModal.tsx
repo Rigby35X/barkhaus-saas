@@ -72,12 +72,22 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
       const data = { ...form };
 
       // Upload main + additional images
+      // NOTE: Make sure animals table has photo_url column:
+      // ALTER TABLE animals ADD COLUMN IF NOT EXISTS photo_url text;
       const fields: ImageField[] = ['image_url', 'additional_image_1', 'additional_image_2', 'additional_image_3', 'additional_image_4'];
       for (const field of fields) {
         const file = imageFiles[field];
         if (file) {
+          const animalId = animal?.id;
+          console.log(`Starting upload for animal ${animalId ?? 'new'}, field: ${field}`);
           const url = await uploadImage(file, orgId);
+          console.log('Upload response:', url);
           (data as Record<string, unknown>)[field] = url;
+          // Also set photo_url for main image
+          if (field === 'image_url') {
+            (data as Record<string, unknown>)['photo_url'] = url;
+            console.log('Saving photo_url to animals table:', url);
+          }
         }
       }
 

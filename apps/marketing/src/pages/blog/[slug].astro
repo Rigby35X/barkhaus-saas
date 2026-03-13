@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Navbar from '../../components/Navbar.astro';
+import CTABanner from '../../components/CTABanner.astro';
+import Footer from '../../components/Footer.astro';
+import { getCollection, getEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({ params: { slug: post.slug } }));
+}
+
+const { slug } = Astro.params;
+const post = await getEntry('blog', slug);
+
+if (!post) return Astro.redirect('/blog');
+
+const { Content } = await post.render();
+
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <Navbar currentPage="/blog" />
+
+  <main class="pt-24">
+
+    <!-- Article header -->
+    <div class="bg-cloud py-16">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-wrap gap-2 mb-4">
+          {post.data.tags.map((tag) => (
+            <span class="text-xs bg-white/80 px-2 py-1 rounded-full text-stone capitalize">{tag}</span>
+          ))}
+        </div>
+        <h1 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">{post.data.title}</h1>
+        <p class="text-stone text-sm">
+          By {post.data.author} &middot; {formatDate(post.data.publishDate)}
+        </p>
+      </div>
+    </div>
+
+    <!-- Article content -->
+    <article class="py-16 bg-white">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 prose prose-lg prose-headings:font-serif prose-headings:text-deep-taupe prose-p:text-stone prose-a:text-warm-brown prose-strong:text-deep-taupe prose-li:text-stone">
+        <Content />
+      </div>
+    </article>
+
+    <!-- Back to blog -->
+    <div class="bg-white pb-8 text-center">
+      <a href="/blog" class="text-sm font-semibold text-warm-brown hover:underline inline-flex items-center gap-1">
+        <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        Back to Blog
+      </a>
+    </div>
+
+    <CTABanner
+      headline="Ready to Try Barkhaus?"
+      subtext="14-day free trial. No credit card required."
+      primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+      secondaryCta={{ label: 'See Pricing', href: '/pricing' }}
+    />
+
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  .prose h2 { margin-top: 2rem; margin-bottom: 1rem; }
+  .prose p { margin-bottom: 1rem; line-height: 1.75; }
+  .prose ul { margin-bottom: 1rem; padding-left: 1.5rem; }
+  .prose li { margin-bottom: 0.5rem; }
+  .prose blockquote { border-left: 4px solid #804e3f; padding-left: 1rem; font-style: italic; }
+  .prose a { text-decoration: underline; }
+  .prose hr { border-color: #e2d4c6; margin: 2rem 0; }
+</style>

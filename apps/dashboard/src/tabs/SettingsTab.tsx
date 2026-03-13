@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
-import { getOrganization, updateOrganization } from '../lib/api';
+import { getOrganization, updateOrganization, ORGANIZATIONS } from '../lib/api';
+import { supabase } from '../lib/supabase';
 
 interface SettingsTabProps {
   orgId: number;
@@ -73,6 +74,11 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   const [csvMsg, setCsvMsg] = useState('');
   const csvInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Logo upload ──
+  const [logoUploading, setLogoUploading] = useState<string | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [pendingLogoField, setPendingLogoField] = useState<string>('logo_dark_url');
+
   // ── Shared save state ──
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
@@ -112,6 +118,59 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
+
+  const uploadLogo = async (file: File, fieldKey: string) => {
+    setLogoUploading(fieldKey);
+    setSaveMsg('');
+    try {
+      const org = ORGANIZATIONS[orgId];
+      const subdomain = org?.subdomain ?? 'mbpr';
+      const tenantUrl = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
+
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('orgId', String(orgId));
+      formData.append('section', 'logos');
+
+      console.log('Starting logo upload to', tenantUrl);
+      const res = await fetch(tenantUrl, { method: 'POST', body: formData });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('Upload failed:', res.status, text);
+        throw new Error(`Upload failed: ${res.status}`);
+      }
+
+      const json = await res.json() as { url?: string };
+      console.log('Upload response:', json);
+      const url = json.url ?? '';
+
+      // Update local state
+      setBranding((prev) => ({ ...prev, [fieldKey]: url }));
+
+      // Save to Supabase organizations table
+      const dbField = fieldKey === 'logo_dark_url' ? 'logo_dark_url' : fieldKey === 'logo_light_url' ? 'logo_light_url' : 'favicon_url';
+      const { error } = await supabase.from('organizations').update({ [dbField]: url }).eq('id', orgId);
+      if (error) console.error('Failed to save logo to DB:', error);
+      else console.log('Logo saved to DB:', dbField, url);
+
+      setSaveMsg('Logo uploaded!');
+      setTimeout(() => setSaveMsg(''), 2500);
+    } catch (err) {
+      console.error('Logo upload error:', err);
+      setSaveMsg('Upload failed. Check console for details.');
+      setTimeout(() => setSaveMsg(''), 4000);
+    } finally {
+      setLogoUploading(null);
+    }
+  };
+
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadLogo(file, pendingLogoField);
+    e.target.value = '';
+  };
 
   const save = async () => {
     setSaving(true);
@@ -359,6 +418,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                 </div>
                 <div className="space-y-3">
                   <p className="text-xs font-semibold text-stone uppercase tracking-wider">Logos &amp; Favicon</p>
+                  <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handleLogoFileChange(e)} />
                   {([
                     ['logo_dark_url', 'Dark Logo URL'],
                     ['logo_light_url', 'Light Logo URL'],
@@ -367,6 +427,14 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                     <SField key={key} label={label}>
                       <div className="flex gap-2">
                         <input type="url" className={`${inp} flex-1`} value={branding[key] as string} onChange={(e) => setBranding((p) => ({ ...p, [key]: e.target.value }))} placeholder="https://…" />
+                        <button
+                          type="button"
+                          onClick={() => { setPendingLogoField(String(key)); logoInputRef.current?.click(); }}
+                          disabled={!!logoUploading}
+                          className="px-3 py-2 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {logoUploading === String(key) ? 'Uploading…' : 'Upload'}
+                        </button>
                         {branding[key] && (
                           <img src={branding[key] as string} alt={label} className="h-9 w-9 rounded-lg object-contain border border-silver-gray bg-cloud" />
                         )}
