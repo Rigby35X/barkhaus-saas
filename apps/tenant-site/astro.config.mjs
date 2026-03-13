@@ -6,6 +6,11 @@ import { fileURLToPath } from "url";
 
 export default defineConfig({
   site: "https://site-0-5ayxjbg5q-rigby35xs-projects.vercel.app",
+  // Disable Astro's built-in CSRF origin check so cross-origin API calls
+  // from app.barkhaus.io (dashboard) can POST to this tenant site's /api/* routes.
+  security: {
+    checkOrigin: false,
+  },
   integrations: [
     icon(),
     sitemap({
