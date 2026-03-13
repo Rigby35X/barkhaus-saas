@@ -83,10 +83,35 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
 
+  // ── Required organizations table columns ──
+  // Run once in Supabase SQL Editor if settings save/load fails:
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS primary_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS secondary_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS accent_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS text_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS background_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS logo_light_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS logo_dark_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS favicon_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_font text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_font text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS facebook_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS instagram_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS twitter_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS youtube_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS custom_domain text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS contact_email text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS email_provider text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS primary_email text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS smtp_server text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS smtp_port text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS smtp_security text;
+
   // Load live org data on mount
   useEffect(() => {
     getOrganization(orgId).then((data) => {
       if (!data) return;
+      console.log('Loaded org data:', data);
       setOrg((prev) => ({
         ...prev,
         name: (data.name as string) || prev.name,
@@ -221,12 +246,14 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       } else if (activeSection === 'domain') {
         updates = { custom_domain: domain.domain_name };
       }
-      await updateOrganization(orgId, updates);
+      console.log(`Saving settings [${activeSection}]:`, updates);
+      const saveResult = await updateOrganization(orgId, updates);
+      console.log('Save result:', saveResult);
       setSaveMsg('Saved!');
-      setTimeout(() => setSaveMsg(''), 2500);
+      setTimeout(() => setSaveMsg(''), 3000);
     } catch (err) {
       console.error('Settings save error:', err);
-      setSaveMsg('Failed to save.');
+      setSaveMsg('Save failed — check console');
       setTimeout(() => setSaveMsg(''), 3000);
     } finally {
       setSaving(false);
@@ -328,7 +355,15 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
               </h3>
               {activeSection !== 'csv-import' && activeSection !== 'api' && (
                 <div className="flex items-center gap-3">
-                  {saveMsg && <span className={`text-sm font-medium ${saveMsg === 'Saved!' ? 'text-green-600' : 'text-red-600'}`}>{saveMsg}</span>}
+                  {saveMsg && (
+                    <span className={`text-sm font-semibold px-3 py-1 rounded-lg ${
+                      saveMsg === 'Saved!' || saveMsg.startsWith('Logo')
+                        ? 'bg-green-50 text-green-700'
+                        : 'bg-red-50 text-red-600'
+                    }`}>
+                      {saveMsg}
+                    </span>
+                  )}
                   <button onClick={() => void save()} disabled={saving} className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition">
                     {saving ? 'Saving…' : 'Save Changes'}
                   </button>
