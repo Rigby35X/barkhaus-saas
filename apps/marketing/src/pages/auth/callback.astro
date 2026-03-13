@@ -20,25 +20,42 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  const { data, error } = await supabase.auth.getSession();
+  // PKCE flow: Supabase email confirmation sends ?code= in the URL
+  const searchParams = new URLSearchParams(window.location.search);
+  const code = searchParams.get('code');
 
-  if (error || !data.session) {
-    // Try exchanging the code from URL hash
+  if (code) {
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    if (!exchangeError) {
+      window.location.href = APP_URL;
+    } else {
+      console.error('Code exchange failed:', exchangeError.message);
+      window.location.href = '/login?error=auth_failed';
+    }
+  } else {
+    // Hash-based flow (OAuth): access_token in URL hash
     const hashParams = new URLSearchParams(window.location.hash.slice(1));
     const accessToken = hashParams.get('access_token');
     const refreshToken = hashParams.get('refresh_token');
 
     if (accessToken && refreshToken) {
-      const { error: setErr } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      const { error: setErr } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
       if (!setErr) {
         window.location.href = APP_URL;
       } else {
         window.location.href = '/login?error=auth_failed';
       }
     } else {
-      window.location.href = '/login';
+      // Already has a session (e.g. navigated here manually)
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        window.location.href = APP_URL;
+      } else {
+        window.location.href = '/login';
+      }
     }
-  } else {
-    window.location.href = APP_URL;
   }
 </script>

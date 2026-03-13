@@ -9,6 +9,7 @@ const links = [
   { href: '/pricing',  label: 'Pricing' },
   { href: '/about',    label: 'About' },
   { href: '/contact',  label: 'Contact' },
+  { href: '/blog',     label: 'Blog' },
 ];
 ---
 
@@ -18,7 +19,7 @@ const links = [
 
       <!-- Logo -->
       <a href="/" class="flex items-center">
-        <img src="/images/logos/6.png" alt="Barkhaus" class="h-9 w-auto" />
+        <img src="/images/logos/6.png" alt="Barkhaus" class="h-12 w-auto" />
       </a>
 
       <!-- Desktop nav -->
@@ -33,7 +34,10 @@ const links = [
             {label}
           </a>
         ))}
-        <a href="/signup" class="ml-2 px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition">
+        <a href="/login" class="px-4 py-2 text-sm font-medium text-deep-taupe hover:text-warm-brown transition">
+          Log in
+        </a>
+        <a href="/signup" class="ml-1 px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition">
           Get started
         </a>
       </div>
@@ -68,7 +72,10 @@ const links = [
           {label}
         </a>
       ))}
-      <a href="/signup" class="block mt-2 px-3 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl text-center">
+      <a href="/login" class="block px-3 py-2 rounded-lg text-sm font-medium text-deep-taupe hover:bg-cloud hover:text-warm-brown transition">
+        Log in
+      </a>
+      <a href="/signup" class="block mt-1 px-3 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl text-center">
         Get started
       </a>
     </div>

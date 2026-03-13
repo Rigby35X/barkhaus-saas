@@ -10,74 +10,86 @@ const features = [
   {
     icon: '🐾',
     eyebrow: 'Animals',
-    title: 'Animal profiles & tracking',
+    title: 'Animal Profiles & Tracking',
     description: 'Create rich profiles with photos, medical history, breed info, and behavioral notes. Track every animal from intake through adoption.',
+    href: '/features/animals',
   },
   {
     icon: '📋',
     eyebrow: 'Applications',
-    title: 'Online application management',
+    title: 'Online Application Management',
     description: 'Receive adoption, foster, and volunteer applications directly through your public site. Review and update status with one click.',
+    href: '/features/applications',
   },
   {
     icon: '🌐',
     eyebrow: 'Website',
-    title: 'Instant public website',
+    title: 'Instant Public Website',
     description: 'Your branded public site goes live the moment you create your account. Edit hero text, about sections, FAQs, and more — no code.',
+    href: '/features/public-website',
   },
   {
     icon: '📣',
     eyebrow: 'Social Media',
-    title: 'AI social post generator',
+    title: 'AI Social Post Generator',
     description: 'Generate platform-optimized captions for Instagram, Facebook, and Twitter in seconds. Choose your tone and copy in one click.',
+    href: '/features/social-media',
   },
   {
     icon: '💬',
     eyebrow: 'Communications',
-    title: 'Unified inbox',
+    title: 'Unified Inbox',
     description: 'All contact form submissions land in one inbox. Read, reply, and track conversations with your community from the dashboard.',
+    href: '/features/inbox',
   },
   {
     icon: '🎨',
     eyebrow: 'Branding',
-    title: 'Full brand customization',
+    title: 'Full Brand Customization',
     description: 'Set your logo, primary colors, fonts, and domain. Your dashboard and public site reflect your brand — not ours.',
+    href: '/features/branding',
   },
   {
     icon: '📊',
     eyebrow: 'Overview',
-    title: 'Dashboard analytics',
+    title: 'Dashboard Analytics',
     description: 'See real-time stats: total animals, pending applications, recent activity. Make data-driven decisions at a glance.',
+    href: '/features/analytics',
   },
   {
     icon: '📅',
     eyebrow: 'Events',
-    title: 'Events management',
+    title: 'Events Management',
     description: 'Create adoption events, fundraisers, and volunteer drives. Publish them to your public site and track RSVPs.',
+    href: '/features/events',
   },
   {
     icon: '💰',
     eyebrow: 'Donations',
-    title: 'Donation tracking',
+    title: 'Donation Tracking',
     description: 'Log and track donations, generate receipts, and see your fundraising progress — all in one place.',
+    href: '/features/donations',
   },
   {
     icon: '📁',
     eyebrow: 'Import',
-    title: 'CSV bulk import',
-    description: "Already have animal records? Import them via CSV in seconds. Map fields, preview the import, and confirm.",
+    title: 'CSV Bulk Import',
+    description: 'Already have animal records? Import them via CSV in seconds. Map fields, preview the import, and confirm.',
+    href: '/features/csv-import',
   },
   {
     icon: '🔒',
     eyebrow: 'Security',
-    title: 'Secure org access',
+    title: 'Secure Org Access',
     description: 'Each organization gets isolated data and secure access codes. No shared databases, no data leaks.',
+    href: '/features/security',
   },
   {
     icon: '🔌',
     eyebrow: 'Integrations',
-    title: 'Integrations (coming soon)',
+    title: 'Integrations',
     description: 'Stripe donations, Petfinder listings, and more are coming in future releases.',
+    href: '/features/integrations',
   },
 ];
 ---
@@ -86,26 +98,30 @@ const features = [
   <Navbar currentPage="/features" />
 
   <Hero
-    headline="Every tool your rescue needs"
+    headline="Every Tool Your Rescue Needs"
     subheadline="From animal intake to adoption day — manage your entire operation from one beautiful, easy-to-use dashboard."
-    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
     secondaryCta={{ label: 'See pricing', href: '/pricing' }}
   />
 
   <section class="py-20 bg-cloud">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">Built for Rescue Organizations</h2>
+        <p class="text-lg text-deep-taupe max-w-2xl mx-auto">Every feature was designed with real rescue workflows in mind. No bloat, no complexity — just the tools you need.</p>
+      </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {features.map((f) => (
-          <FeatureCard {...f} />
+          <FeatureCard {...f} linkLabel="Learn More" />
         ))}
       </div>
     </div>
   </section>
 
   <CTABanner
-    headline="Ready to simplify your rescue?"
-    subtext="Join the waitlist today and get early access to Barkhaus."
-    primaryCta={{ label: 'Join waitlist', href: '/waitlist' }}
+    headline="Ready to Simplify Your Rescue?"
+    subtext="Start your free 14-day trial today. No credit card required."
+    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
     secondaryCta={{ label: 'See pricing', href: '/pricing' }}
   />
 
