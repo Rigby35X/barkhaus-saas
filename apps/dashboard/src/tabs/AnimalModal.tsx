@@ -91,9 +91,11 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
           // ALTER TABLE animals ADD COLUMN IF NOT EXISTS photo_url text;
           if (field === 'image_url' && animalId) {
             console.log('Saving photo_url to animals table:', url);
-            // Intentionally not awaited and error ignored — column may not exist yet
-            supabase.from('animals').update({ photo_url: url }).eq('id', animalId).then(
-              ({ error }) => { if (error) console.warn('photo_url column missing — skipping:', error.message); }
+            supabase.from('animals').update({ photo_url: url }).eq('id', animalId).select().then(
+              ({ data, error }) => {
+                console.log('Photo save data:', data);
+                console.log('Photo save error:', JSON.stringify(error));
+              }
             );
           }
         }
