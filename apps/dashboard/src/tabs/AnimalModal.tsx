@@ -86,17 +86,22 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
           (data as Record<string, unknown>)[field] = url;
           // Update form preview immediately
           handleChange(field as keyof Animal, url);
-          // Also set photo_url for main image
-          if (field === 'image_url') {
-            (data as Record<string, unknown>)['photo_url'] = url;
+          // For main image, also save to photo_url column if it exists.
+          // Run in Supabase SQL Editor if needed:
+          // ALTER TABLE animals ADD COLUMN IF NOT EXISTS photo_url text;
+          if (field === 'image_url' && animalId) {
             console.log('Saving photo_url to animals table:', url);
-            // Explicit photo_url save for existing animals
-            if (animalId) {
-              await supabase.from('animals').update({ photo_url: url }).eq('id', animalId);
-            }
+            // Intentionally not awaited and error ignored — column may not exist yet
+            supabase.from('animals').update({ photo_url: url }).eq('id', animalId).then(
+              ({ error }) => { if (error) console.warn('photo_url column missing — skipping:', error.message); }
+            );
           }
         }
       }
+
+      // Remove photo_url from the batch update — it is not a standard animals column.
+      // image_url carries the photo through the main save below.
+      delete (data as Record<string, unknown>)['photo_url'];
 
       await onSave(data);
       setSuccess(isEditing ? 'Animal updated!' : 'Animal added!');
