@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+
+const PLACEHOLDER_SM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23e9e8e6' rx='24'/%3E%3C/svg%3E";
 import { getAnimals, type Animal } from '../lib/api';
 import type { TabKey } from '../components/Sidebar';
 import StatusBadge from '../components/StatusBadge';
@@ -96,10 +98,10 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
             >
               <div className="flex items-center gap-4">
                 <img
-                  src={animal.image_url ?? 'https://via.placeholder.com/48?text=🐾'}
+                  src={animal.image_url || PLACEHOLDER_SM}
                   alt={animal.name}
                   className="w-12 h-12 rounded-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=🐾'; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_SM; }}
                 />
                 <div>
                   <p className="font-semibold text-deep-taupe">{animal.name}</p>

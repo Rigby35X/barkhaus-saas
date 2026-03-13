@@ -1,4 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
+
+// Self-contained SVG placeholders — no external service needed
+const PLACEHOLDER_LG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23e9e8e6'/%3E%3Ctext x='150' y='110' font-size='32' text-anchor='middle' fill='%23bfae9b' font-family='sans-serif'%3ENo Photo%3C/text%3E%3C/svg%3E";
+const PLACEHOLDER_SM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23e9e8e6' rx='8'/%3E%3C/svg%3E";
 import {
   getAnimals, getAnimalById,
   createAnimal, updateAnimal, deleteAnimal,
@@ -205,10 +209,10 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
           {filtered.map((animal) => (
             <div key={animal.id} className="bg-white rounded-2xl overflow-hidden border border-silver-gray shadow-sm hover:shadow-md transition hover:-translate-y-0.5">
               <img
-                src={animal.image_url ?? 'https://via.placeholder.com/300x200?text=🐾'}
+                src={animal.image_url || PLACEHOLDER_LG}
                 alt={animal.name}
                 className="w-full h-48 object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x200?text=🐾'; }}
+                onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_LG; }}
               />
               <div className="p-4">
                 <div className="flex items-start justify-between mb-1">
@@ -260,10 +264,10 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
               <div key={animal.id} className={`items-center gap-3 p-4 hover:bg-cloud transition flex sm:grid ${isMBPR ? 'sm:grid-cols-8' : 'sm:grid-cols-5'}`}>
                 <div className="flex items-center gap-3 col-span-2">
                   <img
-                    src={animal.image_url ?? 'https://via.placeholder.com/48?text=🐾'}
+                    src={animal.image_url || PLACEHOLDER_SM}
                     alt={animal.name}
                     className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=🐾'; }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_SM; }}
                   />
                   <div className="min-w-0">
                     <h3 className="font-serif font-semibold text-deep-taupe truncate">{animal.name}</h3>

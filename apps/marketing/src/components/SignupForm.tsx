@@ -96,7 +96,7 @@ export default function SignupForm() {
     const { error: oauthError } = await getSupabase().auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: 'https://barkhaus.io/auth/callback',
       },
     });
     if (oauthError) {
@@ -162,13 +162,13 @@ export default function SignupForm() {
           <>
             <div className="w-12 h-12 border-4 border-cloud border-t-warm-brown rounded-full animate-spin mx-auto mb-6" />
             <h2 className="font-serif text-2xl font-bold text-deep-taupe mb-2">Creating Your Account…</h2>
-            <p className="text-stone">Hang tight while we get everything ready.</p>
+            <p className="text-deep-taupe">Hang tight while we get everything ready.</p>
           </>
         ) : (
           <>
             <div className="text-5xl mb-4">🎉</div>
             <h2 className="font-serif text-2xl font-bold text-deep-taupe mb-3">Check Your Email</h2>
-            <p className="text-stone mb-6">
+            <p className="text-deep-taupe mb-6">
               We sent a confirmation link to <strong>{account.email}</strong>. Click it to activate your account.
             </p>
             <a href="/login" className="inline-block px-6 py-3 bg-warm-brown text-white rounded-xl font-semibold hover:opacity-90 transition">
@@ -210,7 +210,7 @@ export default function SignupForm() {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
           <h2 className="font-serif text-2xl font-bold text-deep-taupe mb-2">Choose Your Plan</h2>
-          <p className="text-stone">14-day free trial on all plans. No credit card required.</p>
+          <p className="text-deep-taupe">14-day free trial on all plans. No credit card required.</p>
         </div>
 
         <form onSubmit={handleStep2Submit}>
@@ -243,10 +243,10 @@ export default function SignupForm() {
                   )}
                 </div>
                 <div className="text-xl font-bold text-warm-brown mb-2">{p.price}</div>
-                <p className="text-xs text-stone mb-3">{p.description}</p>
+                <p className="text-xs text-deep-taupe mb-3">{p.description}</p>
                 <ul className="space-y-1">
                   {p.features.map((f) => (
-                    <li key={f} className="text-xs text-stone flex items-center gap-1.5">
+                    <li key={f} className="text-xs text-deep-taupe flex items-center gap-1.5">
                       <svg className="w-3.5 h-3.5 text-warm-brown flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
@@ -289,7 +289,7 @@ export default function SignupForm() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <h2 className="font-serif text-2xl font-bold text-deep-taupe mb-2">Create Your Account</h2>
-        <p className="text-stone">14-day free trial. No credit card required.</p>
+        <p className="text-deep-taupe">14-day free trial. No credit card required.</p>
       </div>
 
       <button
@@ -309,13 +309,13 @@ export default function SignupForm() {
 
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 h-px bg-silver-gray" />
-        <span className="text-xs text-stone">or</span>
+        <span className="text-xs text-deep-taupe">or</span>
         <div className="flex-1 h-px bg-silver-gray" />
       </div>
 
       <form onSubmit={handleStep1Submit} className="space-y-4" noValidate>
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">
             Organization Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -330,7 +330,7 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">
             Your Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -345,7 +345,7 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">
             Email <span className="text-red-500">*</span>
           </label>
           <input
@@ -360,7 +360,7 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">
             Password <span className="text-red-500">*</span>
           </label>
           <input
@@ -375,7 +375,7 @@ export default function SignupForm() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">
             Confirm Password <span className="text-red-500">*</span>
           </label>
           <input
@@ -398,7 +398,7 @@ export default function SignupForm() {
           Continue
         </button>
 
-        <p className="text-center text-sm text-stone pt-2">
+        <p className="text-center text-sm text-deep-taupe pt-2">
           Already have an account?{' '}
           <a href="/login" className="text-warm-brown font-semibold hover:underline">
             Sign In

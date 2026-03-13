@@ -24,7 +24,7 @@ function formatDate(dateStr: string) {
       <div class="max-w-3xl mx-auto px-4">
         <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Insights & Resources</p>
         <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-6">The Barkhaus Blog</h1>
-        <p class="text-lg text-stone">
+        <p class="text-lg text-deep-taupe">
           Tips, stories, and resources for rescue organizations doing important work.
         </p>
       </div>
@@ -38,15 +38,15 @@ function formatDate(dateStr: string) {
             <article class="bg-white rounded-2xl border border-dove p-8 hover:shadow-md transition-shadow">
               <div class="flex flex-wrap gap-2 mb-3">
                 {post.data.tags.map((tag) => (
-                  <span class="text-xs bg-cloud px-2 py-1 rounded-full text-stone capitalize">{tag}</span>
+                  <span class="text-xs bg-cloud px-2 py-1 rounded-full text-deep-taupe capitalize">{tag}</span>
                 ))}
               </div>
               <h2 class="font-serif text-2xl font-bold text-deep-taupe mb-3 hover:text-warm-brown transition-colors">
                 <a href={`/blog/${post.slug}`}>{post.data.title}</a>
               </h2>
-              <p class="text-stone leading-relaxed mb-4">{post.data.description}</p>
+              <p class="text-deep-taupe leading-relaxed mb-4">{post.data.description}</p>
               <div class="flex items-center justify-between">
-                <div class="text-xs text-stone">
+                <div class="text-xs text-deep-taupe">
                   {post.data.author} &middot; {formatDate(post.data.publishDate)}
                 </div>
                 <a

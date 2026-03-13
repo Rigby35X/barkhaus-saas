@@ -27,7 +27,7 @@ export default function LoginForm() {
     const { error: oauthError } = await getSupabase().auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: 'https://barkhaus.io/auth/callback',
       },
     });
     if (oauthError) {
@@ -70,7 +70,7 @@ export default function LoginForm() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <h2 className="font-serif text-2xl font-bold text-deep-taupe mb-2">Welcome Back</h2>
-        <p className="text-stone">Sign in to your Barkhaus account.</p>
+        <p className="text-deep-taupe">Sign in to your Barkhaus account.</p>
       </div>
 
       <button
@@ -90,13 +90,13 @@ export default function LoginForm() {
 
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 h-px bg-silver-gray" />
-        <span className="text-xs text-stone">or</span>
+        <span className="text-xs text-deep-taupe">or</span>
         <div className="flex-1 h-px bg-silver-gray" />
       </div>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4" noValidate>
         <div>
-          <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Email</label>
+          <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider mb-1">Email</label>
           <input
             type="email"
             value={email}
@@ -109,7 +109,7 @@ export default function LoginForm() {
 
         <div>
           <div className="flex justify-between items-center mb-1">
-            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Password</label>
+            <label className="block text-xs font-semibold text-deep-taupe uppercase tracking-wider">Password</label>
             <a href="/forgot-password" className="text-xs text-warm-brown hover:underline">
               Forgot password?
             </a>
@@ -136,7 +136,7 @@ export default function LoginForm() {
           {loading ? 'Signing In…' : 'Sign In'}
         </button>
 
-        <p className="text-center text-sm text-stone pt-2">
+        <p className="text-center text-sm text-deep-taupe pt-2">
           Don't have an account?{' '}
           <a href="/signup" className="text-warm-brown font-semibold hover:underline">
             Start Free Trial

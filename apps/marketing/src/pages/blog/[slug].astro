@@ -32,11 +32,11 @@ function formatDate(dateStr: string) {
       <div class="max-w-3xl mx-auto px-4 sm:px-6">
         <div class="flex flex-wrap gap-2 mb-4">
           {post.data.tags.map((tag) => (
-            <span class="text-xs bg-white/80 px-2 py-1 rounded-full text-stone capitalize">{tag}</span>
+            <span class="text-xs bg-white/80 px-2 py-1 rounded-full text-deep-taupe capitalize">{tag}</span>
           ))}
         </div>
         <h1 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">{post.data.title}</h1>
-        <p class="text-stone text-sm">
+        <p class="text-deep-taupe text-sm">
           By {post.data.author} &middot; {formatDate(post.data.publishDate)}
         </p>
       </div>
@@ -44,7 +44,7 @@ function formatDate(dateStr: string) {
 
     <!-- Article content -->
     <article class="py-16 bg-white">
-      <div class="max-w-3xl mx-auto px-4 sm:px-6 prose prose-lg prose-headings:font-serif prose-headings:text-deep-taupe prose-p:text-stone prose-a:text-warm-brown prose-strong:text-deep-taupe prose-li:text-stone">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 prose prose-lg prose-headings:font-serif prose-headings:text-deep-taupe prose-p:text-deep-taupe prose-a:text-warm-brown prose-strong:text-deep-taupe prose-li:text-deep-taupe">
         <Content />
       </div>
     </article>

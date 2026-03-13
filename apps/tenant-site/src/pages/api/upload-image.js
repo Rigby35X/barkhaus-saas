@@ -8,10 +8,20 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+const ALLOWED_ORIGINS = [
+  'https://app.barkhaus.io',
+  'http://localhost:5173',
+  'http://localhost:4321',
+]
+
+function getCorsHeaders(request) {
+  const origin = request?.headers?.get('origin') ?? ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://app.barkhaus.io'
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
 }
 
 function getSupabaseAdmin() {
@@ -22,6 +32,7 @@ function getSupabaseAdmin() {
 }
 
 export async function POST({ request }) {
+  const corsHeaders = getCorsHeaders(request)
   try {
     const formData = await request.formData()
     const file = formData.get('image')
@@ -35,16 +46,14 @@ export async function POST({ request }) {
       })
     }
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      return new Response(JSON.stringify({ success: false, error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.' }), {
+      return new Response(JSON.stringify({ success: false, error: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json', ...corsHeaders }
       })
     }
 
-    // Validate file size (5MB limit)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       return new Response(JSON.stringify({ success: false, error: 'File size too large. Maximum size is 5MB.' }), {
@@ -80,6 +89,7 @@ export async function POST({ request }) {
     })
 
   } catch (error) {
+    const corsHeaders = getCorsHeaders(request)
     console.error('❌ Image upload error:', error)
     return new Response(JSON.stringify({ success: false, error: 'Failed to upload image: ' + error.message }), {
       status: 500,
@@ -88,9 +98,9 @@ export async function POST({ request }) {
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS({ request }) {
   return new Response(null, {
     status: 204,
-    headers: corsHeaders
+    headers: getCorsHeaders(request)
   })
 }
