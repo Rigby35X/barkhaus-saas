@@ -222,12 +222,21 @@ export async function createAnimal(data: Partial<Animal>): Promise<Animal> {
 }
 
 export async function updateAnimal(id: number, data: Partial<Animal>): Promise<Animal> {
+  // Strip read-only / non-updatable columns that cause Supabase 400s
+  const updatePayload = { ...data } as Record<string, unknown>;
+  delete updatePayload['id'];
+  delete updatePayload['created_at'];
+  delete updatePayload['org_id'];
+  delete updatePayload['Code']; // PAWS field — not a Supabase column
+
+  console.log('Animal update payload:', JSON.stringify(updatePayload));
   const { data: result, error } = await supabase
     .from('animals')
-    .update(data)
+    .update(updatePayload)
     .eq('id', id)
     .select()
     .single();
+  console.log('Animal update error:', JSON.stringify(error));
   if (error) throw error;
   return result;
 }
