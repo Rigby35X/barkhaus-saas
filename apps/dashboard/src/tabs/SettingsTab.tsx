@@ -32,6 +32,8 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
     website: '',
     facebook: orgConfig.social.facebook,
     instagram: orgConfig.social.instagram,
+    twitter: orgConfig.social.twitter ?? '',
+    youtube: '',
   });
 
   // ── Branding ──
@@ -107,38 +109,52 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS smtp_port text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS smtp_security text;
 
-  // Load live org data on mount
+  // Load live org data on mount — use ?? (not ||) so empty-string saves are respected
   useEffect(() => {
     getOrganization(orgId).then((data) => {
       if (!data) return;
       console.log('Loaded org data:', data);
       setOrg((prev) => ({
         ...prev,
-        name: (data.name as string) || prev.name,
-        ein_tax_id: (data.ein as string) || prev.ein_tax_id,
-        phone: (data.phone as string) || prev.phone,
-        email: (data.email as string) || prev.email,
-        contact_email: (data.contact_email as string) || prev.contact_email,
-        address: (data.address as string) || prev.address,
-        city: (data.city as string) || prev.city,
-        state: (data.state as string) || prev.state,
-        zip: (data.zip_code as string) || prev.zip,
-        website: (data.website as string) || prev.website,
-        facebook: (data.facebook_url as string) || prev.facebook,
-        instagram: (data.instagram_url as string) || prev.instagram,
+        name: (data.name as string) ?? prev.name,
+        ein_tax_id: (data.ein as string) ?? prev.ein_tax_id,
+        phone: (data.phone as string) ?? prev.phone,
+        email: (data.email as string) ?? prev.email,
+        contact_email: (data.contact_email as string) ?? prev.contact_email,
+        address: (data.address as string) ?? prev.address,
+        city: (data.city as string) ?? prev.city,
+        state: (data.state as string) ?? prev.state,
+        zip: (data.zip_code as string) ?? prev.zip,
+        website: (data.website as string) ?? prev.website,
+        facebook: (data.facebook_url as string) ?? prev.facebook,
+        instagram: (data.instagram_url as string) ?? prev.instagram,
+        twitter: (data.twitter_url as string) ?? prev.twitter,
+        youtube: (data.youtube_url as string) ?? prev.youtube,
       }));
       setBranding((prev) => ({
         ...prev,
-        heading_font: (data.heading_font as string) || prev.heading_font,
-        body_font: (data.body_font as string) || prev.body_font,
-        color_primary: (data.primary_color as string) || prev.color_primary,
-        color_secondary: (data.secondary_color as string) || prev.color_secondary,
-        color_accent: (data.accent_color as string) || prev.color_accent,
-        color_text: (data.text_color as string) || prev.color_text,
-        color_background: (data.background_color as string) || prev.color_background,
-        logo_dark_url: (data.logo_dark_url as string) || prev.logo_dark_url,
-        logo_light_url: (data.logo_light_url as string) || prev.logo_light_url,
-        favicon_url: (data.favicon_url as string) || prev.favicon_url,
+        heading_font: (data.heading_font as string) ?? prev.heading_font,
+        body_font: (data.body_font as string) ?? prev.body_font,
+        color_primary: (data.primary_color as string) ?? prev.color_primary,
+        color_secondary: (data.secondary_color as string) ?? prev.color_secondary,
+        color_accent: (data.accent_color as string) ?? prev.color_accent,
+        color_text: (data.text_color as string) ?? prev.color_text,
+        color_background: (data.background_color as string) ?? prev.color_background,
+        logo_dark_url: (data.logo_dark_url as string) ?? prev.logo_dark_url,
+        logo_light_url: (data.logo_light_url as string) ?? prev.logo_light_url,
+        favicon_url: (data.favicon_url as string) ?? prev.favicon_url,
+      }));
+      setEmailCfg((prev) => ({
+        ...prev,
+        provider: (data.email_provider as string) ?? prev.provider,
+        primary_email: (data.primary_email as string) ?? prev.primary_email,
+        smtp_server: (data.smtp_server as string) ?? prev.smtp_server,
+        smtp_port: (data.smtp_port as string) ?? prev.smtp_port,
+        security: (data.smtp_security as string) ?? prev.security,
+      }));
+      setDomain((prev) => ({
+        ...prev,
+        domain_name: (data.custom_domain as string) ?? prev.domain_name,
       }));
     }).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,8 +191,10 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
       // Save to Supabase organizations table
       const dbField = fieldKey === 'logo_dark_url' ? 'logo_dark_url' : fieldKey === 'logo_light_url' ? 'logo_light_url' : 'favicon_url';
-      const { error } = await supabase.from('organizations').update({ [dbField]: url }).eq('id', orgId);
-      if (error) console.error('Failed to save logo to DB:', error);
+      const { data: logoSaveData, error: logoSaveError } = await supabase.from('organizations').update({ [dbField]: url }).eq('id', orgId).select();
+      console.log('Logo save data:', logoSaveData);
+      console.log('Logo save error:', JSON.stringify(logoSaveError));
+      if (logoSaveError) console.error('Failed to save logo to DB:', logoSaveError);
       else console.log('Logo saved to DB:', dbField, url);
 
       setSaveMsg('Logo uploaded!');
@@ -234,6 +252,8 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
         updates = {
           facebook_url: org.facebook,
           instagram_url: org.instagram,
+          twitter_url: org.twitter,
+          youtube_url: org.youtube,
         };
       } else if (activeSection === 'email') {
         updates = {
@@ -491,15 +511,18 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
             {/* ── Social Media ── */}
             {activeSection === 'social' && (
               <div className="space-y-4">
-                {([
-                  ['instagram', 'Instagram URL'],
-                  ['facebook', 'Facebook URL'],
-                  ['twitter', 'Twitter / X URL'],
-                ] as [string, string][]).map(([key, label]) => (
-                  <SField key={key} label={label}>
-                    <input type="url" className={inp} value={org[key as keyof typeof org] ?? ''} onChange={(e) => setOrg((p) => ({ ...p, [key]: e.target.value }))} placeholder="https://…" />
-                  </SField>
-                ))}
+                <SField label="Instagram URL">
+                  <input type="url" className={inp} value={org.instagram} onChange={(e) => setOrg((p) => ({ ...p, instagram: e.target.value }))} placeholder="https://instagram.com/…" />
+                </SField>
+                <SField label="Facebook URL">
+                  <input type="url" className={inp} value={org.facebook} onChange={(e) => setOrg((p) => ({ ...p, facebook: e.target.value }))} placeholder="https://facebook.com/…" />
+                </SField>
+                <SField label="Twitter / X URL">
+                  <input type="url" className={inp} value={org.twitter} onChange={(e) => setOrg((p) => ({ ...p, twitter: e.target.value }))} placeholder="https://twitter.com/…" />
+                </SField>
+                <SField label="YouTube URL">
+                  <input type="url" className={inp} value={org.youtube} onChange={(e) => setOrg((p) => ({ ...p, youtube: e.target.value }))} placeholder="https://youtube.com/…" />
+                </SField>
               </div>
             )}
 

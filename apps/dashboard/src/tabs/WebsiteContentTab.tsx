@@ -23,6 +23,8 @@ interface PageDef {
   sections: SectionDef[];
 }
 
+// Section keys match what apps/tenant-site/src/pages/*.astro reads from content-fetcher.
+// page_slug values must match the first arg of fetchAllPageData() in each tenant page.
 const PAGES: PageDef[] = [
   {
     key: 'homepage',
@@ -33,26 +35,11 @@ const PAGES: PageDef[] = [
         label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
+          { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
           { key: 'button_text', label: 'Button Text' },
           { key: 'button_link', label: 'Button Link', type: 'url' },
           { key: 'background_image_url', label: 'Background Image URL', type: 'url' },
-        ],
-      },
-      {
-        key: 'services_header',
-        label: 'Services',
-        fields: [
-          { key: 'headline', label: 'Headline' },
-          { key: 'service_1', label: 'Service 1 Name' },
-          { key: 'service_1_description', label: 'Service 1 Description', type: 'textarea' },
-          { key: 'service_1_icon', label: 'Service 1 Icon' },
-          { key: 'service_2', label: 'Service 2 Name' },
-          { key: 'service_2_description', label: 'Service 2 Description', type: 'textarea' },
-          { key: 'service_2_icon', label: 'Service 2 Icon' },
-          { key: 'service_3', label: 'Service 3 Name' },
-          { key: 'service_3_description', label: 'Service 3 Description', type: 'textarea' },
-          { key: 'service_3_icon', label: 'Service 3 Icon' },
         ],
       },
       {
@@ -73,7 +60,6 @@ const PAGES: PageDef[] = [
           { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
           { key: 'featured_image_url', label: 'Featured Image URL', type: 'url' },
-          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'url' },
         ],
       },
       {
@@ -100,12 +86,55 @@ const PAGES: PageDef[] = [
     label: 'About',
     sections: [
       {
-        key: 'about_main',
-        label: 'About Page',
+        key: 'hero',
+        label: 'Hero',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'background_image_url', label: 'Background Image URL', type: 'url' },
+        ],
+      },
+      {
+        key: 'our_story',
+        label: 'Our Story',
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
           { key: 'featured_image_url', label: 'Featured Image URL', type: 'url' },
+          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'url' },
+        ],
+      },
+      {
+        key: 'what_we_do_expanded',
+        label: 'What We Do',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'team',
+        label: 'Team',
+        fields: [
+          { key: 'headline', label: 'Section Headline' },
+          { key: 'body_text', label: 'Intro Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'faq_section',
+        label: 'FAQ',
+        fields: [
+          { key: 'headline', label: 'Section Headline' },
+          { key: 'faq_question_1', label: 'FAQ 1 Question' },
+          { key: 'faq_answer_1', label: 'FAQ 1 Answer', type: 'textarea' },
+          { key: 'faq_question_2', label: 'FAQ 2 Question' },
+          { key: 'faq_answer_2', label: 'FAQ 2 Answer', type: 'textarea' },
+          { key: 'faq_question_3', label: 'FAQ 3 Question' },
+          { key: 'faq_answer_3', label: 'FAQ 3 Answer', type: 'textarea' },
+          { key: 'faq_question_4', label: 'FAQ 4 Question' },
+          { key: 'faq_answer_4', label: 'FAQ 4 Answer', type: 'textarea' },
+          { key: 'faq_question_5', label: 'FAQ 5 Question' },
+          { key: 'faq_answer_5', label: 'FAQ 5 Answer', type: 'textarea' },
         ],
       },
     ],
@@ -115,10 +144,19 @@ const PAGES: PageDef[] = [
     label: 'Contact',
     sections: [
       {
-        key: 'contact_main',
-        label: 'Contact Page',
+        key: 'hero',
+        label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'contact_info',
+        label: 'Contact Info',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
         ],
       },
@@ -129,11 +167,27 @@ const PAGES: PageDef[] = [
     label: 'Animals',
     sections: [
       {
-        key: 'animals_header',
-        label: 'Animals Page',
+        key: 'hero',
+        label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Intro Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'adoption_process',
+        label: 'Adoption Process',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'more_info',
+        label: 'More Info',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
         ],
       },
     ],
@@ -143,13 +197,19 @@ const PAGES: PageDef[] = [
     label: 'Donate',
     sections: [
       {
-        key: 'donate_header',
-        label: 'Donate Page',
+        key: 'hero',
+        label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
-          { key: 'button_text', label: 'Donate Button Text' },
-          { key: 'button_link', label: 'Donate URL', type: 'url' },
+        ],
+      },
+      {
+        key: 'impact',
+        label: 'Impact',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
         ],
       },
     ],
@@ -159,10 +219,18 @@ const PAGES: PageDef[] = [
     label: 'Events',
     sections: [
       {
-        key: 'events_header',
-        label: 'Events Page',
+        key: 'hero',
+        label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Intro Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'upcoming',
+        label: 'Upcoming Events',
+        fields: [
+          { key: 'headline', label: 'Section Headline' },
           { key: 'body_text', label: 'Intro Text', type: 'textarea' },
         ],
       },
@@ -173,11 +241,35 @@ const PAGES: PageDef[] = [
     label: 'Applications',
     sections: [
       {
-        key: 'applications_header',
-        label: 'Applications Page',
+        key: 'hero',
+        label: 'Hero',
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Intro Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'adoption_application',
+        label: 'Adoption Application',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'foster_application',
+        label: 'Foster Application',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+        ],
+      },
+      {
+        key: 'volunteer_application',
+        label: 'Volunteer Application',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
         ],
       },
     ],
@@ -236,9 +328,11 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const currentPage = PAGES.find((p) => p.key === activePage) ?? PAGES[0];
   const currentSectionDef = currentPage.sections.find((s) => s.key === activeSectionKey) ?? currentPage.sections[0];
 
-  // Find the matching live section from Xano data
+  // Find the matching live section — must match both page_slug and section_key
   const liveSection = sections.find(
-    (s) => (s.section_key ?? s.section) === currentSectionDef?.key
+    (s) =>
+      (s.page_slug as string | undefined) === activePage &&
+      (s.section_key ?? s.section) === currentSectionDef?.key
   );
 
   const handleEdit = (key: string, value: string) => {
