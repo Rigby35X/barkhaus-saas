@@ -99,9 +99,23 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
         }
       }
 
-      // Remove photo_url from the batch update — it is not a standard animals column.
-      // image_url carries the photo through the main save below.
+      // Remove photo_url — not a standard animals column.
       delete (data as Record<string, unknown>)['photo_url'];
+
+      // Normalize any { url: '...' } object fields to plain strings.
+      // additional_image_* and new_owner_photo may arrive from the DB as objects;
+      // Supabase returns 400 if you PATCH a text column with a JS object.
+      const objectImageFields = [
+        'additional_image_1', 'additional_image_2',
+        'additional_image_3', 'additional_image_4',
+        'new_owner_photo',
+      ] as const;
+      for (const f of objectImageFields) {
+        const v = (data as Record<string, unknown>)[f];
+        if (v !== null && v !== undefined && typeof v === 'object') {
+          (data as Record<string, unknown>)[f] = (v as { url?: string }).url ?? null;
+        }
+      }
 
       await onSave(data);
       setSuccess(isEditing ? 'Animal updated!' : 'Animal added!');
