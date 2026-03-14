@@ -1,4 +1,25 @@
 import type { APIRoute } from 'astro'
+import { createClient } from '@supabase/supabase-js'
+
+const ALLOWED_ORIGINS = [
+  'https://app.barkhaus.io',
+  'http://localhost:5173',
+  'http://localhost:4321',
+]
+
+function getCorsHeaders(request: Request) {
+  const origin = request.headers.get('origin') ?? ''
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : 'https://app.barkhaus.io'
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  }
+}
+
+export const OPTIONS: APIRoute = async ({ request }) => {
+  return new Response(null, { status: 204, headers: getCorsHeaders(request) })
+}
 
 const POLICY_PROMPTS: Record<string, string> = {
   privacy_policy: `Write a comprehensive Privacy Policy for a nonprofit animal rescue organization. Include sections on: information we collect, how we use it, data sharing, cookies, user rights, contact information, and effective date. Use plain language suitable for a nonprofit website.`,
@@ -11,6 +32,8 @@ const POLICY_PROMPTS: Record<string, string> = {
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  const corsHeaders = getCorsHeaders(request)
+
   try {
     const body = await request.json() as { orgId?: number; policyType?: string }
     const { orgId, policyType } = body
@@ -18,7 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!policyType || !(policyType in POLICY_PROMPTS)) {
       return new Response(JSON.stringify({ error: 'Invalid policy type.' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       })
     }
 
@@ -26,12 +49,49 @@ export const POST: APIRoute = async ({ request }) => {
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'OpenAI API key not configured.' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       })
     }
 
-    const orgHint = orgId ? `The organization ID is ${orgId}.` : ''
-    const prompt = `${POLICY_PROMPTS[policyType]} ${orgHint}\n\nFormat with clear section headers. Write in a professional but approachable tone.`
+    // Fetch org details from Supabase for personalization
+    let orgName = 'Our Animal Rescue Organization'
+    let orgEmail = ''
+    let orgAddress = ''
+    if (orgId) {
+      try {
+        const supabase = createClient(
+          import.meta.env.PUBLIC_SUPABASE_URL,
+          import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+        )
+        const { data } = await supabase
+          .from('organizations')
+          .select('name, contact_email, email, address')
+          .eq('id', orgId)
+          .single()
+        if (data) {
+          orgName = (data.name as string) ?? orgName
+          orgEmail = (data.contact_email as string) ?? (data.email as string) ?? ''
+          orgAddress = (data.address as string) ?? ''
+        }
+        console.log(`[generate-policy] org data fetched: name=${orgName}, email=${orgEmail}`)
+      } catch (e) {
+        console.warn('[generate-policy] Could not fetch org data, using defaults:', e)
+      }
+    }
+
+    const orgContext = [
+      `Organization Name: ${orgName}`,
+      orgEmail ? `Contact Email: ${orgEmail}` : '',
+      orgAddress ? `Address: ${orgAddress}` : '',
+    ].filter(Boolean).join('\n')
+
+    const prompt = `${POLICY_PROMPTS[policyType]}
+
+${orgContext}
+
+Format with clear section headers. Write in a professional but approachable tone. Replace any placeholder brackets with the actual organization details provided above.`
+
+    console.log(`[generate-policy] Generating ${policyType} for org ${orgId} (${orgName})`)
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -42,7 +102,10 @@ export const POST: APIRoute = async ({ request }) => {
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [
-          { role: 'system', content: 'You are a legal document specialist for nonprofit animal rescue organizations. Write clear, practical policy documents.' },
+          {
+            role: 'system',
+            content: 'You are a legal document specialist for nonprofit animal rescue organizations. Write clear, practical policy documents personalized with the organization\'s actual name, email, and address.',
+          },
           { role: 'user', content: prompt },
         ],
         max_tokens: 1500,
@@ -58,28 +121,19 @@ export const POST: APIRoute = async ({ request }) => {
     const openaiData = await openaiRes.json() as { choices?: { message?: { content?: string } }[] }
     const content = openaiData.choices?.[0]?.message?.content?.trim() ?? ''
 
+    console.log(`[generate-policy] Generated ${content.length} chars for ${policyType}`)
+
     return new Response(JSON.stringify({ content }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })
 
   } catch (error) {
     const err = error as Error
-    console.error('generate-policy error:', err)
+    console.error('[generate-policy] error:', err)
     return new Response(JSON.stringify({ error: 'Failed to generate policy', details: err.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })
   }
-}
-
-export const OPTIONS: APIRoute = async () => {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  })
 }

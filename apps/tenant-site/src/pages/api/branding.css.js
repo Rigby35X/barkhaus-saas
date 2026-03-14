@@ -54,10 +54,15 @@ export async function GET({ request }) {
     const accent = organization.accent_color || '#bfae9b';
     const textColor = organization.text_color || '#4d4c4c';
     const backgroundColor = organization.background_color || '#ffffff';
+    const headingColor = organization.heading_color || textColor;
+    const bodyTextColor = organization.body_text_color || textColor;
+    const linkColor = organization.link_color || primary;
     const primaryLight = lightenColor(primary, 20);
     const secondaryLight = lightenColor(secondary, 20);
-    const headingFont = organization.heading_font || 'Noto Serif Display';
+    const headingFont = organization.heading_font || 'Inter';
     const bodyFont = organization.body_font || 'Poppins';
+    const fontScaleMap = { 'Small': '0.875rem', 'Medium': '1rem', 'Large': '1.125rem', 'Extra Large': '1.25rem' };
+    const bodyFontSize = fontScaleMap[organization.font_scale] || '1rem';
     const googleFontsUrl = generateGoogleFontsUrl([headingFont, bodyFont]);
 
     const css = `
@@ -69,22 +74,25 @@ export async function GET({ request }) {
     --primaryLight: ${primaryLight};
     --secondary: ${secondary};
     --secondaryLight: ${secondaryLight};
-    --headerColor: ${textColor};
-    --bodyTextColor: ${textColor};
+    --accent: ${accent};
+    --headerColor: ${headingColor};
+    --bodyTextColor: ${bodyTextColor};
+    --linkColor: ${linkColor};
+    --backgroundColor: ${backgroundColor};
     --bodyTextColorWhite: #ffffff;
-    --headingFont: '${headingFont}', serif;
+    --headingFont: '${headingFont}', sans-serif;
     --bodyFont: '${bodyFont}', sans-serif;
     --topperFontSize: clamp(0.8125rem, 1.6vw, 1rem);
     --headerFontSize: clamp(1.9375rem, 3.9vw, 3.0625rem);
-    --bodyFontSize: 1rem;
+    --bodyFontSize: ${bodyFontSize};
     --sectionPadding: clamp(3.75rem, 7.82vw, 6.25rem) 1rem;
 }
 
-h1, h2, h3, h4, h5, h6, .cs-title { font-family: var(--headingFont) !important; }
-body, p, span, div, a, button, .cs-text, .cs-topper { font-family: var(--bodyFont) !important; }
+h1, h2, h3, h4, h5, h6, .cs-title { font-family: var(--headingFont) !important; color: var(--headerColor); }
+body, p, span, div, a, button, .cs-text, .cs-topper { font-family: var(--bodyFont) !important; font-size: var(--bodyFontSize); }
 .cs-button-solid { background-color: var(--primary) !important; color: var(--bodyTextColorWhite) !important; }
 .cs-button-solid:hover { background-color: var(--primaryLight) !important; }
-a { color: var(--primary); }
+a { color: var(--linkColor); }
 a:hover { color: var(--primaryLight); }
 .cs-topper { color: var(--secondary) !important; }
 .cs-title { color: var(--headerColor) !important; }
@@ -92,8 +100,8 @@ a:hover { color: var(--primaryLight); }
 #cs-navigation .cs-nav-link { color: var(--bodyTextColor); }
 #cs-navigation .cs-nav-link:hover { color: var(--primary); }
 #cs-footer { background-color: var(--headerColor); color: var(--bodyTextColorWhite); }
-.accent-color { color: var(--secondary) !important; }
-.accent-bg { background-color: var(--secondary) !important; }
+.accent-color { color: var(--accent) !important; }
+.accent-bg { background-color: var(--accent) !important; }
 .org-primary { color: var(--primary) !important; }
 .org-primary-bg { background-color: var(--primary) !important; }
 .org-secondary { color: var(--secondary) !important; }

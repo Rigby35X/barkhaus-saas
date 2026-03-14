@@ -41,15 +41,19 @@ export async function GET({ request }) {
 
     const branding = {
       fonts: {
-        heading: organization.heading_font || 'Noto Serif Display',
-        body: organization.body_font || 'Poppins'
+        heading: organization.heading_font || 'Inter',
+        body: organization.body_font || 'Poppins',
+        scale: organization.font_scale || 'Medium',
       },
       colors: {
         primary: organization.primary_color || '#804e3f',
         secondary: organization.secondary_color || '#d8c8b6',
         accent: organization.accent_color || '#bfae9b',
         text: organization.text_color || '#4d4c4c',
-        background: organization.background_color || '#ffffff'
+        background: organization.background_color || '#ffffff',
+        heading: organization.heading_color || '#4d4c4c',
+        bodyText: organization.body_text_color || '#4d4c4c',
+        link: organization.link_color || '#804e3f',
       },
       logos: {
         dark: organization.logo_dark_url || '',
@@ -95,11 +99,15 @@ export async function PUT({ request }) {
       secondary_color: colors?.secondary || '#d8c8b6',
       accent_color: colors?.accent || '#bfae9b',
       text_color: colors?.text || '#4d4c4c',
-      background_color: colors?.background || '#ffffff'
+      background_color: colors?.background || '#ffffff',
     };
 
     if (fonts?.heading) supabaseData.heading_font = fonts.heading;
     if (fonts?.body) supabaseData.body_font = fonts.body;
+    if (fonts?.scale) supabaseData.font_scale = fonts.scale;
+    if (colors?.heading) supabaseData.heading_color = colors.heading;
+    if (colors?.bodyText) supabaseData.body_text_color = colors.bodyText;
+    if (colors?.link) supabaseData.link_color = colors.link;
     if (logos?.dark !== undefined) supabaseData.logo_dark_url = logos.dark;
     if (logos?.light !== undefined) supabaseData.logo_light_url = logos.light;
     if (logos?.favicon !== undefined) supabaseData.favicon_url = logos.favicon;
@@ -117,13 +125,16 @@ export async function PUT({ request }) {
       success: true,
       message: 'Branding settings saved successfully',
       branding: {
-        fonts: { heading: updatedOrg.heading_font, body: updatedOrg.body_font },
+        fonts: { heading: updatedOrg.heading_font, body: updatedOrg.body_font, scale: updatedOrg.font_scale },
         colors: {
           primary: updatedOrg.primary_color,
           secondary: updatedOrg.secondary_color,
           accent: updatedOrg.accent_color,
           text: updatedOrg.text_color,
-          background: updatedOrg.background_color
+          background: updatedOrg.background_color,
+          heading: updatedOrg.heading_color,
+          bodyText: updatedOrg.body_text_color,
+          link: updatedOrg.link_color,
         },
         logos: { dark: updatedOrg.logo_dark_url, light: updatedOrg.logo_light_url, favicon: updatedOrg.favicon_url }
       }

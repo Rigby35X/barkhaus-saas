@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
 
 interface WebsiteContentTabProps {
@@ -307,6 +307,10 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const [editing, setEditing] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState('');
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [pendingImageField, setPendingImageField] = useState<string>('');
 
   useEffect(() => {
     const load = async () => {
@@ -377,6 +381,40 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     const page = PAGES.find((p) => p.key === pageKey);
     if (page?.sections[0]) setActiveSectionKey(page.sections[0].key);
     setEditing({});
+  };
+
+  const handleImageUpload = async (file: File, fieldKey: string) => {
+    setUploadingField(fieldKey);
+    setUploadError('');
+    try {
+      const org = ORGANIZATIONS[orgId];
+      const subdomain = org?.subdomain ?? 'mbpr';
+      const endpoint = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('orgId', String(orgId));
+      formData.append('section', activePage);
+      console.log(`[WebsiteContentTab] Uploading image for field ${fieldKey} to ${endpoint}`);
+      const res = await fetch(endpoint, { method: 'POST', body: formData });
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      const json = await res.json() as { url?: string };
+      const url = json.url ?? '';
+      console.log(`[WebsiteContentTab] Uploaded image URL:`, url);
+      handleEdit(fieldKey, url);
+    } catch (err) {
+      console.error('[WebsiteContentTab] Image upload error:', err);
+      setUploadError('Upload failed — check console.');
+      setTimeout(() => setUploadError(''), 4000);
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
+  const handleImageInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingImageField) return;
+    await handleImageUpload(file, pendingImageField);
+    e.target.value = '';
   };
 
   return (
@@ -477,9 +515,21 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
 
               {currentSectionDef && (
                 <div className="space-y-4">
+                  {/* Hidden file input for image uploads */}
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => void handleImageInputChange(e)}
+                  />
+                  {uploadError && (
+                    <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{uploadError}</p>
+                  )}
                   {currentSectionDef.fields.map((field) => {
                     const val = getValue(field.key);
                     const isLong = field.type === 'textarea';
+                    const isImage = field.type === 'image' || (field.type === 'url' && field.key.includes('image'));
                     return (
                       <div key={field.key} className="space-y-1">
                         <label className="block text-xs font-semibold text-stone uppercase tracking-wider">
@@ -491,6 +541,27 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                             onChange={(e) => handleEdit(field.key, e.target.value)}
                             className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown min-h-[100px] resize-y bg-white"
                           />
+                        ) : isImage ? (
+                          <div className="flex gap-2 items-center">
+                            <input
+                              type="url"
+                              value={val}
+                              onChange={(e) => handleEdit(field.key, e.target.value)}
+                              placeholder="https://…"
+                              className="flex-1 border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                            />
+                            <button
+                              type="button"
+                              disabled={!!uploadingField}
+                              onClick={() => { setPendingImageField(field.key); imageInputRef.current?.click(); }}
+                              className="px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
+                            >
+                              {uploadingField === field.key ? 'Uploading…' : 'Upload'}
+                            </button>
+                            {val && (
+                              <img src={val} alt={field.label} className="h-9 w-9 rounded-lg object-cover border border-silver-gray bg-cloud flex-shrink-0" />
+                            )}
+                          </div>
                         ) : (
                           <input
                             type={field.type === 'url' ? 'url' : 'text'}

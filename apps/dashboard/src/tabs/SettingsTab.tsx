@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
-import { getOrganization, updateOrganization, ORGANIZATIONS } from '../lib/api';
+import { ORGANIZATIONS } from '../lib/api';
 import { supabase } from '../lib/supabase';
 
 interface SettingsTabProps {
@@ -8,7 +8,8 @@ interface SettingsTabProps {
   orgConfig: OrgConfig;
 }
 
-const FONT_OPTIONS = ['Noto Serif Display', 'Poppins', 'Inter', 'Playfair Display', 'Merriweather', 'Lato', 'Open Sans', 'Raleway'];
+const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
+const FONT_SCALE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
 const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Custom SMTP'];
 const DOMAIN_PROVIDERS = ['None', 'GoDaddy', 'Namecheap', 'Google Domains', 'Cloudflare', 'Other'];
 const SECURITY_OPTIONS = ['TLS', 'SSL', 'None'];
@@ -38,13 +39,17 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
   // ── Branding ──
   const [branding, setBranding] = useState({
-    heading_font: 'Noto Serif Display',
+    heading_font: 'Inter',
     body_font: 'Poppins',
+    font_scale: 'Medium',
     color_primary: orgConfig.colors.primary,
     color_secondary: orgConfig.colors.secondary,
     color_accent: '#c8956b',
     color_text: '#4d4c4c',
     color_background: '#e9e8e6',
+    heading_color: '#4d4c4c',
+    body_text_color: '#4d4c4c',
+    link_color: '#804e3f',
     logo_dark_url: orgConfig.logo,
     logo_light_url: '',
     favicon_url: '',
@@ -111,52 +116,65 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
   // Load live org data on mount — use ?? (not ||) so empty-string saves are respected
   useEffect(() => {
-    getOrganization(orgId).then((data) => {
-      if (!data) return;
-      console.log('Loaded org data:', data);
-      setOrg((prev) => ({
-        ...prev,
-        name: (data.name as string) ?? prev.name,
-        ein_tax_id: (data.ein as string) ?? prev.ein_tax_id,
-        phone: (data.phone as string) ?? prev.phone,
-        email: (data.email as string) ?? prev.email,
-        contact_email: (data.contact_email as string) ?? prev.contact_email,
-        address: (data.address as string) ?? prev.address,
-        city: (data.city as string) ?? prev.city,
-        state: (data.state as string) ?? prev.state,
-        zip: (data.zip_code as string) ?? prev.zip,
-        website: (data.website as string) ?? prev.website,
-        facebook: (data.facebook_url as string) ?? prev.facebook,
-        instagram: (data.instagram_url as string) ?? prev.instagram,
-        twitter: (data.twitter_url as string) ?? prev.twitter,
-        youtube: (data.youtube_url as string) ?? prev.youtube,
-      }));
-      setBranding((prev) => ({
-        ...prev,
-        heading_font: (data.heading_font as string) ?? prev.heading_font,
-        body_font: (data.body_font as string) ?? prev.body_font,
-        color_primary: (data.primary_color as string) ?? prev.color_primary,
-        color_secondary: (data.secondary_color as string) ?? prev.color_secondary,
-        color_accent: (data.accent_color as string) ?? prev.color_accent,
-        color_text: (data.text_color as string) ?? prev.color_text,
-        color_background: (data.background_color as string) ?? prev.color_background,
-        logo_dark_url: (data.logo_dark_url as string) ?? prev.logo_dark_url,
-        logo_light_url: (data.logo_light_url as string) ?? prev.logo_light_url,
-        favicon_url: (data.favicon_url as string) ?? prev.favicon_url,
-      }));
-      setEmailCfg((prev) => ({
-        ...prev,
-        provider: (data.email_provider as string) ?? prev.provider,
-        primary_email: (data.primary_email as string) ?? prev.primary_email,
-        smtp_server: (data.smtp_server as string) ?? prev.smtp_server,
-        smtp_port: (data.smtp_port as string) ?? prev.smtp_port,
-        security: (data.smtp_security as string) ?? prev.security,
-      }));
-      setDomain((prev) => ({
-        ...prev,
-        domain_name: (data.custom_domain as string) ?? prev.domain_name,
-      }));
-    }).catch(() => {});
+    console.log('[SettingsTab] Loading org data from Supabase, id:', orgId);
+    supabase
+      .from('organizations')
+      .select('*')
+      .eq('id', orgId)
+      .single()
+      .then(({ data, error }) => {
+        if (error || !data) {
+          console.error('[SettingsTab] Failed to load org data:', error);
+          return;
+        }
+        console.log('[SettingsTab] Loaded org data:', data);
+        setOrg((prev) => ({
+          ...prev,
+          name: (data.name as string) ?? prev.name,
+          ein_tax_id: (data.ein as string) ?? prev.ein_tax_id,
+          phone: (data.phone as string) ?? prev.phone,
+          email: (data.email as string) ?? prev.email,
+          contact_email: (data.contact_email as string) ?? prev.contact_email,
+          address: (data.address as string) ?? prev.address,
+          city: (data.city as string) ?? prev.city,
+          state: (data.state as string) ?? prev.state,
+          zip: (data.zip_code as string) ?? prev.zip,
+          website: (data.website as string) ?? prev.website,
+          facebook: (data.facebook_url as string) ?? prev.facebook,
+          instagram: (data.instagram_url as string) ?? prev.instagram,
+          twitter: (data.twitter_url as string) ?? prev.twitter,
+          youtube: (data.youtube_url as string) ?? prev.youtube,
+        }));
+        setBranding((prev) => ({
+          ...prev,
+          heading_font: (data.heading_font as string) ?? prev.heading_font,
+          body_font: (data.body_font as string) ?? prev.body_font,
+          font_scale: (data.font_scale as string) ?? prev.font_scale,
+          color_primary: (data.primary_color as string) ?? prev.color_primary,
+          color_secondary: (data.secondary_color as string) ?? prev.color_secondary,
+          color_accent: (data.accent_color as string) ?? prev.color_accent,
+          color_text: (data.text_color as string) ?? prev.color_text,
+          color_background: (data.background_color as string) ?? prev.color_background,
+          heading_color: (data.heading_color as string) ?? prev.heading_color,
+          body_text_color: (data.body_text_color as string) ?? prev.body_text_color,
+          link_color: (data.link_color as string) ?? prev.link_color,
+          logo_dark_url: (data.logo_dark_url as string) ?? prev.logo_dark_url,
+          logo_light_url: (data.logo_light_url as string) ?? prev.logo_light_url,
+          favicon_url: (data.favicon_url as string) ?? prev.favicon_url,
+        }));
+        setEmailCfg((prev) => ({
+          ...prev,
+          provider: (data.email_provider as string) ?? prev.provider,
+          primary_email: (data.primary_email as string) ?? prev.primary_email,
+          smtp_server: (data.smtp_server as string) ?? prev.smtp_server,
+          smtp_port: (data.smtp_port as string) ?? prev.smtp_port,
+          security: (data.smtp_security as string) ?? prev.security,
+        }));
+        setDomain((prev) => ({
+          ...prev,
+          domain_name: (data.custom_domain as string) ?? prev.domain_name,
+        }));
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
@@ -236,14 +254,25 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           instagram_url: org.instagram,
         };
       } else if (activeSection === 'branding') {
+        // Required migration (run once in Supabase SQL Editor):
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_font text;
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_font text;
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS font_scale text;
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_color text;
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_text_color text;
+        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS link_color text;
         updates = {
           heading_font: branding.heading_font,
           body_font: branding.body_font,
+          font_scale: branding.font_scale,
           primary_color: branding.color_primary,
           secondary_color: branding.color_secondary,
           accent_color: branding.color_accent,
           text_color: branding.color_text,
           background_color: branding.color_background,
+          heading_color: branding.heading_color,
+          body_text_color: branding.body_text_color,
+          link_color: branding.link_color,
           logo_dark_url: branding.logo_dark_url,
           logo_light_url: branding.logo_light_url,
           favicon_url: branding.favicon_url,
@@ -266,14 +295,18 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       } else if (activeSection === 'domain') {
         updates = { custom_domain: domain.domain_name };
       }
-      console.log(`Saving settings [${activeSection}]:`, updates);
-      const saveResult = await updateOrganization(orgId, updates);
-      console.log('Save result:', saveResult);
+      console.log(`[SettingsTab] Saving [${activeSection}]:`, updates);
+      const { error } = await supabase
+        .from('organizations')
+        .update(updates)
+        .eq('id', orgId);
+      if (error) throw error;
+      console.log('[SettingsTab] Save successful');
       setSaveMsg('Saved!');
       setTimeout(() => setSaveMsg(''), 3000);
     } catch (err) {
-      console.error('Settings save error:', err);
-      setSaveMsg('Save failed — check console');
+      console.error('[SettingsTab] Save error:', err);
+      setSaveMsg('Save failed');
       setTimeout(() => setSaveMsg(''), 3000);
     } finally {
       setSaving(false);
@@ -447,9 +480,14 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                       {FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
                     </select>
                   </SField>
+                  <SField label="Font Scale">
+                    <select className={inp} value={branding.font_scale} onChange={(e) => setBranding((p) => ({ ...p, font_scale: e.target.value }))}>
+                      {FONT_SCALE_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                    </select>
+                  </SField>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-3">Colors</p>
+                  <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-3">Brand Colors</p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {([
                       ['color_primary', 'Primary'],
@@ -457,6 +495,35 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                       ['color_accent', 'Accent'],
                       ['color_text', 'Text'],
                       ['color_background', 'Background'],
+                    ] as [keyof typeof branding, string][]).map(([key, label]) => (
+                      <div key={key} className="space-y-1">
+                        <label className="block text-xs text-stone">{label}</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={branding[key] as string}
+                            onChange={(e) => setBranding((p) => ({ ...p, [key]: e.target.value }))}
+                            className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5"
+                          />
+                          <input
+                            type="text"
+                            value={branding[key] as string}
+                            onChange={(e) => setBranding((p) => ({ ...p, [key]: e.target.value }))}
+                            maxLength={7}
+                            className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-3">Typography Colors</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {([
+                      ['heading_color', 'Heading Color'],
+                      ['body_text_color', 'Body Text Color'],
+                      ['link_color', 'Link Color'],
                     ] as [keyof typeof branding, string][]).map(([key, label]) => (
                       <div key={key} className="space-y-1">
                         <label className="block text-xs text-stone">{label}</label>
