@@ -8,7 +8,7 @@ import { getImage } from "astro:assets";
 const optimizedImage = await getImage({src: landingImage, format: 'avif'})
 
 // Fetch dynamic content for homepage
-import { fetchAllPageData } from "../utils/content-fetcher.js";
+import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
 
 // Get tenant context from middleware
 const { tenant } = Astro.locals;
@@ -142,7 +142,7 @@ const showSuccessStories = false;
   <!--                    Hero                      -->
   <!-- ============================================ -->
 
-  <section id="hero">
+  <section id="hero" style={buildSectionStyle(content.hero?.typography)}>
     <div class="cs-container">
       <div class="cs-flex-group">
         <span class="cs-topper">{content.hero.subheadline}</span>
@@ -266,7 +266,7 @@ const showSuccessStories = false;
   <!--                 Side By Side                 -->
   <!-- ============================================ -->
 
-  <section id="sbs">
+  <section id="sbs" style={buildSectionStyle(content.about_us?.typography)}>
     <div class="cs-container">
       <!-- Left Image Section -->
       <div class="cs-left">
@@ -329,7 +329,7 @@ const showSuccessStories = false;
   <!--            Extra Content To Rank             -->
   <!-- ============================================ -->
 
-  <section id="sbs-r">
+  <section id="sbs-r" style={buildSectionStyle(content.what_we_do?.typography)}>
     <div class="cs-container">
       <!-- Left Image Section -->
       <div class="cs-left">

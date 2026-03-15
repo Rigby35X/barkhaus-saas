@@ -53,17 +53,26 @@ export async function POST({ request }) {
       })
     }
 
-    // Optionally fetch full animal data from Supabase
-    let animalInfo = animal_name ? `Animal: ${animal_name}` : ''
+    // Fetch full animal data including photo_url from Supabase
+    let animalInfo = animal_name ? `Animal name: ${animal_name}` : ''
+    let photoUrl = ''
     if (animal_id) {
       try {
         const { data } = await getSupabase()
           .from('animals')
-          .select('name,breed,age,gender,size,description,species')
+          .select('name,breed,age,gender,size,description,species,status,photo_url')
           .eq('id', animal_id)
           .single()
         if (data) {
-          animalInfo = `Animal: ${data.name}${data.breed ? `, ${data.breed}` : ''}${data.age ? `, ${data.age}` : ''}${data.gender ? `, ${data.gender}` : ''}${data.size ? `, ${data.size}` : ''}${data.description ? `\nDescription: ${data.description}` : ''}`
+          photoUrl = data.photo_url ?? ''
+          animalInfo = [
+            `Animal name: ${data.name}`,
+            data.breed ? `Breed: ${data.breed}` : '',
+            data.description ? `Bio: ${data.description}` : '',
+            data.status ? `Status: ${data.status}` : '',
+            data.gender ? `Gender: ${data.gender}` : '',
+            data.size ? `Size: ${data.size}` : '',
+          ].filter(Boolean).join('\n')
         }
       } catch {
         // ignore fetch error, fall back to animal_name
@@ -83,9 +92,10 @@ export async function POST({ request }) {
 
 Tone: ${tone}
 Platform guidelines: ${platformGuides[platform] ?? 'Engaging and platform-appropriate.'}
-${animalInfo ? `\n${animalInfo}` : ''}
+${animalInfo ? `\nAnimal details:\n${animalInfo}` : ''}
 ${customContext ? `\nAdditional context: ${customContext}` : ''}
 
+Use the animal's real name, breed, and bio from the details above to write a specific, personal post about this individual dog — not a generic rescue post.
 Write only the post content — no labels, no preamble.`
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -113,7 +123,7 @@ Write only the post content — no labels, no preamble.`
     const openaiData = await openaiRes.json()
     const content = openaiData.choices?.[0]?.message?.content?.trim() ?? ''
 
-    return new Response(JSON.stringify({ content }), {
+    return new Response(JSON.stringify({ content, photo_url: photoUrl }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     })

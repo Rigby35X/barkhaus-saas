@@ -205,6 +205,24 @@ function normalizeFaqSection(faqSection) {
 }
 
 /**
+ * Convert a section's typography overrides object into an inline CSS variable string.
+ * Apply to the section's wrapper element: style={buildSectionStyle(content.hero?.typography)}
+ * CSS variables match those set by /api/branding.css so they shadow the global values locally.
+ */
+export function buildSectionStyle(typography) {
+  if (!typography || typeof typography !== 'object') return '';
+  const fontScaleMap = { Small: '0.875rem', Medium: '1rem', Large: '1.125rem', 'Extra Large': '1.25rem' };
+  const parts = [];
+  if (typography.heading_color) parts.push(`--headerColor: ${typography.heading_color}`);
+  if (typography.body_text_color) parts.push(`--bodyTextColor: ${typography.body_text_color}`);
+  if (typography.heading_font) parts.push(`--headingFont: '${typography.heading_font}', sans-serif`);
+  if (typography.font_size_scale && fontScaleMap[typography.font_size_scale]) {
+    parts.push(`--bodyFontSize: ${fontScaleMap[typography.font_size_scale]}`);
+  }
+  return parts.join('; ');
+}
+
+/**
  * Fetch dynamic website content from Supabase.
  */
 export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origin = '') {
@@ -265,6 +283,7 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
             background_image_url: section.background_image_url || parsedContent.background_image_url || parsedContent.hero_image_url,
             featured_image_url: section.featured_image_url || parsedContent.featured_image_url || parsedContent.image_url,
             secondary_image_url: section.secondary_image_url || parsedContent.secondary_image_url || null,
+            typography: section.typography ?? parsedContent.typography ?? null,
             content: parsedContent
           };
 

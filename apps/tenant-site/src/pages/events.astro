@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import CTA from "@components/CTA.astro";
-import { fetchAllPageData } from "../utils/content-fetcher.js";
+import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
 
 // Get tenant context from middleware
 const { tenant } = Astro.locals;
@@ -95,7 +95,7 @@ const pastEvents = [
   <!--                 Page Header                  -->
   <!-- ============================================ -->
   
-  <section id="page-header">
+  <section id="page-header" style={buildSectionStyle(heroContent?.typography)}>
     <div class="cs-container">
       <h1 class="cs-title">{heroContent.headline || "Upcoming Events"}</h1>
       <p class="cs-text">

@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
 
+const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
+const SECTION_FONT_SCALE_OPTIONS = ['', 'Small', 'Medium', 'Large', 'Extra Large'];
+
 interface WebsiteContentTabProps {
   orgId: number;
 }
@@ -59,7 +62,8 @@ const PAGES: PageDef[] = [
           { key: 'headline', label: 'Headline' },
           { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
-          { key: 'featured_image_url', label: 'Featured Image URL', type: 'url' },
+          { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
+          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'image' },
         ],
       },
       {
@@ -158,6 +162,7 @@ const PAGES: PageDef[] = [
           { key: 'headline', label: 'Headline' },
           { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'background_image_url', label: 'Background Image URL', type: 'image' },
         ],
       },
     ],
@@ -190,6 +195,15 @@ const PAGES: PageDef[] = [
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
         ],
       },
+      {
+        key: 'adopted_gallery',
+        label: 'Adopted Gallery',
+        fields: [
+          { key: 'headline', label: 'Headline' },
+          { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
+        ],
+      },
     ],
   },
   {
@@ -210,6 +224,7 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
         ],
       },
     ],
@@ -312,6 +327,12 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [pendingImageField, setPendingImageField] = useState<string>('');
 
+  // Typography overrides per section (stored as JSONB `typography` column in website_content)
+  // Run once in Supabase SQL Editor if not yet added:
+  // ALTER TABLE website_content ADD COLUMN IF NOT EXISTS typography jsonb;
+  const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+  const [showTypography, setShowTypography] = useState(false);
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -328,6 +349,29 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     if (orgId) void load();
     else setLoading(false);
   }, [orgId]);
+
+  // Hydrate typography overrides when the active section changes
+  useEffect(() => {
+    const page = PAGES.find((p) => p.key === activePage) ?? PAGES[0];
+    const sectionDef = page.sections.find((s) => s.key === activeSectionKey) ?? page.sections[0];
+    const section = sections.find(
+      (s) => (s.page_slug as string | undefined) === activePage &&
+        (s.section_key ?? s.section) === sectionDef?.key
+    );
+    const typo = section?.typography;
+    if (typo && typeof typo === 'object' && !Array.isArray(typo)) {
+      const t = typo as Record<string, string>;
+      setTypographyEditing({
+        heading_color: t.heading_color ?? '',
+        body_text_color: t.body_text_color ?? '',
+        heading_font: t.heading_font ?? '',
+        font_size_scale: t.font_size_scale ?? '',
+      });
+    } else {
+      setTypographyEditing({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePage, activeSectionKey, sections]);
 
   const currentPage = PAGES.find((p) => p.key === activePage) ?? PAGES[0];
   const currentSectionDef = currentPage.sections.find((s) => s.key === activeSectionKey) ?? currentPage.sections[0];
@@ -356,13 +400,18 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setSaving(true);
     setSaved(false);
     try {
+      // Include typography overrides only when the panel is open (user explicitly set/cleared them)
+      const typographyPayload = showTypography
+        ? { typography: Object.values(typographyEditing).some(v => v) ? typographyEditing : null }
+        : {};
+      const fullContent = { ...editing, ...typographyPayload };
       if (liveSection) {
-        console.log('[WebsiteContentTab] updating existing section id:', liveSection.id, editing);
-        const updated = await updateWebsiteSection(liveSection.id, editing);
+        console.log('[WebsiteContentTab] updating existing section id:', liveSection.id, fullContent);
+        const updated = await updateWebsiteSection(liveSection.id, fullContent);
         setSections((prev) => prev.map((s) => (s.id === liveSection.id ? { ...s, ...updated } : s)));
       } else {
-        console.log('[WebsiteContentTab] creating new section:', activePage, currentSectionDef?.key, editing);
-        const created = await saveWebsiteContentSection(orgId, activePage, currentSectionDef?.key ?? '', editing);
+        console.log('[WebsiteContentTab] creating new section:', activePage, currentSectionDef?.key, fullContent);
+        const created = await saveWebsiteContentSection(orgId, activePage, currentSectionDef?.key ?? '', fullContent);
         setSections((prev) => [...prev, created]);
       }
       setEditing({});
@@ -381,6 +430,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     const page = PAGES.find((p) => p.key === pageKey);
     if (page?.sections[0]) setActiveSectionKey(page.sections[0].key);
     setEditing({});
+    setShowTypography(false);
   };
 
   const handleImageUpload = async (file: File, fieldKey: string) => {
@@ -480,7 +530,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   {currentPage.sections.map((sec) => (
                     <button
                       key={sec.key}
-                      onClick={() => { setActiveSectionKey(sec.key); setEditing({}); }}
+                      onClick={() => { setActiveSectionKey(sec.key); setEditing({}); setShowTypography(false); }}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                         activeSectionKey === sec.key ? 'bg-cloud text-warm-brown font-semibold' : 'text-deep-taupe hover:bg-cloud'
                       }`}
@@ -574,6 +624,96 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                       </div>
                     );
                   })}
+
+                  {/* ── Typography Overrides ── */}
+                  <div className="border border-silver-gray rounded-xl overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setShowTypography((v) => !v)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-deep-taupe hover:bg-cloud transition"
+                    >
+                      <span>Typography Overrides <span className="text-xs font-normal text-stone ml-1">(optional — overrides global settings for this section)</span></span>
+                      <span className="text-stone text-xs">{showTypography ? '▲' : '▼'}</span>
+                    </button>
+                    {showTypography && (
+                      <div className="border-t border-silver-gray p-4 space-y-4 bg-cloud">
+                        <p className="text-xs text-stone">Leave fields empty to use the global branding settings. Set a value to override just this section.</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Heading Color */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Heading Color</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={typographyEditing.heading_color || '#4d4c4c'}
+                                onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_color: e.target.value }))}
+                                className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={typographyEditing.heading_color}
+                                onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_color: e.target.value }))}
+                                placeholder="Leave empty for global"
+                                maxLength={7}
+                                className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                              />
+                              {typographyEditing.heading_color && (
+                                <button type="button" onClick={() => setTypographyEditing((p) => ({ ...p, heading_color: '' }))} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                              )}
+                            </div>
+                          </div>
+                          {/* Body Text Color */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Body Text Color</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={typographyEditing.body_text_color || '#4d4c4c'}
+                                onChange={(e) => setTypographyEditing((p) => ({ ...p, body_text_color: e.target.value }))}
+                                className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={typographyEditing.body_text_color}
+                                onChange={(e) => setTypographyEditing((p) => ({ ...p, body_text_color: e.target.value }))}
+                                placeholder="Leave empty for global"
+                                maxLength={7}
+                                className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                              />
+                              {typographyEditing.body_text_color && (
+                                <button type="button" onClick={() => setTypographyEditing((p) => ({ ...p, body_text_color: '' }))} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                              )}
+                            </div>
+                          </div>
+                          {/* Heading Font */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Heading Font</label>
+                            <select
+                              value={typographyEditing.heading_font}
+                              onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_font: e.target.value }))}
+                              className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white text-deep-taupe"
+                            >
+                              <option value="">— Use global font —</option>
+                              {FONT_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+                            </select>
+                          </div>
+                          {/* Font Size Scale */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Font Size Scale</label>
+                            <select
+                              value={typographyEditing.font_size_scale}
+                              onChange={(e) => setTypographyEditing((p) => ({ ...p, font_size_scale: e.target.value }))}
+                              className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white text-deep-taupe"
+                            >
+                              {SECTION_FONT_SCALE_OPTIONS.map((s) => (
+                                <option key={s} value={s}>{s === '' ? '— Use global scale —' : s}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

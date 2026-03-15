@@ -102,6 +102,10 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS favicon_url text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_font text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_font text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS font_scale text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_text_color text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS link_color text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS facebook_url text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS instagram_url text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS twitter_url text;

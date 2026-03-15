@@ -64,7 +64,9 @@ const TEMPLATES = [
 interface GeneratedResult {
   platform: PlatformKey;
   content: string;
+  photo_url: string;
   copied: boolean;
+  imageCopied: boolean;
   showSpecs: boolean;
 }
 
@@ -139,19 +141,22 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
       };
       console.log(`[generate-social-content] POST ${endpoint}`, payload);
       try {
-        const res = await axios.post<{ content?: string; text?: string; post?: string }>(
+        const res = await axios.post<{ content?: string; text?: string; post?: string; photo_url?: string }>(
           endpoint,
           payload
         );
         console.log(`[generate-social-content] response (${platform}):`, res.data);
         const content = res.data.content ?? res.data.text ?? res.data.post ?? '';
-        generated.push({ platform, content, copied: false, showSpecs: false });
+        const photo_url = res.data.photo_url ?? '';
+        generated.push({ platform, content, photo_url, copied: false, imageCopied: false, showSpecs: false });
       } catch (err) {
         console.error(`[generate-social-content] error (${platform}):`, err);
         generated.push({
           platform,
           content: `[Content generation for ${platform} is not available — connect the AI endpoint to enable this feature.]`,
+          photo_url: '',
           copied: false,
+          imageCopied: false,
           showSpecs: false,
         });
       }
@@ -171,6 +176,36 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
 
   const toggleSpecs = (idx: number) => {
     setResults((prev) => prev.map((r, i) => (i === idx ? { ...r, showSpecs: !r.showSpecs } : r)));
+  };
+
+  const copyImageUrl = (idx: number) => {
+    const url = results[idx].photo_url;
+    if (!url) return;
+    void navigator.clipboard.writeText(url);
+    setResults((prev) => prev.map((r, i) => (i === idx ? { ...r, imageCopied: true } : r)));
+    setTimeout(
+      () => setResults((prev) => prev.map((r, i) => (i === idx ? { ...r, imageCopied: false } : r))),
+      2000
+    );
+  };
+
+  const downloadImage = async (idx: number) => {
+    const url = results[idx].photo_url;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const ext = url.split('.').pop()?.split('?')[0] ?? 'jpg';
+      const filename = `${results[idx].platform}-photo.${ext}`;
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error('[downloadImage] failed:', err);
+    }
   };
 
   const platformInfo = (key: string) => PLATFORMS.find((p) => p.key === key);
@@ -301,9 +336,10 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
                 const info = platformInfo(r.platform);
                 return (
                   <div key={r.platform} className="border border-silver-gray rounded-xl overflow-hidden">
-                    <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 flex items-center justify-between gap-2">
+                    {/* Header row */}
+                    <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 flex items-center justify-between gap-2 flex-wrap">
                       <span className="font-semibold text-sm text-deep-taupe">{info?.label ?? r.platform}</span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <button
                           onClick={() => toggleSpecs(idx)}
                           className="px-3 py-1.5 text-xs border border-silver-gray rounded-lg text-stone hover:bg-cloud transition"
@@ -318,8 +354,28 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
                               : 'border border-warm-brown text-warm-brown hover:bg-sand'
                           }`}
                         >
-                          {r.copied ? 'Copied!' : 'Copy'}
+                          {r.copied ? 'Copied!' : 'Copy Text'}
                         </button>
+                        {r.photo_url && (
+                          <>
+                            <button
+                              onClick={() => copyImageUrl(idx)}
+                              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition ${
+                                r.imageCopied
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'border border-silver-gray text-deep-taupe hover:bg-cloud'
+                              }`}
+                            >
+                              {r.imageCopied ? 'Copied!' : 'Copy Image URL'}
+                            </button>
+                            <button
+                              onClick={() => void downloadImage(idx)}
+                              className="px-3 py-1.5 text-xs font-semibold border border-silver-gray rounded-lg text-deep-taupe hover:bg-cloud transition"
+                            >
+                              Download Image
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                     {r.showSpecs && info && (
@@ -327,8 +383,16 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
                         <span className="font-semibold">Image specs:</span> {info.specs}
                       </div>
                     )}
-                    <div className="p-4">
-                      <p className="text-sm text-deep-taupe whitespace-pre-wrap">{r.content}</p>
+                    {/* Content + photo side by side when photo is available */}
+                    <div className={`p-4 ${r.photo_url ? 'flex gap-4 items-start' : ''}`}>
+                      {r.photo_url && (
+                        <img
+                          src={r.photo_url}
+                          alt="Animal photo"
+                          className="w-28 h-28 rounded-xl object-cover border border-silver-gray flex-shrink-0"
+                        />
+                      )}
+                      <p className="text-sm text-deep-taupe whitespace-pre-wrap flex-1">{r.content}</p>
                     </div>
                   </div>
                 );

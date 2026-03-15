@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import CTA from "@components/CTA.astro";
-import { fetchAllPageData } from "../utils/content-fetcher.js";
+import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
 
 // Get tenant context from middleware
 const { tenant } = Astro.locals;
@@ -24,7 +24,7 @@ const impactContent = content.impact || {};
   <!--                 Page Header                  -->
   <!-- ============================================ -->
   
-  <section id="page-header">
+  <section id="page-header" style={buildSectionStyle(heroContent?.typography)}>
     <div class="cs-container">
       <h1 class="cs-title">{heroContent.headline || "Support Our Mission"}</h1>
       <p class="cs-text">
@@ -47,7 +47,7 @@ const impactContent = content.impact || {};
   <!--              Donation Impact                 -->
   <!-- ============================================ -->
   
-  <section id="donation-impact">
+  <section id="donation-impact" style={buildSectionStyle(impactContent?.typography)}>
     <div class="cs-container">
       <div class="cs-content">
         <div class="cs-text-content">
