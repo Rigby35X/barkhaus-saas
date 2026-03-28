@@ -516,10 +516,15 @@ const adoptionContent = content.adoption_application || {};
   </section>
 </BaseLayout>
 
+<script define:vars={{ supabaseUrl: import.meta.env.PUBLIC_SUPABASE_URL, supabaseAnonKey: import.meta.env.PUBLIC_SUPABASE_ANON_KEY }}>
+  window.__SB_URL__ = supabaseUrl;
+  window.__SB_KEY__ = supabaseAnonKey;
+</script>
+
 <script is:inline>
 (function () {
-  const XANO_ENDPOINT =
-    'https://xz6u-fpaz-praf.n7e.xano.io/api:tVL5q7Ta/applications/cognito-webhook?org_id=9&cognito_form_id=1';
+  const SUPABASE_URL = window.__SB_URL__;
+  const SUPABASE_KEY = window.__SB_KEY__;
 
   const form      = document.getElementById('adoption-form');
   const success   = document.getElementById('form-success');
@@ -631,15 +636,29 @@ const adoptionContent = content.adoption_application || {};
     // Auto-populated fields
     const today = new Date().toISOString().split('T')[0];
     data['ContractAgreement_Date'] = today;
-    data['Entry_Status']           = 'Submitted';
-    data['Entry_DateSubmitted']    = today;
-    data['Entry_DateCreated']      = today;
+
+    // Build Supabase payload
+    const payload = {
+      org_id: 9,
+      form_type: 'adoption',
+      first_name: data['AboutYou2_Name_First'] || '',
+      last_name:  data['AboutYou2_Name_Last']  || '',
+      email:      data['AboutYou2_Email']       || '',
+      phone:      data['AboutYou2_CellPhone']   || '',
+      status:     'new',
+      form_data:  data,
+    };
 
     try {
-      const res = await fetch(XANO_ENDPOINT, {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/applications', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {

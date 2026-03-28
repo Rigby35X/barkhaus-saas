@@ -10,7 +10,7 @@ import {
   deleteAnimal,
   sendAnimalEmail,
 } from '../lib/api';
-import MBPRPuppyForm from '../components/MBPRPuppyForm';
+import AnimalForm from '../components/AnimalForm';
 import PawsAnimalList from '../components/PawsAnimalList';
 
 export default function Animals() {
@@ -119,7 +119,7 @@ export default function Animals() {
               onClick={handleAddAnimal}
               className="bg-warm-brown text-white px-6 py-2 rounded hover:bg-opacity-90 transition"
             >
-              + Add New Puppy
+              + Add New Animal
             </button>
           </div>
 
@@ -173,7 +173,7 @@ export default function Animals() {
           />
 
           {isFormOpen && (
-            <MBPRPuppyForm
+            <AnimalForm
               puppy={selectedAnimal}
               onSave={handleSaveAnimal}
               onCancel={() => {
