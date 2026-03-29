@@ -2,12 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
 import { ORGANIZATIONS } from '../lib/api';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../components/Toast';
 
 interface SettingsTabProps {
   orgId: number;
   orgConfig: OrgConfig;
 }
 
+const HEADING_FONT_OPTIONS = ['Noto Serif Display', 'Playfair Display', 'Lora', 'Merriweather', 'Georgia'];
+const BODY_FONT_OPTIONS = ['Poppins', 'DM Sans', 'Inter', 'Source Sans 3', 'Roboto'];
 const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
 const FONT_SCALE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
 const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Custom SMTP'];
@@ -17,6 +20,7 @@ const SECURITY_OPTIONS = ['TLS', 'SSL', 'None'];
 interface CsvRow { [key: string]: string }
 
 export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
+  const { showToast } = useToast();
   const [activeSection, setActiveSection] = useState('organization');
 
   // ── Organization ──
@@ -88,7 +92,6 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
   // ── Shared save state ──
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
 
   // ── Required organizations table columns ──
   // Run once in Supabase SQL Editor if settings save/load fails:
@@ -184,10 +187,9 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
   const uploadLogo = async (file: File, fieldKey: string) => {
     setLogoUploading(fieldKey);
-    setSaveMsg('');
     try {
-      const org = ORGANIZATIONS[orgId];
-      const subdomain = org?.subdomain ?? 'mbpr';
+      const orgRecord = ORGANIZATIONS[orgId];
+      const subdomain = orgRecord?.subdomain ?? 'mbpr';
       const tenantUrl = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
 
       const formData = new FormData();
@@ -216,15 +218,16 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       const { data: logoSaveData, error: logoSaveError } = await supabase.from('organizations').update({ [dbField]: url }).eq('id', orgId).select();
       console.log('Logo save data:', logoSaveData);
       console.log('Logo save error:', JSON.stringify(logoSaveError));
-      if (logoSaveError) console.error('Failed to save logo to DB:', logoSaveError);
-      else console.log('Logo saved to DB:', dbField, url);
-
-      setSaveMsg('Logo uploaded!');
-      setTimeout(() => setSaveMsg(''), 2500);
+      if (logoSaveError) {
+        console.error('Failed to save logo to DB:', logoSaveError);
+        showToast('Upload failed — could not save to database', 'error');
+      } else {
+        console.log('Logo saved to DB:', dbField, url);
+        showToast('Logo uploaded!', 'success');
+      }
     } catch (err) {
       console.error('Logo upload error:', err);
-      setSaveMsg('Upload failed. Check console for details.');
-      setTimeout(() => setSaveMsg(''), 4000);
+      showToast('Upload failed — check console for details', 'error');
     } finally {
       setLogoUploading(null);
     }
@@ -239,7 +242,6 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
 
   const save = async () => {
     setSaving(true);
-    setSaveMsg('');
     try {
       let updates: Record<string, unknown> = {};
       if (activeSection === 'organization') {
@@ -258,13 +260,6 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           instagram_url: org.instagram,
         };
       } else if (activeSection === 'branding') {
-        // Required migration (run once in Supabase SQL Editor):
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_font text;
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_font text;
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS font_scale text;
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS heading_color text;
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS body_text_color text;
-        // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS link_color text;
         updates = {
           heading_font: branding.heading_font,
           body_font: branding.body_font,
@@ -306,12 +301,16 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
         .eq('id', orgId);
       if (error) throw error;
       console.log('[SettingsTab] Save successful');
-      setSaveMsg('Saved!');
-      setTimeout(() => setSaveMsg(''), 3000);
+      if (activeSection === 'organization') {
+        showToast('Organization info saved \u2713', 'success');
+      } else if (activeSection === 'branding') {
+        showToast('Branding saved \u2713', 'success');
+      } else {
+        showToast('Saved \u2713', 'success');
+      }
     } catch (err) {
       console.error('[SettingsTab] Save error:', err);
-      setSaveMsg('Save failed');
-      setTimeout(() => setSaveMsg(''), 3000);
+      showToast('Save failed \u2014 please try again', 'error');
     } finally {
       setSaving(false);
     }
@@ -412,15 +411,6 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
               </h3>
               {activeSection !== 'csv-import' && activeSection !== 'api' && (
                 <div className="flex items-center gap-3">
-                  {saveMsg && (
-                    <span className={`text-sm font-semibold px-3 py-1 rounded-lg ${
-                      saveMsg === 'Saved!' || saveMsg.startsWith('Logo')
-                        ? 'bg-green-50 text-green-700'
-                        : 'bg-red-50 text-red-600'
-                    }`}>
-                      {saveMsg}
-                    </span>
-                  )}
                   <button onClick={() => void save()} disabled={saving} className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition">
                     {saving ? 'Saving…' : 'Save Changes'}
                   </button>
@@ -476,12 +466,12 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <SField label="Heading Font">
                     <select className={inp} value={branding.heading_font} onChange={(e) => setBranding((p) => ({ ...p, heading_font: e.target.value }))}>
-                      {FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
+                      {HEADING_FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
                     </select>
                   </SField>
                   <SField label="Body Font">
                     <select className={inp} value={branding.body_font} onChange={(e) => setBranding((p) => ({ ...p, body_font: e.target.value }))}>
-                      {FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
+                      {BODY_FONT_OPTIONS.map((f) => <option key={f}>{f}</option>)}
                     </select>
                   </SField>
                   <SField label="Font Scale">

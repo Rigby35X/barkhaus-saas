@@ -3,6 +3,7 @@ import Sidebar, { type TabKey } from './Sidebar';
 import Header from './Header';
 import type { OrgConfig } from '../lib/api';
 import { ORGANIZATIONS } from '../lib/api';
+import { ToastProvider } from './Toast';
 
 interface LayoutProps {
   children: ReactNode;
@@ -46,6 +47,7 @@ export default function Layout({
   };
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Sticky header */}
       <Header
@@ -100,5 +102,6 @@ export default function Layout({
         </div>
       </div>
     </div>
+    </ToastProvider>
   );
 }
