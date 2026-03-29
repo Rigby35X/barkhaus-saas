@@ -1,33 +1,84 @@
 import { useState, useEffect } from 'react';
-import { getApplications, updateApplication, type Application } from '../lib/api';
-import StatusBadge from '../components/StatusBadge';
-import Modal from '../components/Modal';
 
 interface ApplicationsTabProps {
-  orgId: number;
+  orgId?: number;
 }
 
-const ADOPTION_CODES = [
-  '4.Approved', '1.LM', '7.Adopted: MBPR', 'Approved', 'Adopted: MBPR',
-  'Z.Denied', '6.Conditional Approval', 'LM', 'Foster', 'Denied',
-  'Conditional Approval', 'Call Later', '5.Approved: Adult', '8.Adopted: Other',
-  '2.Call Later', '9.Foster', 'Approved: Adult', 'Returned', '3.VIP',
-  'VIP', 'Adopted: Other', 'Volunteer', 'Y.Returned',
-];
+interface Application {
+  id: number;
+  org_id: number;
+  form_type: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  status?: string;
+  admin_notes?: string;
+  created_at?: string;
+  form_data?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+async function fetchApplicationsFromSupabase(orgId: number): Promise<Application[]> {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/applications?org_id=eq.${orgId}&order=created_at.desc`,
+    {
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+      },
+    }
+  );
+  if (!res.ok) throw new Error(`Supabase error ${res.status}`);
+  return res.json() as Promise<Application[]>;
+}
+
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const colorMap: Record<string, string> = {
+    adoption: 'bg-blue-100 text-blue-700',
+    foster: 'bg-purple-100 text-purple-700',
+    volunteer: 'bg-green-100 text-green-700',
+  };
+  const color = colorMap[type?.toLowerCase()] ?? 'bg-gray-100 text-gray-600';
+  return (
+    <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${color}`}>
+      {type ?? '—'}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const colorMap: Record<string, string> = {
+    new: 'bg-gray-100 text-gray-600',
+    under_review: 'bg-yellow-100 text-yellow-700',
+    approved: 'bg-green-100 text-green-700',
+    denied: 'bg-red-100 text-red-700',
+    completed: 'bg-blue-100 text-blue-700',
+  };
+  const color = colorMap[status?.toLowerCase()] ?? 'bg-gray-100 text-gray-500';
+  const label = status ? status.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '—';
+  return (
+    <span className={`text-xs px-2 py-1 rounded-full font-medium ${color}`}>
+      {label}
+    </span>
+  );
+}
 
 const STATUSES = ['new', 'under_review', 'approved', 'denied', 'completed'];
 
-const HIDDEN_FIELDS = ['id', 'org_id', 'first_name', 'last_name', 'email', 'phone', 'form_type', 'status', 'admin_notes', 'created_at', 'adoption_code'];
-
-export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
+export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterCode, setFilterCode] = useState('');
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [noteText, setNoteText] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState('');
@@ -36,61 +87,59 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
     setLoading(true);
     setError('');
     try {
-      const data = await getApplications(orgId);
+      console.log('[ApplicationsTab] Fetching applications for org_id:', orgId);
+      const data = await fetchApplicationsFromSupabase(orgId);
+      console.log('[ApplicationsTab] Loaded applications:', data.length);
       setApps(data);
-    } catch {
-      setError('Could not load applications. API may not be configured yet.');
-      setApps([]);
+    } catch (err) {
+      console.error('[ApplicationsTab] Error fetching applications:', err);
+      setError('Unable to load applications');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (orgId) void load();
-    else setLoading(false);
+    void load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
-  const filtered = apps.filter((a) => {
-    const term = search.toLowerCase();
-    const matchSearch =
-      !search ||
-      `${a.first_name} ${a.last_name}`.toLowerCase().includes(term) ||
-      (a.email ?? '').toLowerCase().includes(term) ||
-      (a.phone ?? '').toLowerCase().includes(term) ||
-      (a.status ?? '').toLowerCase().includes(term);
-    const matchCode = !filterCode || (a.status ?? '') === filterCode;
-    return matchSearch && matchCode;
-  });
-
   const openApp = (app: Application) => {
     setSelectedApp(app);
-    setNoteText(app.admin_notes ?? '');
     setNewStatus(app.status ?? 'new');
     setSaveMsg('');
   };
 
-  const handleSave = async () => {
+  const handleSaveStatus = async () => {
     if (!selectedApp) return;
     setSaving(true);
     setSaveMsg('');
     try {
-      await updateApplication(selectedApp.id, { status: newStatus, admin_notes: noteText });
-      setApps((prev) => prev.map((a) => a.id === selectedApp.id ? { ...a, status: newStatus, admin_notes: noteText } : a));
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/applications?id=eq.${selectedApp.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+      if (!res.ok) throw new Error(`Supabase PATCH error ${res.status}`);
+      setApps((prev) =>
+        prev.map((a) => (a.id === selectedApp.id ? { ...a, status: newStatus } : a))
+      );
+      setSelectedApp((prev) => (prev ? { ...prev, status: newStatus } : prev));
       setSaveMsg('Saved!');
-      setSelectedApp((prev) => prev ? { ...prev, status: newStatus, admin_notes: noteText } : prev);
-    } catch {
+    } catch (err) {
+      console.error('[ApplicationsTab] Error saving status:', err);
       setSaveMsg('Failed to save.');
     } finally {
       setSaving(false);
     }
-  };
-
-  const mailtoLink = (app: Application) => {
-    const subject = encodeURIComponent(`Re: Your ${app.form_type ?? 'adoption'} application`);
-    const body = encodeURIComponent(`Hi ${app.first_name},\n\nThank you for your application.\n\n`);
-    return `mailto:${app.email ?? ''}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -98,198 +147,200 @@ export default function ApplicationsTab({ orgId }: ApplicationsTabProps) {
       <div className="bg-white rounded-2xl border border-silver-gray shadow-sm">
         <div className="px-6 py-5 border-b border-silver-gray">
           <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Applications</h2>
-          <p className="text-sm text-stone mt-1">Manage adoption, foster, and relinquishment applications.</p>
+          <p className="text-sm text-stone mt-1">Manage adoption, foster, and volunteer applications.</p>
         </div>
 
-        <div className="p-6 space-y-4">
-          {/* Filters */}
-          <div className="bg-cloud rounded-xl p-4 space-y-3">
-            <input
-              type="text"
-              placeholder="Search by name, email, phone…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full border border-silver-gray rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white"
-              >
-                <option value="">All Types</option>
-                <option value="adoption">Adoption</option>
-                <option value="foster">Foster</option>
-                <option value="relinquishment">Relinquishment</option>
-              </select>
-              <select
-                value={filterCode}
-                onChange={(e) => setFilterCode(e.target.value)}
-                className="border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white"
-              >
-                <option value="">All Codes</option>
-                {ADOPTION_CODES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+        <div className="p-6">
+          {/* Loading state */}
+          {loading && (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-gray-100 animate-pulse rounded" />
+              ))}
+            </div>
+          )}
+
+          {/* Error state */}
+          {!loading && error && (
+            <div className="text-center py-12">
+              <p className="text-red-500 font-medium mb-3">Unable to load applications</p>
               <button
-                onClick={() => { setSearch(''); setFilterType(''); setFilterCode(''); }}
-                className="border border-stone rounded-xl px-3 py-2 text-sm text-deep-taupe hover:bg-dove transition"
+                onClick={() => void load()}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
               >
-                Reset Filters
+                Retry
               </button>
             </div>
-          </div>
+          )}
 
-          {error && (
-            <div className="text-center py-10">
-              <p className="text-4xl mb-3">📋</p>
-              <p className="font-serif font-semibold text-deep-taupe">Applications Coming Soon</p>
-              <p className="text-sm text-stone mt-1 max-w-sm mx-auto">{error}</p>
+          {/* Empty state */}
+          {!loading && !error && apps.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="text-5xl mb-4">📋</div>
+              <p className="text-lg font-semibold text-deep-taupe mb-2">No applications yet</p>
+              <p className="text-sm text-gray-500 max-w-sm">
+                Applications submitted through your website will appear here.
+              </p>
             </div>
           )}
 
-          {loading && <p className="text-center py-10 text-stone">Loading applications…</p>}
-
-          {!loading && !error && filtered.length === 0 && (
-            <div className="text-center py-10">
-              <p className="text-4xl mb-3">📋</p>
-              <p className="font-serif font-semibold text-deep-taupe">No applications found</p>
-              <p className="text-sm text-stone mt-1">Adjust your filters or check back later.</p>
-            </div>
-          )}
-
-          {!loading && !error && filtered.length > 0 && (
+          {/* Table */}
+          {!loading && !error && apps.length > 0 && (
             <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="rounded-xl border border-silver-gray overflow-hidden min-w-[600px] mx-4 sm:mx-0">
-              <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 grid grid-cols-6 gap-3 text-xs font-semibold text-stone uppercase tracking-wider">
-                <span>Applicant</span>
-                <span>Email</span>
-                <span>Phone</span>
-                <span>Type</span>
-                <span>Status/Code</span>
-                <span className="text-right">Actions</span>
-              </div>
-              <div className="divide-y divide-silver-gray">
-                {filtered.map((app) => (
-                  <div key={app.id} className="px-4 py-3 grid grid-cols-6 gap-3 items-center hover:bg-cloud transition text-sm">
-                    <span className="font-medium text-deep-taupe">{app.first_name} {app.last_name}</span>
-                    <span className="text-stone truncate">{app.email}</span>
-                    <span className="text-stone">{app.phone}</span>
-                    <span className="text-stone capitalize">{app.form_type}</span>
-                    <span><StatusBadge status={app.status ?? 'new'} /></span>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => openApp(app)}
-                        className="px-3 py-1 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition"
-                      >
-                        View
-                      </button>
+              <div className="rounded-xl border border-silver-gray overflow-hidden min-w-[640px] mx-4 sm:mx-0">
+                <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 grid grid-cols-6 gap-3 text-xs font-semibold text-stone uppercase tracking-wider">
+                  <span>Date</span>
+                  <span>Type</span>
+                  <span>Name</span>
+                  <span>Email</span>
+                  <span>Status</span>
+                  <span className="text-right">Actions</span>
+                </div>
+                <div className="divide-y divide-silver-gray">
+                  {apps.map((app) => (
+                    <div
+                      key={app.id}
+                      className="px-4 py-3 grid grid-cols-6 gap-3 items-center hover:bg-cloud transition text-sm"
+                    >
+                      <span className="text-stone text-xs">{formatDate(app.created_at)}</span>
+                      <span><TypeBadge type={app.form_type} /></span>
+                      <span className="font-medium text-deep-taupe truncate">
+                        {app.first_name} {app.last_name}
+                      </span>
+                      <span className="text-stone truncate">{app.email ?? '—'}</span>
+                      <span><StatusBadge status={app.status ?? 'new'} /></span>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => openApp(app)}
+                          className="px-3 py-1 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition"
+                        >
+                          View
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
             </div>
           )}
         </div>
       </div>
 
       {/* Detail Modal */}
-      <Modal
-        isOpen={!!selectedApp}
-        onClose={() => setSelectedApp(null)}
-        title="Application Details"
-        size="lg"
-        footer={
-          <>
-            <button onClick={() => setSelectedApp(null)} className="px-4 py-2 text-sm border border-stone rounded-lg text-deep-taupe hover:bg-cloud transition">
-              Close
-            </button>
-            {selectedApp && (
+      {selectedApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-silver-gray">
+              <div className="flex items-center gap-3">
+                <span className="font-serif font-semibold text-deep-taupe text-lg">
+                  {selectedApp.first_name} {selectedApp.last_name}
+                </span>
+                <TypeBadge type={selectedApp.form_type} />
+              </div>
+              <button
+                onClick={() => setSelectedApp(null)}
+                className="text-gray-400 hover:text-gray-600 text-xl font-light"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal body */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-4">
+              {saveMsg && (
+                <p
+                  className={`text-sm px-3 py-2 rounded-xl ${
+                    saveMsg === 'Saved!' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
+                  }`}
+                >
+                  {saveMsg}
+                </p>
+              )}
+
+              {/* Contact info */}
+              <div className="grid grid-cols-2 gap-3 text-sm bg-cloud rounded-xl p-4">
+                <div>
+                  <span className="text-stone font-medium text-xs uppercase tracking-wider">Email</span>
+                  <p className="text-deep-taupe mt-0.5">{selectedApp.email ?? '—'}</p>
+                </div>
+                <div>
+                  <span className="text-stone font-medium text-xs uppercase tracking-wider">Phone</span>
+                  <p className="text-deep-taupe mt-0.5">{selectedApp.phone ?? '—'}</p>
+                </div>
+              </div>
+
+              {/* form_data */}
+              {selectedApp.form_data &&
+                typeof selectedApp.form_data === 'object' &&
+                Object.keys(selectedApp.form_data).length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-2">
+                      Form Responses
+                    </p>
+                    <div className="bg-cloud rounded-xl p-4 max-h-64 overflow-y-auto">
+                      <dl>
+                        {Object.entries(selectedApp.form_data)
+                          .filter(([, v]) => v !== null && v !== undefined && v !== '')
+                          .map(([key, val]) => (
+                            <div key={key}>
+                              <dt className="font-semibold text-sm text-deep-taupe mt-2">
+                                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                              </dt>
+                              <dd className="text-sm text-gray-600 mb-2">{String(val)}</dd>
+                            </div>
+                          ))}
+                      </dl>
+                    </div>
+                  </div>
+                )}
+
+              {/* Status update */}
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+                  Update Status
+                </label>
+                <select
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-warm-brown"
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Modal footer */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-silver-gray gap-3">
               <a
-                href={mailtoLink(selectedApp)}
-                className="px-4 py-2 text-sm border border-stone rounded-lg text-deep-taupe hover:bg-cloud transition"
+                href={`mailto:${selectedApp.email ?? ''}`}
+                className="text-sm text-warm-brown hover:underline"
               >
                 Open in Email Client
               </a>
-            )}
-            <button onClick={() => void handleSave()} disabled={saving} className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition">
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </>
-        }
-      >
-        {selectedApp && (
-          <div className="space-y-4">
-            {saveMsg && (
-              <p className={`text-sm px-3 py-2 rounded-xl ${saveMsg === 'Saved!' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>{saveMsg}</p>
-            )}
-
-            {/* Contact info */}
-            <div className="grid grid-cols-2 gap-3 text-sm bg-cloud rounded-xl p-4">
-              <div><span className="text-stone font-medium">Name:</span><br /><span className="text-deep-taupe">{selectedApp.first_name} {selectedApp.last_name}</span></div>
-              <div><span className="text-stone font-medium">Email:</span><br /><span className="text-deep-taupe">{selectedApp.email ?? '—'}</span></div>
-              <div><span className="text-stone font-medium">Phone:</span><br /><span className="text-deep-taupe">{selectedApp.phone ?? '—'}</span></div>
-              <div><span className="text-stone font-medium">Type:</span><br /><span className="text-deep-taupe capitalize">{selectedApp.form_type ?? '—'}</span></div>
-              <div><span className="text-stone font-medium">Date:</span><br /><span className="text-deep-taupe">{selectedApp.created_at ? new Date(selectedApp.created_at).toLocaleString() : '—'}</span></div>
-              <div><span className="text-stone font-medium">Status:</span><br /><StatusBadge status={selectedApp.status ?? 'new'} /></div>
-            </div>
-
-            {/* form_data fields */}
-            {selectedApp.form_data && typeof selectedApp.form_data === 'object' && Object.keys(selectedApp.form_data as object).length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-2">Form Responses</p>
-                <div className="space-y-2 bg-cloud rounded-xl p-4">
-                  {Object.entries(selectedApp.form_data as Record<string, unknown>)
-                    .filter(([, v]) => v !== null && v !== undefined && v !== '')
-                    .map(([key, val]) => (
-                      <div key={key} className="text-sm">
-                        <span className="font-medium text-stone capitalize">{key.replace(/_/g, ' ')}: </span>
-                        <span className="text-deep-taupe">{String(val)}</span>
-                      </div>
-                    ))}
-                </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedApp(null)}
+                  className="px-4 py-2 text-sm border border-stone rounded-lg text-deep-taupe hover:bg-cloud transition"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => void handleSaveStatus()}
+                  disabled={saving}
+                  className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition"
+                >
+                  {saving ? 'Saving…' : 'Save Status'}
+                </button>
               </div>
-            )}
-
-            {/* Other fields */}
-            {Object.entries(selectedApp)
-              .filter(([k]) => !HIDDEN_FIELDS.includes(k) && k !== 'form_data')
-              .filter(([, v]) => v !== null && v !== undefined && v !== '')
-              .map(([key, val]) => (
-                <div key={key} className="text-sm">
-                  <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</p>
-                  <p className="text-deep-taupe">{String(val)}</p>
-                </div>
-              ))}
-
-            {/* Status update */}
-            <div>
-              <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Update Status</label>
-              <select
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
-                className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none"
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s} className="capitalize">{s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>
-                ))}
-                {ADOPTION_CODES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-
-            {/* Admin notes */}
-            <div>
-              <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Admin Notes / Reply</label>
-              <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown min-h-[100px] resize-y bg-white"
-                placeholder="Add notes or draft a reply…"
-              />
             </div>
           </div>
-        )}
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }

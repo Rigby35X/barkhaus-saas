@@ -1,48 +1,58 @@
 import { useState, useEffect } from 'react';
-import Modal from '../components/Modal';
-import StatusBadge from '../components/StatusBadge';
-import { fetchApplications, updateApplicationStatus } from '../lib/api';
-import type { Application } from '../lib/api';
 
 interface CommunicationsTabProps {
-  orgId: number;
+  orgId?: number;
 }
 
-type Submission = Application & {
+interface Submission {
+  id: number;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
   message?: string;
-};
+  created_at?: string;
+  [key: string]: unknown;
+}
 
-const FORM_TYPES = ['', 'contact', 'waitlist'];
-const STATUSES = ['', 'new', 'read', 'replied', 'archived'];
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
-const STATUS_LABEL: Record<string, string> = {
-  '': 'All', new: 'New', read: 'Read', replied: 'Replied', archived: 'Archived',
-};
+function getDisplayName(sub: Submission): string {
+  if (sub.name) return sub.name as string;
+  if (sub.first_name || sub.last_name) return `${sub.first_name ?? ''} ${sub.last_name ?? ''}`.trim();
+  return '—';
+}
 
-export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
+function getMessagePreview(sub: Submission): string {
+  const msg = sub.message as string | undefined;
+  if (!msg) return '—';
+  return msg.length > 80 ? msg.slice(0, 80) + '…' : msg;
+}
+
+export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps) {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
   const [selected, setSelected] = useState<Submission | null>(null);
-  const [replyText, setReplyText] = useState('');
-  const [newStatus, setNewStatus] = useState<string>('read');
-  const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
 
   const load = async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await fetchApplications({
-        org_id: orgId,
-        form_type: filterType || undefined,
-        status: filterStatus || undefined,
-      });
-      setSubmissions(data as Submission[]);
-    } catch {
-      setError('Could not load submissions.');
+      console.log('[CommunicationsTab] Fetching submissions for org_id:', orgId);
+      const res = await fetch(
+        `https://xz6u-fpaz-praf.n7e.xano.io/api:0Mx5oX0z/submissions?org_id=${orgId}`
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as Submission[];
+      console.log('[CommunicationsTab] Loaded submissions:', data.length);
+      setSubmissions(data);
+    } catch (err) {
+      console.error('[CommunicationsTab] Error fetching submissions:', err);
+      setError('Unable to connect — submissions may be temporarily unavailable');
       setSubmissions([]);
     } finally {
       setLoading(false);
@@ -50,259 +60,149 @@ export default function CommunicationsTab({ orgId }: CommunicationsTabProps) {
   };
 
   useEffect(() => {
-    if (orgId) load();
-    else setLoading(false);
+    void load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orgId, filterType, filterStatus]);
-
-  const openSubmission = (sub: Submission) => {
-    setSelected(sub);
-    setReplyText(sub.admin_notes ?? '');
-    setNewStatus(sub.status === 'new' ? 'read' : (sub.status ?? 'read'));
-    setSaveMsg('');
-    if (sub.status === 'new') {
-      void patchStatus(sub.id, 'read', sub.admin_notes ?? '');
-    }
-  };
-
-  const patchStatus = async (id: number, status: string, notes: string) => {
-    await updateApplicationStatus(id, status, notes);
-  };
-
-  const handleSave = async () => {
-    if (!selected) return;
-    setSaving(true);
-    setSaveMsg('');
-    try {
-      await patchStatus(selected.id, newStatus, replyText);
-      setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === selected.id ? { ...s, status: newStatus, admin_notes: replyText } : s
-        )
-      );
-      setSaveMsg('Saved!');
-      setSelected((prev) => prev ? { ...prev, status: newStatus, admin_notes: replyText } : prev);
-    } catch {
-      setSaveMsg('Failed to save. Please try again.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const counts = {
-    all: submissions.length,
-    new: submissions.filter((s) => s.status === 'new').length,
-    unread: submissions.filter((s) => s.status === 'new' || s.status === 'read').length,
-  };
+  }, [orgId]);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="bg-white rounded-2xl border border-silver-gray shadow-sm">
-        <div className="px-6 py-5 border-b border-silver-gray flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="px-6 py-5 border-b border-silver-gray flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Form Submissions</h2>
-            <p className="text-sm text-stone mt-0.5">
-              Inbox for contact and waitlist messages from your website.
-            </p>
+            <p className="text-sm text-stone mt-1">Contact form submissions from your website.</p>
           </div>
-          <div className="flex gap-3 items-center">
-            {counts.new > 0 && (
-              <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
-                {counts.new} new
-              </span>
-            )}
-            <button
-              onClick={load}
-              className="px-4 py-2 text-sm border border-stone rounded-xl text-deep-taupe hover:bg-cloud transition"
-            >
-              Refresh
-            </button>
-          </div>
+          <button
+            onClick={() => void load()}
+            className="px-4 py-2 text-sm border border-stone rounded-xl text-deep-taupe hover:bg-cloud transition"
+          >
+            Refresh
+          </button>
         </div>
 
-        <div className="p-6 space-y-4">
-          {/* Filters */}
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none"
-            >
-              <option value="">All Form Types</option>
-              {FORM_TYPES.slice(1).map((t) => (
-                <option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+        <div className="p-6">
+          {/* Loading state */}
+          {loading && (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-12 bg-gray-100 animate-pulse rounded" />
               ))}
-            </select>
-
-            <div className="flex gap-1 bg-cloud rounded-xl p-1">
-              {STATUSES.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => setFilterStatus(s)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                    filterStatus === s
-                      ? 'bg-white shadow-sm text-warm-brown font-semibold'
-                      : 'text-stone hover:text-deep-taupe'
-                  }`}
-                >
-                  {STATUS_LABEL[s]}
-                  {s === 'new' && counts.new > 0 && (
-                    <span className="ml-1 bg-red-100 text-red-600 px-1.5 rounded-full text-xs">{counts.new}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="text-center py-10">
-              <p className="text-4xl mb-3">📭</p>
-              <p className="font-serif font-semibold text-deep-taupe">Submissions Inbox</p>
-              <p className="text-sm text-stone mt-1 max-w-sm mx-auto">{error}</p>
             </div>
           )}
 
-          {loading && <p className="text-center py-10 text-stone">Loading submissions…</p>}
+          {/* Error state */}
+          {!loading && error && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 mb-3">{error}</p>
+              <button
+                onClick={() => void load()}
+                className="px-4 py-2 text-sm border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 transition"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
-          {/* Empty */}
+          {/* Empty state */}
           {!loading && !error && submissions.length === 0 && (
-            <div className="text-center py-10">
-              <p className="text-4xl mb-3">📬</p>
-              <p className="font-serif font-semibold text-deep-taupe">No submissions found</p>
-              <p className="text-sm text-stone mt-1">Submissions from your website forms will appear here.</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="text-5xl mb-4">📥</div>
+              <p className="text-lg font-semibold text-deep-taupe mb-2">No submissions yet</p>
+              <p className="text-sm text-gray-500 max-w-sm">
+                Contact form submissions will appear here.
+              </p>
             </div>
           )}
 
           {/* Table */}
           {!loading && !error && submissions.length > 0 && (
-            <div className="overflow-x-auto">
-            <div className="rounded-xl border border-silver-gray overflow-hidden">
-              <div className="hidden sm:grid grid-cols-5 gap-3 bg-gray-50 border-b border-silver-gray px-4 py-3 text-xs font-semibold text-stone uppercase tracking-wider">
-                <span>From</span>
-                <span>Email</span>
-                <span>Type</span>
-                <span>Date</span>
-                <span>Status</span>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="rounded-xl border border-silver-gray overflow-hidden min-w-[600px] mx-4 sm:mx-0">
+                <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 grid grid-cols-5 gap-3 text-xs font-semibold text-stone uppercase tracking-wider">
+                  <span>Date</span>
+                  <span>Name</span>
+                  <span>Email</span>
+                  <span>Message</span>
+                  <span className="text-right">Actions</span>
+                </div>
+                <div className="divide-y divide-silver-gray">
+                  {submissions.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="px-4 py-3 grid grid-cols-5 gap-3 items-center hover:bg-cloud transition text-sm"
+                    >
+                      <span className="text-stone text-xs">{formatDate(sub.created_at)}</span>
+                      <span className="font-medium text-deep-taupe truncate">{getDisplayName(sub)}</span>
+                      <span className="text-stone truncate">{sub.email ?? '—'}</span>
+                      <span className="text-stone text-xs truncate">{getMessagePreview(sub)}</span>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => setSelected(sub)}
+                          className="px-3 py-1 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="divide-y divide-silver-gray">
-                {submissions.map((sub) => (
-                  <div
-                    key={sub.id}
-                    onClick={() => openSubmission(sub)}
-                    className={`grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-3 px-4 py-3 cursor-pointer hover:bg-cloud transition text-sm ${
-                      sub.status === 'new' ? 'bg-blue-50 hover:bg-blue-100' : ''
-                    }`}
-                  >
-                    <span className="font-medium text-deep-taupe flex items-center gap-1">
-                      {sub.status === 'new' && (
-                        <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-                      )}
-                      {sub.first_name} {sub.last_name}
-                    </span>
-                    <span className="text-stone truncate">{sub.email ?? '—'}</span>
-                    <span className="text-stone capitalize">{sub.form_type}</span>
-                    <span className="text-stone text-xs">
-                      {sub.created_at ? new Date(sub.created_at).toLocaleDateString() : '—'}
-                    </span>
-                    <span><StatusBadge status={sub.status ?? ''} /></span>
-                  </div>
-                ))}
-              </div>
-            </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Detail modal */}
-      <Modal
-        isOpen={!!selected}
-        onClose={() => setSelected(null)}
-        title="Submission Details"
-        size="lg"
-        footer={
-          <>
-            <button
-              onClick={() => setSelected(null)}
-              className="px-4 py-2 text-sm border border-stone rounded-lg text-deep-taupe hover:bg-cloud transition"
-            >
-              Close
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition"
-            >
-              {saving ? 'Saving…' : 'Save'}
-            </button>
-          </>
-        }
-      >
-        {selected && (
-          <div className="space-y-4">
-            {saveMsg && (
-              <p className={`text-sm px-3 py-2 rounded-xl ${saveMsg === 'Saved!' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
-                {saveMsg}
-              </p>
-            )}
-
-            {/* Contact details */}
-            <div className="grid grid-cols-2 gap-3 text-sm bg-cloud rounded-xl p-4">
-              <div><span className="text-stone font-medium">Name:</span><br /><span className="text-deep-taupe">{selected.first_name} {selected.last_name}</span></div>
-              <div><span className="text-stone font-medium">Email:</span><br /><span className="text-deep-taupe">{selected.email ?? '—'}</span></div>
-              <div><span className="text-stone font-medium">Phone:</span><br /><span className="text-deep-taupe">{selected.phone ?? '—'}</span></div>
-              <div><span className="text-stone font-medium">Form:</span><br /><span className="text-deep-taupe capitalize">{selected.form_type}</span></div>
-              <div><span className="text-stone font-medium">Date:</span><br /><span className="text-deep-taupe">{selected.created_at ? new Date(selected.created_at).toLocaleString() : '—'}</span></div>
-              <div><span className="text-stone font-medium">Status:</span><br /><StatusBadge status={selected.status ?? ''} /></div>
-            </div>
-
-            {/* Message */}
-            {selected.message && (
-              <div>
-                <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-1">Message</p>
-                <p className="text-sm text-deep-taupe bg-cloud rounded-xl p-3 whitespace-pre-wrap">{selected.message}</p>
-              </div>
-            )}
-
-            {/* Other fields */}
-            {Object.entries(selected)
-              .filter(([k]) => !['id', 'org_id', 'form_type', 'first_name', 'last_name', 'email', 'phone', 'message', 'status', 'admin_notes', 'created_at'].includes(k))
-              .filter(([, v]) => v !== null && v !== undefined && v !== '')
-              .map(([key, val]) => (
-                <div key={key}>
-                  <p className="text-xs font-semibold text-stone uppercase tracking-wider mb-1">{key.replace(/_/g, ' ')}</p>
-                  <p className="text-sm text-deep-taupe">{String(val)}</p>
-                </div>
-              ))}
-
-            {/* Update status */}
-            <div>
-              <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Update Status</label>
-              <select
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value)}
-                className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none"
+      {/* Detail Modal */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-silver-gray">
+              <span className="font-serif font-semibold text-deep-taupe text-lg">
+                {getDisplayName(selected)}
+              </span>
+              <button
+                onClick={() => setSelected(null)}
+                className="text-gray-400 hover:text-gray-600 text-xl font-light"
               >
-                {['new', 'read', 'replied', 'archived'].map((s) => (
-                  <option key={s} value={s} className="capitalize">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                ))}
-              </select>
+                ×
+              </button>
             </div>
 
-            {/* Admin notes / reply */}
-            <div>
-              <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Admin Notes / Reply</label>
-              <textarea
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                placeholder="Add notes or draft a reply…"
-                className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown min-h-[100px] resize-y bg-white"
-              />
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-4">
+              <dl>
+                {Object.entries(selected)
+                  .filter(([, v]) => v !== null && v !== undefined && v !== '')
+                  .map(([key, val]) => (
+                    <div key={key}>
+                      <dt className="font-semibold text-sm text-deep-taupe mt-2">
+                        {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </dt>
+                      <dd className="text-sm text-gray-600 mb-2">{String(val)}</dd>
+                    </div>
+                  ))}
+              </dl>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-silver-gray">
+              <a
+                href={`mailto:${selected.email ?? ''}?subject=Re: Your message`}
+                className="text-sm text-warm-brown hover:underline"
+              >
+                Reply by email
+              </a>
+              <button
+                onClick={() => setSelected(null)}
+                className="px-4 py-2 text-sm border border-stone rounded-lg text-deep-taupe hover:bg-cloud transition"
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }
