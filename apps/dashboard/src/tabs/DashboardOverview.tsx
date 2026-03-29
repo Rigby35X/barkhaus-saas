@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-const PLACEHOLDER_SM = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect width='48' height='48' fill='%23e9e8e6' rx='24'/%3E%3C/svg%3E";
 import { getAnimals, type Animal } from '../lib/api';
 import type { TabKey } from '../components/Sidebar';
 import StatusBadge from '../components/StatusBadge';
@@ -13,20 +12,25 @@ interface DashboardOverviewProps {
 export default function DashboardOverview({ orgId, onTabChange }: DashboardOverviewProps) {
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+
+  const loadAnimals = async () => {
+    setLoading(true);
+    setFetchError(false);
+    try {
+      const data = await getAnimals(orgId);
+      setAnimals(data);
+    } catch {
+      setFetchError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getAnimals(orgId);
-        setAnimals(data);
-      } catch {
-        setAnimals([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (orgId) load();
+    if (orgId) void loadAnimals();
     else setLoading(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
   const total = animals.length;
@@ -49,7 +53,8 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
     { label: 'Adopted', value: adopted, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
-  const recentAnimals = animals.slice(0, 5);
+  // Sort by id descending (highest id = most recent), take first 6
+  const recentAnimals = [...animals].sort((a, b) => b.id - a.id).slice(0, 6);
 
   return (
     <div className="space-y-6">
@@ -58,9 +63,21 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
         {stats.map((s) => (
           <div key={s.label} className="bg-white rounded-2xl p-6 shadow-sm border border-silver-gray">
             <p className="text-sm font-medium text-gray-500">{s.label}</p>
-            <p className={`text-3xl font-bold mt-2 ${s.color}`}>
-              {loading ? '—' : s.value}
-            </p>
+            {loading ? (
+              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded mt-2" />
+            ) : fetchError ? (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-2xl font-bold text-gray-400">—</span>
+                <button
+                  onClick={() => void loadAnimals()}
+                  className="text-xs text-warm-brown underline hover:no-underline"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : (
+              <p className={`text-3xl font-bold mt-2 ${s.color}`}>{s.value}</p>
+            )}
           </div>
         ))}
       </div>
@@ -85,24 +102,79 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
           </div>
         </div>
         <div className="p-6 space-y-3">
+          {/* Loading skeletons */}
           {loading && (
-            <p className="text-center py-8 text-stone">Loading animals…</p>
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border border-silver-gray rounded-xl animate-pulse">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-1/3" />
+                    <div className="h-3 bg-gray-100 rounded w-1/4" />
+                  </div>
+                  <div className="w-16 h-5 bg-gray-200 rounded-full" />
+                </div>
+              ))}
+            </div>
           )}
-          {!loading && recentAnimals.length === 0 && (
-            <p className="text-center py-8 text-stone">No animals found.</p>
+
+          {/* Error state */}
+          {!loading && fetchError && (
+            <div className="text-center py-8">
+              <p className="text-stone mb-3">Failed to load animals.</p>
+              <button
+                onClick={() => void loadAnimals()}
+                className="px-4 py-2 text-sm font-medium bg-warm-brown text-white rounded-lg hover:opacity-90 transition"
+              >
+                Retry
+              </button>
+            </div>
           )}
-          {recentAnimals.map((animal) => (
+
+          {/* Empty state */}
+          {!loading && !fetchError && recentAnimals.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-4xl mb-3">🐾</p>
+              <p className="font-serif font-semibold text-deep-taupe">No animals yet</p>
+              <p className="text-sm text-stone mt-1 mb-4">Add your first animal to get started.</p>
+              <button
+                onClick={() => onTabChange('animals')}
+                className="px-4 py-2 text-sm font-medium bg-warm-brown text-white rounded-lg hover:opacity-90 transition"
+              >
+                Add your first animal
+              </button>
+            </div>
+          )}
+
+          {/* Animal rows */}
+          {!loading && !fetchError && recentAnimals.map((animal) => (
             <div
               key={animal.id}
               className="flex items-center justify-between p-4 border border-silver-gray rounded-xl hover:bg-cloud transition"
             >
               <div className="flex items-center gap-4">
-                <img
-                  src={animal.image_url || PLACEHOLDER_SM}
-                  alt={animal.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_SM; }}
-                />
+                {animal.photo_url || animal.image_url ? (
+                  <img
+                    src={(animal.photo_url || animal.image_url) as string}
+                    alt={animal.name}
+                    className="w-[50px] h-[50px] rounded-lg object-cover flex-shrink-0"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'w-[50px] h-[50px] rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-xl';
+                        placeholder.textContent = '🐶';
+                        parent.insertBefore(placeholder, target);
+                      }
+                    }}
+                  />
+                ) : (
+                  <div className="w-[50px] h-[50px] rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-xl">
+                    🐶
+                  </div>
+                )}
                 <div>
                   <p className="font-semibold text-deep-taupe">{animal.name}</p>
                   <p className="text-sm text-stone">

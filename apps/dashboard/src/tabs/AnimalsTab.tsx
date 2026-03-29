@@ -189,17 +189,47 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
       </div>
 
       {/* Error */}
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl p-3">{error}</p>}
+      {error && (
+        <div className="flex items-center justify-between text-sm text-red-600 bg-red-50 rounded-xl p-3">
+          <span>{error}</span>
+          <button
+            onClick={() => void load()}
+            className="ml-4 px-3 py-1 text-xs font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
-      {/* Loading */}
-      {loading && <p className="text-center py-12 text-stone">Loading animals…</p>}
+      {/* Loading skeletons */}
+      {loading && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-lg" />
+          ))}
+        </div>
+      )}
 
       {/* Empty */}
-      {!loading && filtered.length === 0 && (
+      {!loading && !error && filtered.length === 0 && (
         <div className="text-center py-16 bg-white rounded-2xl border border-silver-gray">
           <p className="text-4xl mb-3">🐾</p>
-          <p className="font-serif font-semibold text-deep-taupe">No animals found</p>
-          <p className="text-sm text-stone mt-1">Try adjusting your filters or add a new animal.</p>
+          <p className="font-serif font-semibold text-deep-taupe">
+            {animals.length === 0 ? 'No animals yet' : 'No animals found'}
+          </p>
+          <p className="text-sm text-stone mt-1 mb-4">
+            {animals.length === 0
+              ? 'Add your first animal to get started.'
+              : 'Try adjusting your filters or search terms.'}
+          </p>
+          {animals.length === 0 && (
+            <button
+              onClick={handleAdd}
+              className="px-4 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition"
+            >
+              Add your first animal
+            </button>
+          )}
         </div>
       )}
 

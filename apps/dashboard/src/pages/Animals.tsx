@@ -101,7 +101,17 @@ export default function Animals() {
   if (tenantLoading || isLoading) {
     return (
       <Layout>
-        <div>Loading animals...</div>
+        <div>
+          <div className="flex justify-between items-center mb-6">
+            <div className="h-9 w-48 bg-gray-200 animate-pulse rounded" />
+            <div className="h-9 w-36 bg-gray-200 animate-pulse rounded" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-lg" />
+            ))}
+          </div>
+        </div>
       </Layout>
     );
   }
@@ -237,9 +247,13 @@ export default function Animals() {
               </table>
             </div>
           ) : (
-            <div className="p-8 text-center text-gray-500">
-              <p className="text-4xl mb-4">🐕</p>
-              <p>No animals yet. Add your first animal to get started!</p>
+            <div className="p-12 text-center">
+              <p className="text-4xl mb-3">🐾</p>
+              <p className="font-semibold text-deep-taupe text-lg mb-2">No animals yet</p>
+              <p className="text-gray-500 mb-4">Add your first animal to get started.</p>
+              <button className="bg-warm-brown text-white px-5 py-2 rounded hover:bg-opacity-90 transition text-sm font-semibold">
+                + Add Animal
+              </button>
             </div>
           )}
         </div>
