@@ -41,8 +41,8 @@ const PAGES: PageDef[] = [
           { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
           { key: 'button_text', label: 'Button Text' },
-          { key: 'button_link', label: 'Button Link', type: 'url' },
-          { key: 'background_image_url', label: 'Background Image URL', type: 'url' },
+          { key: 'button_link', label: 'Button URL (e.g. /adopt or https://...)', type: 'text' },
+          { key: 'background_image_url', label: 'Background Image URL', type: 'image' },
         ],
       },
       {
@@ -51,8 +51,10 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
-          { key: 'featured_image_url', label: 'Featured Image URL', type: 'url' },
-          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'url' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /about or https://...)', type: 'text' },
+          { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
+          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'image' },
         ],
       },
       {
@@ -62,6 +64,8 @@ const PAGES: PageDef[] = [
           { key: 'headline', label: 'Headline' },
           { key: 'subheadline', label: 'Subheadline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /about or https://...)', type: 'text' },
           { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
           { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'image' },
         ],
@@ -95,7 +99,7 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
-          { key: 'background_image_url', label: 'Background Image URL', type: 'url' },
+          { key: 'background_image_url', label: 'Background Image URL', type: 'image' },
         ],
       },
       {
@@ -104,8 +108,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
-          { key: 'featured_image_url', label: 'Featured Image URL', type: 'url' },
-          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'url' },
+          { key: 'featured_image_url', label: 'Featured Image URL', type: 'image' },
+          { key: 'secondary_image_url', label: 'Secondary Image URL', type: 'image' },
         ],
       },
       {
@@ -185,6 +189,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /applications or https://...)', type: 'text' },
         ],
       },
       {
@@ -216,6 +222,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. https://donate.example.com)', type: 'text' },
         ],
       },
       {
@@ -269,6 +277,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /forms/adoption or https://...)', type: 'text' },
         ],
       },
       {
@@ -277,6 +287,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /forms/foster or https://...)', type: 'text' },
         ],
       },
       {
@@ -285,6 +297,8 @@ const PAGES: PageDef[] = [
         fields: [
           { key: 'headline', label: 'Headline' },
           { key: 'body_text', label: 'Body Text', type: 'textarea' },
+          { key: 'button_text', label: 'Button Text' },
+          { key: 'button_link', label: 'Button URL (e.g. /forms/volunteer or https://...)', type: 'text' },
         ],
       },
     ],
@@ -313,25 +327,43 @@ const PAGES: PageDef[] = [
   },
 ];
 
+const PAGE_PREVIEW_URLS: Record<string, string> = {
+  homepage: 'https://mbpr.preview.barkhaus.io/',
+  about: 'https://mbpr.preview.barkhaus.io/about',
+  animals: 'https://mbpr.preview.barkhaus.io/our-animals',
+  contact: 'https://mbpr.preview.barkhaus.io/contact',
+  donate: 'https://mbpr.preview.barkhaus.io/donate',
+  events: 'https://mbpr.preview.barkhaus.io/events',
+  applications: 'https://mbpr.preview.barkhaus.io/applications',
+  global: 'https://mbpr.preview.barkhaus.io/',
+};
+
 export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const [sections, setSections] = useState<WebsiteSection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sectionLoading, setSectionLoading] = useState(false);
   const [error, setError] = useState('');
   const [activePage, setActivePage] = useState('homepage');
   const [activeSectionKey, setActiveSectionKey] = useState('hero');
   const [editing, setEditing] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [pendingImageField, setPendingImageField] = useState<string>('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   // Typography overrides per section (stored as JSONB `typography` column in website_content)
   // Run once in Supabase SQL Editor if not yet added:
   // ALTER TABLE website_content ADD COLUMN IF NOT EXISTS typography jsonb;
   const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
   const [showTypography, setShowTypography] = useState(false);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -398,7 +430,6 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
 
   const handleSave = async () => {
     setSaving(true);
-    setSaved(false);
     try {
       // Include typography overrides only when the panel is open (user explicitly set/cleared them)
       const typographyPayload = showTypography
@@ -415,22 +446,32 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
         setSections((prev) => [...prev, created]);
       }
       setEditing({});
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+      showToast('Saved ✓', 'success');
     } catch (err) {
       console.error('[WebsiteContentTab] save error:', err);
-      alert('Failed to save. Please try again.');
+      showToast('Save failed — please try again', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handlePageChange = (pageKey: string) => {
+    setSectionLoading(true);
     setActivePage(pageKey);
     const page = PAGES.find((p) => p.key === pageKey);
     if (page?.sections[0]) setActiveSectionKey(page.sections[0].key);
     setEditing({});
     setShowTypography(false);
+    // Brief loading state to signal section switched
+    setTimeout(() => setSectionLoading(false), 300);
+  };
+
+  const handleSectionChange = (sectionKey: string) => {
+    setSectionLoading(true);
+    setActiveSectionKey(sectionKey);
+    setEditing({});
+    setShowTypography(false);
+    setTimeout(() => setSectionLoading(false), 300);
   };
 
   const handleImageUpload = async (file: File, fieldKey: string) => {
@@ -467,8 +508,24 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     e.target.value = '';
   };
 
+  // Device preview dimensions
+  const deviceWidth = previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '375px';
+  const deviceHeight = previewDevice === 'mobile' ? '600px' : '500px';
+  const previewUrl = PAGE_PREVIEW_URLS[activePage] ?? 'https://mbpr.preview.barkhaus.io/';
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${
+            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
+
       <div className="bg-white rounded-2xl border border-silver-gray shadow-sm">
         <div className="px-6 py-5 border-b border-silver-gray flex items-center justify-between">
           <div>
@@ -477,12 +534,12 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
           </div>
           {(() => {
             const org = ORGANIZATIONS[orgId];
-            const previewUrl = org?.subdomain
+            const viewUrl = org?.subdomain
               ? `https://${org.subdomain}.preview.barkhaus.io`
               : org?.siteUrl ?? null;
-            return previewUrl ? (
+            return viewUrl ? (
               <a
-                href={previewUrl}
+                href={viewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition"
@@ -530,7 +587,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   {currentPage.sections.map((sec) => (
                     <button
                       key={sec.key}
-                      onClick={() => { setActiveSectionKey(sec.key); setEditing({}); setShowTypography(false); }}
+                      onClick={() => handleSectionChange(sec.key)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
                         activeSectionKey === sec.key ? 'bg-cloud text-warm-brown font-semibold' : 'text-deep-taupe hover:bg-cloud'
                       }`}
@@ -552,7 +609,6 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  {saved && <span className="text-sm text-green-600 font-medium">Saved!</span>}
                   <button
                     onClick={() => void handleSave()}
                     disabled={saving || Object.keys(editing).length === 0}
@@ -563,7 +619,16 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 </div>
               </div>
 
-              {currentSectionDef && (
+              {sectionLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="animate-pulse space-y-1">
+                      <div className="h-3 w-24 bg-silver-gray rounded" />
+                      <div className="h-9 w-full bg-silver-gray rounded-xl" />
+                    </div>
+                  ))}
+                </div>
+              ) : currentSectionDef ? (
                 <div className="space-y-4">
                   {/* Hidden file input for image uploads */}
                   <input
@@ -592,24 +657,35 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                             className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown min-h-[100px] resize-y bg-white"
                           />
                         ) : isImage ? (
-                          <div className="flex gap-2 items-center">
-                            <input
-                              type="url"
-                              value={val}
-                              onChange={(e) => handleEdit(field.key, e.target.value)}
-                              placeholder="https://…"
-                              className="flex-1 border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
-                            />
-                            <button
-                              type="button"
-                              disabled={!!uploadingField}
-                              onClick={() => { setPendingImageField(field.key); imageInputRef.current?.click(); }}
-                              className="px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
-                            >
-                              {uploadingField === field.key ? 'Uploading…' : 'Upload'}
-                            </button>
-                            {val && (
-                              <img src={val} alt={field.label} className="h-9 w-9 rounded-lg object-cover border border-silver-gray bg-cloud flex-shrink-0" />
+                          <div>
+                            <div className="flex gap-2 items-center">
+                              <input
+                                type="url"
+                                value={val}
+                                onChange={(e) => handleEdit(field.key, e.target.value)}
+                                placeholder="https://…"
+                                className="flex-1 border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                              />
+                              <button
+                                type="button"
+                                disabled={!!uploadingField}
+                                onClick={() => { setPendingImageField(field.key); imageInputRef.current?.click(); }}
+                                className="px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
+                              >
+                                {uploadingField === field.key ? 'Uploading…' : 'Upload'}
+                              </button>
+                            </div>
+                            {val ? (
+                              <img
+                                src={val}
+                                alt="preview"
+                                className="mt-2 h-16 w-auto rounded object-cover"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div className="mt-2 h-16 w-32 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">
+                                No image
+                              </div>
                             )}
                           </div>
                         ) : (
@@ -715,11 +791,77 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                     )}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         )}
       </div>
+
+      {/* ── Device Preview ── */}
+      {!loading && (
+        <div className="bg-white rounded-2xl border border-silver-gray shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-silver-gray flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-deep-taupe">Preview</span>
+              <div className="flex items-center gap-1 ml-2">
+                <button
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={`px-3 py-1.5 text-xs rounded-lg border transition ${
+                    previewDevice === 'desktop'
+                      ? 'bg-warm-brown text-white border-warm-brown'
+                      : 'border-silver-gray text-deep-taupe hover:bg-cloud'
+                  }`}
+                >
+                  Desktop
+                </button>
+                <button
+                  onClick={() => setPreviewDevice('tablet')}
+                  className={`px-3 py-1.5 text-xs rounded-lg border transition ${
+                    previewDevice === 'tablet'
+                      ? 'bg-warm-brown text-white border-warm-brown'
+                      : 'border-silver-gray text-deep-taupe hover:bg-cloud'
+                  }`}
+                >
+                  Tablet
+                </button>
+                <button
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={`px-3 py-1.5 text-xs rounded-lg border transition ${
+                    previewDevice === 'mobile'
+                      ? 'bg-warm-brown text-white border-warm-brown'
+                      : 'border-silver-gray text-deep-taupe hover:bg-cloud'
+                  }`}
+                >
+                  Mobile
+                </button>
+              </div>
+            </div>
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-[#804e3f] hover:underline"
+            >
+              Open Live Page ↗
+            </a>
+          </div>
+          <div className="p-4">
+            <div style={{ overflowX: 'auto' }}>
+              <iframe
+                src={previewUrl}
+                width={deviceWidth}
+                height={deviceHeight}
+                className="border-0"
+                title="Page preview"
+                style={{ minWidth: previewDevice !== 'desktop' ? deviceWidth : undefined }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-2">
+              Preview may not load due to browser security. Use "Open Live Page" to view.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
