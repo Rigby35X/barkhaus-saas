@@ -4,49 +4,207 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --color-primary:       #804e3f;
+  --color-primary-hover: #6b3e31;
+  --color-primary-light: #f9ebe4;
+  --color-primary-muted: #e3a98f;
+  --color-surface:       #f5f0ee;
+  --color-card:          #ffffff;
+  --color-border:        #e8ddd9;
+  --color-text-base:     #1a1a1a;
+  --color-text-muted:    #6b7280;
+  --color-text-light:    #9ca3af;
+  --font-heading:        'Noto Serif Display', Georgia, serif;
+  --font-body:           'Poppins', system-ui, sans-serif;
+  --radius-card:         16px;
+  --radius-btn:          10px;
+  --shadow-card:         0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-card-hover:   0 4px 12px rgba(128,78,63,0.12);
+
+  /* Legacy */
+  --color-deep-taupe:  #4d4c4c;
+  --color-silver-gray: #d8c8b6;
+  --color-stone:       #bfae9b;
+  --color-white:       #ffffff;
+  --color-warm-brown:  #804e3f;
+  --color-sand:        #cbb19d;
+  --color-dove:        #e2d4c6;
+  --color-charcoal:    #4d4c4c;
+  --color-cloud:       #e9e8e6;
+}
+
 @layer base {
   body {
-    @apply font-sans bg-gray-50;
+    font-family: var(--font-body);
+    background-color: var(--color-surface);
+    color: var(--color-text-base);
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-heading);
   }
 }
 
 @layer components {
-  /* ── Button utilities ─────────────────────────────────────────────────── */
+  /* ── Buttons ──────────────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition;
+    @apply bg-[#804e3f] text-white font-semibold rounded-[10px] px-4 py-2.5 text-sm
+           hover:bg-[#6b3e31] active:bg-[#572f24] transition-colors duration-150
+           focus:outline-none focus:ring-2 focus:ring-[#804e3f] focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-secondary {
-    @apply px-5 py-2 text-sm font-semibold bg-silver-gray text-deep-taupe rounded-xl hover:opacity-90 disabled:opacity-50 transition;
+    @apply bg-white text-[#804e3f] border border-[#e8ddd9] font-medium rounded-[10px]
+           px-4 py-2.5 text-sm hover:bg-[#f9ebe4] hover:border-[#804e3f]
+           transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-danger {
-    @apply px-5 py-2 text-sm font-semibold bg-red-600 text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition;
+    @apply bg-white text-red-600 border border-red-200 font-medium rounded-[10px]
+           px-4 py-2.5 text-sm hover:bg-red-50 transition-colors duration-150
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-outline {
-    @apply px-5 py-2 text-sm font-semibold bg-white border border-stone text-deep-taupe rounded-xl hover:bg-cloud disabled:opacity-50 transition;
+    @apply px-5 py-2 text-sm font-semibold bg-white border border-[#bfae9b]
+           text-[#4d4c4c] rounded-xl hover:bg-[#e9e8e6]
+           disabled:opacity-50 transition;
   }
   .btn-accent {
-    @apply px-5 py-2 text-sm font-semibold bg-purple-600 text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition;
+    @apply px-5 py-2 text-sm font-semibold bg-purple-600 text-white rounded-xl
+           hover:opacity-90 disabled:opacity-50 transition;
   }
 
-  /* ── Badge utilities ──────────────────────────────────────────────────── */
+  /* ── Cards ────────────────────────────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-[16px] border border-[#e8ddd9]
+           shadow-[0_1px_3px_rgba(0,0,0,0.06)]
+           hover:shadow-[0_4px_12px_rgba(128,78,63,0.12)]
+           transition-shadow duration-200;
+  }
+
+  /* ── Inputs ───────────────────────────────────────────────────────────────── */
+  .input-base {
+    @apply w-full border border-[#e8ddd9] rounded-[10px] px-3.5 py-2.5 text-sm
+           bg-white placeholder:text-[#9ca3af] text-[#1a1a1a]
+           focus:outline-none focus:ring-2 focus:ring-[#804e3f] focus:border-transparent
+           transition-all duration-150;
+  }
+
+  /* ── Badges ───────────────────────────────────────────────────────────────── */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
   }
-  .badge-available   { @apply badge bg-green-100 text-green-800; }
-  .badge-published   { @apply badge bg-blue-100 text-blue-800; }
-  .badge-pending     { @apply badge bg-yellow-100 text-yellow-800; }
-  .badge-medical     { @apply badge bg-red-100 text-red-700; }
-  .badge-adopted     { @apply badge bg-purple-100 text-purple-800; }
-  .badge-new         { @apply badge bg-blue-100 text-blue-700; }
+  .badge-available    { @apply badge bg-green-100  text-green-800  border border-green-200; }
+  .badge-adopted      { @apply badge bg-indigo-100 text-indigo-800 border border-indigo-200; }
+  .badge-pending      { @apply badge bg-yellow-100 text-yellow-800 border border-yellow-200; }
+  .badge-foster       { @apply badge bg-purple-100 text-purple-800 border border-purple-200; }
+  .badge-medical      { @apply badge bg-red-100    text-red-800    border border-red-200; }
+  .badge-published    { @apply badge bg-blue-100   text-blue-800; }
+  .badge-new          { @apply badge bg-blue-100   text-blue-700; }
   .badge-under_review { @apply badge bg-orange-100 text-orange-700; }
-  .badge-approved    { @apply badge bg-green-100 text-green-700; }
-  .badge-denied      { @apply badge bg-red-100 text-red-700; }
-  .badge-completed   { @apply badge bg-gray-100 text-gray-700; }
-  .badge-read        { @apply badge bg-sky-100 text-sky-700; }
-  .badge-replied     { @apply badge bg-teal-100 text-teal-700; }
-  .badge-archived    { @apply badge bg-gray-100 text-gray-500; }
+  .badge-approved     { @apply badge bg-green-100  text-green-700; }
+  .badge-denied       { @apply badge bg-red-100    text-red-700; }
+  .badge-completed    { @apply badge bg-gray-100   text-gray-700; }
+  .badge-read         { @apply badge bg-sky-100    text-sky-700; }
+  .badge-replied      { @apply badge bg-teal-100   text-teal-700; }
+  .badge-archived     { @apply badge bg-gray-100   text-gray-500; }
+}
+
+/* ── Animations ──────────────────────────────────────────────────────────────── */
+.tab-content {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Animals grid ────────────────────────────────────────────────────────────── */
+.animals-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .animals-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────────── */
+.dashboard-sidebar {
+  background: var(--color-deep-taupe);
+  border-right: 1px solid var(--color-stone);
+  color: var(--color-sand);
+}
+
+.sidebar-tab {
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  color: rgba(246, 240, 228, 0.75);
+  background-color: transparent;
+}
+
+.sidebar-tab:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--color-white);
+}
+
+.sidebar-tab.active {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--color-white) !important;
+}
+
+/* ── View toggle buttons ─────────────────────────────────────────────────────── */
+.view-toggle-btn {
+  background: transparent;
+  color: var(--color-deep-taupe);
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.view-toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.view-toggle-btn:not(.active):hover {
+  background: rgba(128, 78, 63, 0.12);
+}
+
+/* ── Content-section tabs ────────────────────────────────────────────────────── */
+.content-tab {
+  transition: background 0.15s ease;
+}
+
+.content-tab.active {
+  background-color: var(--color-dove) !important;
+  color: var(--color-primary) !important;
+  font-weight: 600;
+}
+
+/* ── Mobile responsive utilities ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .mobile-stack {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .mobile-full {
+    width: 100% !important;
+  }
+  .mobile-scroll-x {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mobile-p-sm {
+    padding: 1rem !important;
+  }
 }
