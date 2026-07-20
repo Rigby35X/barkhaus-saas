@@ -11,7 +11,6 @@ interface SettingsTabProps {
 
 const HEADING_FONT_OPTIONS = ['Noto Serif Display', 'Playfair Display', 'Lora', 'Merriweather', 'Georgia'];
 const BODY_FONT_OPTIONS = ['Poppins', 'DM Sans', 'Inter', 'Source Sans 3', 'Roboto'];
-const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
 const FONT_SCALE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
 const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Custom SMTP'];
 const DOMAIN_PROVIDERS = ['None', 'GoDaddy', 'Namecheap', 'Google Domains', 'Cloudflare', 'Other'];
