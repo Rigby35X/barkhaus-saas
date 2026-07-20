@@ -34,42 +34,31 @@ interface Animal {
   house_trained?: boolean;
 }
 
-// Generate static paths for all animals
-export async function getStaticPaths() {
-  // For now, return fallback animal IDs to ensure the pages work
-  // In production, you might want to fetch from your actual API
-  const fallbackIds = ['luna', 'max'];
-
-  try {
-    // Try to fetch from API if available
-    const response = await fetch(`http://localhost:4322/api/admin/animals?orgId=9`);
-    if (response.ok) {
-      const animals = await response.json();
-      console.log('✅ Static paths generated for animals:', animals.map(a => a.id));
-      return animals.map(animal => ({
-        params: { id: animal.id.toString() }
-      }));
-    }
-  } catch (error) {
-    console.error('Error fetching animals for static paths, using fallback:', error);
-  }
-
-  // Fallback to predefined IDs if API fails
-  return fallbackIds.map(id => ({
-    params: { id: id.toString() }
-  }));
-}
-
-// Get the animal ID from the URL
+// This route is server-rendered (prerender = false), so getStaticPaths is not used.
+// The animal id comes from the URL and the org is resolved from the subdomain by middleware.
 const { id } = Astro.params;
 
-// Fetch animal data from API
+// Resolve tenant from middleware — never trust a client-supplied org id.
+const { tenant } = Astro.locals;
+const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if tenant unresolved
+
+// Fetch this single animal directly from Supabase, scoped to the tenant org.
 let animal: Animal | null = null;
 try {
-  const response = await fetch(`${Astro.url.origin}/api/admin/animals?orgId=9`);
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/animals?select=*&org_id=eq.${orgId}&id=eq.${encodeURIComponent(id ?? '')}`,
+    {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+      },
+    }
+  );
   if (response.ok) {
-    const animals = await response.json();
-    animal = animals.find(a => a.id.toString() === id);
+    const rows = await response.json();
+    animal = Array.isArray(rows) ? rows[0] ?? null : null;
   }
 } catch (error) {
   console.error('Error fetching animal details:', error);

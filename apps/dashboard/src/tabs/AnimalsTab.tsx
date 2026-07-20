@@ -103,7 +103,7 @@ export default function AnimalsTab({ orgId }: AnimalsTabProps) {
       const updated = await updateAnimal(editingAnimal.id, data);
       setAnimals((prev) => prev.map((a) => (a.id === editingAnimal.id ? updated : a)));
     } else {
-      const created = await createAnimal({ ...data, org: orgId });
+      const created = await createAnimal({ ...data, org_id: orgId });
       setAnimals((prev) => [created, ...prev]);
     }
   };

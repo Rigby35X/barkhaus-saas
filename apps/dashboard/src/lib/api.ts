@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { getCached, setCached } from './apiCache';
+import { getCached, setCached, clearCache } from './apiCache';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -218,6 +218,7 @@ export async function getAnimalById(id: number): Promise<Animal> {
 export async function createAnimal(data: Partial<Animal>): Promise<Animal> {
   const { data: result, error } = await supabase.from('animals').insert(data).select().single();
   if (error) throw error;
+  clearCache('animals_org_'); // invalidate cached animal lists so new record shows immediately
   return result;
 }
 
@@ -238,6 +239,7 @@ export async function updateAnimal(id: number, data: Partial<Animal>): Promise<A
     .single();
   console.log('Animal update error:', JSON.stringify(error));
   if (error) throw error;
+  clearCache('animals_org_'); // invalidate cached animal lists so edits show immediately
   return result;
 }
 
@@ -246,6 +248,7 @@ export async function deleteAnimal(id: number, orgId?: number): Promise<void> {
   if (orgId) query = query.eq('org_id', orgId);
   const { error } = await query;
   if (error) throw error;
+  clearCache('animals_org_'); // invalidate cached animal lists so deletion shows immediately
 }
 
 export async function sendAnimalEmail(animalId: number, templateName: string): Promise<{ confirmation_message?: string }> {
