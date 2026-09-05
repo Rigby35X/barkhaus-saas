@@ -14,6 +14,7 @@ interface LayoutProps {
   onLogout?: () => void;
   onOrgSwitch?: (orgId: number) => void;
   onRestartTour?: () => void;
+  onSearch?: (query: string) => void;
 }
 
 export default function Layout({
@@ -25,9 +26,9 @@ export default function Layout({
   onLogout,
   onOrgSwitch,
   onRestartTour,
+  onSearch,
 }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [_searchQuery, setSearchQuery] = useState('');
 
   const config = orgConfig ?? ORGANIZATIONS[orgId] ?? {
     name: 'Dashboard',
@@ -54,7 +55,7 @@ export default function Layout({
         orgConfig={config}
         onTabChange={handleTabChange}
         onSearch={(q) => {
-          setSearchQuery(q);
+          if (onSearch) onSearch(q);
           handleTabChange('animals');
         }}
         onLogout={handleLogout}
@@ -81,6 +82,7 @@ export default function Layout({
             onClose={() => setSidebarOpen(false)}
             onOrgSwitch={onOrgSwitch}
             onRestartTour={onRestartTour}
+            onLogout={handleLogout}
           />
         )}
 

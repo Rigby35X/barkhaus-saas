@@ -13,18 +13,25 @@ import AnimalModal from './AnimalModal';
 
 interface AnimalsTabProps {
   orgId: number;
+  initialSearch?: string;
+  searchNonce?: number;
 }
 
 type ViewMode = 'grid' | 'list';
 
-export default function AnimalsTab({ orgId }: AnimalsTabProps) {
+export default function AnimalsTab({ orgId, initialSearch, searchNonce }: AnimalsTabProps) {
   const isMBPR = orgId === 9;
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [view, setView] = useState<ViewMode>('grid');
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch ?? '');
   const [statusFilter, setStatusFilter] = useState('');
+
+  useEffect(() => {
+    if (searchNonce) setSearch(initialSearch ?? '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchNonce]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
 

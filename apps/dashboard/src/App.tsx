@@ -199,6 +199,7 @@ function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [animalsSearch, setAnimalsSearch] = useState({ query: '', nonce: 0 });
 
   useEffect(() => {
     // Check URL for ?token= parameter (from marketing signup/login redirect)
@@ -257,6 +258,10 @@ function App() {
     setShowOnboarding(true);
   };
 
+  const handleSearch = (query: string) => {
+    setAnimalsSearch((prev) => ({ query, nonce: prev.nonce + 1 }));
+  };
+
   const handleOrgSwitch = (newOrgId: number) => {
     const newConfig = ORGANIZATIONS[newOrgId];
     if (newConfig && session) {
@@ -275,7 +280,13 @@ function App() {
       case 'overview':
         return <DashboardOverview orgId={session.orgId} onTabChange={setActiveTab} />;
       case 'animals':
-        return <AnimalsTab orgId={session.orgId} />;
+        return (
+          <AnimalsTab
+            orgId={session.orgId}
+            initialSearch={animalsSearch.query}
+            searchNonce={animalsSearch.nonce}
+          />
+        );
       case 'applications':
         return <ApplicationsTab orgId={session.orgId} />;
       case 'website-content':
@@ -309,6 +320,7 @@ function App() {
         onLogout={handleLogout}
         onOrgSwitch={session.orgConfig.isAdmin ? handleOrgSwitch : undefined}
         onRestartTour={handleRestartTour}
+        onSearch={handleSearch}
       >
         <Suspense fallback={<TabSpinner />}>
           {tabContent()}
