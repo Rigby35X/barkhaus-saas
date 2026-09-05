@@ -192,7 +192,6 @@ export default function Sidebar({
   const isAdmin = orgConfig.isAdmin === true;
   const orgName = orgConfig.name ?? 'Org';
   const orgInitial = orgName.charAt(0).toUpperCase();
-  const logoUrl: string | undefined = (orgConfig as any).logo_url || orgConfig.logo || undefined;
   const contactEmail: string = orgConfig.contact?.email ?? '';
 
   return (
@@ -214,16 +213,12 @@ export default function Sidebar({
       >
         {/* Top: org logo + name */}
         <div className="px-4 py-5 flex items-center gap-3 border-b border-gray-100" data-tour="sidebar-header">
-          {logoUrl ? (
-            <img src={logoUrl} alt={orgName} className="h-10 w-10 object-contain rounded-lg flex-shrink-0" />
-          ) : (
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white text-base flex-shrink-0"
-              style={{ backgroundColor: '#804e3f' }}
-            >
-              {orgInitial}
-            </div>
-          )}
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base flex-shrink-0"
+            style={{ backgroundColor: '#e2d4c6', color: '#804e3f' }}
+          >
+            {orgInitial}
+          </div>
           <div className="min-w-0">
             <p className="font-bold text-sm text-gray-800 truncate leading-tight">{orgName}</p>
             <p className="text-xs text-gray-400 truncate">Org #{orgId}</p>

@@ -12,6 +12,7 @@ interface HeaderProps {
 export default function Header({ orgConfig, onTabChange, onSearch, onLogout, onToggleSidebar }: HeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -63,10 +64,15 @@ export default function Header({ orgConfig, onTabChange, onSearch, onLogout, onT
         className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition"
         aria-label="Go to overview"
       >
-        {logoUrl ? (
-          <img src={logoUrl} alt={orgName} className="h-8 w-auto object-contain" />
+        {logoUrl && !logoError ? (
+          <img
+            src={logoUrl}
+            alt={orgName}
+            className="h-8 w-auto object-contain"
+            onError={() => setLogoError(true)}
+          />
         ) : (
-          <span className="font-serif font-bold text-[#4d4c4c] text-lg leading-none">{orgName}</span>
+          <span className="font-serif font-bold text-[#804e3f] text-lg leading-none">{orgName}</span>
         )}
       </button>
 
