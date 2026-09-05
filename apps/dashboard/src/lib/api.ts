@@ -258,37 +258,6 @@ export async function sendAnimalEmail(animalId: number, templateName: string): P
   return res.json() as Promise<{ confirmation_message?: string }>;
 }
 
-// ─── Image upload ─────────────────────────────────────────────────────────────
-
-export async function uploadImage(file: File, orgId: number, section = 'animals'): Promise<string> {
-  // NOTE: animal-images bucket must exist in Supabase Storage and be set to PUBLIC.
-  // Go to Supabase → Storage → New bucket → animal-images → Public
-  const org = ORGANIZATIONS[orgId];
-  const subdomain = org?.subdomain ?? 'mbpr';
-  const tenantUrl = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
-
-  const form = new FormData();
-  form.append('image', file);
-  form.append('section', section);
-  form.append('orgId', String(orgId));
-
-  console.log(`Starting upload for org ${orgId}, section: ${section}, endpoint: ${tenantUrl}`);
-  const res = await fetch(tenantUrl, { method: 'POST', body: form });
-
-  if (!res.ok) {
-    const text = await res.text();
-    console.error('Upload failed:', res.status, text);
-    throw new Error(`Image upload failed: ${res.status}`);
-  }
-
-  const json = await res.json() as { success?: boolean; url?: string; error?: string };
-  console.log('Upload response:', json);
-
-  if (json.url) return json.url;
-  if (!json.success) throw new Error(json.error ?? 'Upload failed');
-  return json.url ?? '';
-}
-
 // ─── Website content ──────────────────────────────────────────────────────────
 
 export async function getWebsiteContent(orgId: number, pageSlug?: string): Promise<WebsiteSection[]> {

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
-import { ORGANIZATIONS } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/Toast';
+import { uploadImage } from '../lib/upload';
 
 interface SettingsTabProps {
   orgId: number;
@@ -188,27 +188,9 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   const uploadLogo = async (file: File, fieldKey: string) => {
     setLogoUploading(fieldKey);
     try {
-      const orgRecord = ORGANIZATIONS[orgId];
-      const subdomain = orgRecord?.subdomain ?? 'mbpr';
-      const tenantUrl = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
-
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('orgId', String(orgId));
-      formData.append('section', 'logos');
-
-      console.log('Starting logo upload to', tenantUrl);
-      const res = await fetch(tenantUrl, { method: 'POST', body: formData });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('Upload failed:', res.status, text);
-        throw new Error(`Upload failed: ${res.status}`);
-      }
-
-      const json = await res.json() as { url?: string };
-      console.log('Upload response:', json);
-      const url = json.url ?? '';
+      console.log('Starting logo upload for', fieldKey);
+      const url = await uploadImage(file, 'logos', orgId);
+      console.log('Upload response url:', url);
 
       // Update local state
       setBranding((prev) => ({ ...prev, [fieldKey]: url }));
@@ -227,7 +209,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       }
     } catch (err) {
       console.error('Logo upload error:', err);
-      showToast('Upload failed — check console for details', 'error');
+      showToast(err instanceof Error ? err.message : 'Upload failed — please try again.', 'error');
     } finally {
       setLogoUploading(null);
     }
@@ -555,8 +537,14 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                           type="button"
                           onClick={() => { setPendingLogoField(String(key)); logoInputRef.current?.click(); }}
                           disabled={!!logoUploading}
-                          className="px-3 py-2 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
+                          className="flex items-center gap-1.5 px-3 py-2 text-xs border border-silver-gray rounded-lg hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
                         >
+                          {logoUploading === String(key) && (
+                            <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                          )}
                           {logoUploading === String(key) ? 'Uploading…' : 'Upload'}
                         </button>
                         {branding[key] && (

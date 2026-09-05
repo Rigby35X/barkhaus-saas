@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Modal from '../components/Modal';
 import ImageUpload from '../components/ImageUpload';
-import { type Animal, uploadImage } from '../lib/api';
+import { type Animal } from '../lib/api';
+import { uploadImage } from '../lib/upload';
 import { supabase } from '../lib/supabase';
 
 interface AnimalModalProps {
@@ -81,7 +82,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
         if (file) {
           const animalId = animal?.id;
           console.log(`Starting upload for animal ${animalId ?? 'new'}, field: ${field}`);
-          const url = await uploadImage(file, orgId);
+          const url = await uploadImage(file, 'animals', orgId);
           console.log('Upload response:', url);
           (data as Record<string, unknown>)[field] = url;
           // Update form preview immediately

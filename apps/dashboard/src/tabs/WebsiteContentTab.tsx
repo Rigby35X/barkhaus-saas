@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
+import { uploadImage } from '../lib/upload';
 
 const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
 const SECTION_FONT_SCALE_OPTIONS = ['', 'Small', 'Medium', 'Large', 'Extra Large'];
@@ -478,23 +479,13 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setUploadingField(fieldKey);
     setUploadError('');
     try {
-      const org = ORGANIZATIONS[orgId];
-      const subdomain = org?.subdomain ?? 'mbpr';
-      const endpoint = `https://${subdomain}.preview.barkhaus.io/api/upload-image`;
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('orgId', String(orgId));
-      formData.append('section', activePage);
-      console.log(`[WebsiteContentTab] Uploading image for field ${fieldKey} to ${endpoint}`);
-      const res = await fetch(endpoint, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-      const json = await res.json() as { url?: string };
-      const url = json.url ?? '';
+      console.log(`[WebsiteContentTab] Uploading image for field ${fieldKey}, page ${activePage}`);
+      const url = await uploadImage(file, activePage, orgId);
       console.log(`[WebsiteContentTab] Uploaded image URL:`, url);
       handleEdit(fieldKey, url);
     } catch (err) {
       console.error('[WebsiteContentTab] Image upload error:', err);
-      setUploadError('Upload failed — check console.');
+      setUploadError(err instanceof Error ? err.message : 'Upload failed — please try again.');
       setTimeout(() => setUploadError(''), 4000);
     } finally {
       setUploadingField(null);
@@ -670,8 +661,14 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                                 type="button"
                                 disabled={!!uploadingField}
                                 onClick={() => { setPendingImageField(field.key); imageInputRef.current?.click(); }}
-                                className="px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
+                                className="flex items-center gap-1.5 px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
                               >
+                                {uploadingField === field.key && (
+                                  <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                  </svg>
+                                )}
                                 {uploadingField === field.key ? 'Uploading…' : 'Upload'}
                               </button>
                             </div>
