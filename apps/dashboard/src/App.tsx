@@ -8,7 +8,7 @@ import {
   initSession,
   TOKEN_KEY,
 } from './lib/auth';
-import { ORGANIZATIONS, type OrgConfig } from './lib/api';
+import { ORGANIZATIONS, getOrganization, type OrgConfig } from './lib/api';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import { isOnboardingComplete, resetOnboarding } from './lib/onboarding';
@@ -200,6 +200,47 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [animalsSearch, setAnimalsSearch] = useState({ query: '', nonce: 0 });
+
+  // Merge live Supabase organizations row over the static ORGANIZATIONS defaults —
+  // covers login, session restore, and org switch, since all of them change orgId.
+  useEffect(() => {
+    if (!session) return;
+    const orgId = session.orgId;
+    let cancelled = false;
+    getOrganization(orgId).then((data) => {
+      if (cancelled || !data) return;
+      setSession((prev) => {
+        if (!prev || prev.orgId !== orgId) return prev;
+        return {
+          ...prev,
+          orgConfig: {
+            ...prev.orgConfig,
+            name: (data.org as string) ?? prev.orgConfig.name,
+            logo: (data.logo_dark_url as string) ?? prev.orgConfig.logo,
+            colors: {
+              primary: (data.primary_color as string) ?? prev.orgConfig.colors.primary,
+              secondary: (data.secondary_color as string) ?? prev.orgConfig.colors.secondary,
+            },
+            contact: {
+              email: (data.contact_email as string) ?? prev.orgConfig.contact.email,
+              phone: (data.phone as string) ?? prev.orgConfig.contact.phone,
+              address: (data.address as string) ?? prev.orgConfig.contact.address,
+            },
+            social: {
+              facebook: (data.facebook_url as string) ?? prev.orgConfig.social.facebook,
+              instagram: (data.instagram_url as string) ?? prev.orgConfig.social.instagram,
+              twitter: (data.twitter_url as string) ?? prev.orgConfig.social.twitter,
+            },
+            subdomain: (data.subdomain as string) ?? prev.orgConfig.subdomain,
+          },
+        };
+      });
+    }).catch(() => {
+      // Live org fetch is a best-effort enhancement — keep the static defaults on failure.
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.orgId]);
 
   useEffect(() => {
     // Check URL for ?token= parameter (from marketing signup/login redirect)

@@ -10,6 +10,7 @@ import {
 } from '../lib/api';
 import StatusBadge from '../components/StatusBadge';
 import AnimalModal from './AnimalModal';
+import { useToast } from '../components/Toast';
 
 interface AnimalsTabProps {
   orgId: number;
@@ -20,6 +21,7 @@ interface AnimalsTabProps {
 type ViewMode = 'grid' | 'list';
 
 export default function AnimalsTab({ orgId, initialSearch, searchNonce }: AnimalsTabProps) {
+  const { showToast } = useToast();
   const isMBPR = orgId === 9;
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,18 +102,26 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
     try {
       await deleteAnimal(id, orgId);
       setAnimals((prev) => prev.filter((a) => a.id !== id));
-    } catch {
-      alert('Failed to delete animal.');
+      showToast('Animal deleted.', 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to delete animal.', 'error');
     }
   };
 
   const handleSave = async (data: Partial<Animal>) => {
-    if (editingAnimal) {
-      const updated = await updateAnimal(editingAnimal.id, data);
-      setAnimals((prev) => prev.map((a) => (a.id === editingAnimal.id ? updated : a)));
-    } else {
-      const created = await createAnimal({ ...data, org_id: orgId });
-      setAnimals((prev) => [created, ...prev]);
+    try {
+      if (editingAnimal) {
+        const updated = await updateAnimal(editingAnimal.id, data);
+        setAnimals((prev) => prev.map((a) => (a.id === editingAnimal.id ? updated : a)));
+        showToast('Animal updated.', 'success');
+      } else {
+        const created = await createAnimal({ ...data, org_id: orgId });
+        setAnimals((prev) => [created, ...prev]);
+        showToast('Animal added.', 'success');
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to save animal.', 'error');
+      throw err;
     }
   };
 
