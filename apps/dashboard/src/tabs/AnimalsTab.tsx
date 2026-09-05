@@ -98,7 +98,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
   const handleDelete = async (id: number) => {
     if (!window.confirm('Delete this animal? This cannot be undone.')) return;
     try {
-      await deleteAnimal(id);
+      await deleteAnimal(id, orgId);
       setAnimals((prev) => prev.filter((a) => a.id !== id));
     } catch {
       alert('Failed to delete animal.');
@@ -110,7 +110,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
       const updated = await updateAnimal(editingAnimal.id, data);
       setAnimals((prev) => prev.map((a) => (a.id === editingAnimal.id ? updated : a)));
     } else {
-      const created = await createAnimal({ ...data, org: orgId });
+      const created = await createAnimal({ ...data, org_id: orgId });
       setAnimals((prev) => [created, ...prev]);
     }
   };
