@@ -229,7 +229,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
           {/* Empty state */}
           {!loading && !error && submissions.length === 0 && (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="text-5xl mb-4">📥</div>
+              <div className="text-5xl mb-4">📬</div>
               <p className="text-lg font-semibold text-deep-taupe mb-2">No form submissions yet.</p>
             </div>
           )}

@@ -36,10 +36,12 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
     state: '',
     zip: '',
     website: '',
+    mission_statement: '',
     facebook: orgConfig.social.facebook,
     instagram: orgConfig.social.instagram,
     twitter: orgConfig.social.twitter ?? '',
     youtube: '',
+    linkedin: '',
   });
 
   // ── Branding ──
@@ -114,6 +116,8 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS instagram_url text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS twitter_url text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS youtube_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS linkedin_url text;
+  // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS mission_statement text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS custom_domain text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS contact_email text;
   // ALTER TABLE organizations ADD COLUMN IF NOT EXISTS email_provider text;
@@ -148,10 +152,12 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           state: (data.state as string) ?? prev.state,
           zip: (data.zip_code as string) ?? prev.zip,
           website: (data.website as string) ?? prev.website,
+          mission_statement: (data.mission_statement as string) ?? prev.mission_statement,
           facebook: (data.facebook_url as string) ?? prev.facebook,
           instagram: (data.instagram_url as string) ?? prev.instagram,
           twitter: (data.twitter_url as string) ?? prev.twitter,
           youtube: (data.youtube_url as string) ?? prev.youtube,
+          linkedin: (data.linkedin_url as string) ?? prev.linkedin,
         }));
         setBranding((prev) => ({
           ...prev,
@@ -239,8 +245,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           state: org.state,
           zip_code: org.zip,
           website: org.website,
-          facebook_url: org.facebook,
-          instagram_url: org.instagram,
+          mission_statement: org.mission_statement,
         };
       } else if (activeSection === 'branding') {
         updates = {
@@ -265,6 +270,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
           instagram_url: org.instagram,
           twitter_url: org.twitter,
           youtube_url: org.youtube,
+          linkedin_url: org.linkedin,
         };
       } else if (activeSection === 'email') {
         updates = {
@@ -281,15 +287,17 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       await updateOrganization(orgId, updates);
       console.log('[SettingsTab] Save successful');
       if (activeSection === 'organization') {
-        showToast('Organization info saved \u2713', 'success');
+        showToast('Organization saved \u2713', 'success');
       } else if (activeSection === 'branding') {
         showToast('Branding saved \u2713', 'success');
+      } else if (activeSection === 'social') {
+        showToast('Social media saved \u2713', 'success');
       } else {
         showToast('Saved \u2713', 'success');
       }
     } catch (err) {
       console.error('[SettingsTab] Save error:', err);
-      showToast('Save failed \u2014 please try again', 'error');
+      showToast(err instanceof Error ? `Save failed: ${err.message}` : 'Save failed \u2014 please try again', 'error');
     } finally {
       setSaving(false);
     }
@@ -430,11 +438,12 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                 <SField label="ZIP">
                   <input className={inp} value={org.zip} onChange={(e) => setOrg((p) => ({ ...p, zip: e.target.value }))} />
                 </SField>
-                <SField label="Facebook URL">
-                  <input type="url" className={inp} value={org.facebook} onChange={(e) => setOrg((p) => ({ ...p, facebook: e.target.value }))} placeholder="https://facebook.com/…" />
-                </SField>
-                <SField label="Instagram URL">
-                  <input type="url" className={inp} value={org.instagram} onChange={(e) => setOrg((p) => ({ ...p, instagram: e.target.value }))} placeholder="https://instagram.com/…" />
+                <SField label="Mission Statement" cls="sm:col-span-2">
+                  <textarea
+                    className={`${inp} min-h-[90px] resize-y`}
+                    value={org.mission_statement}
+                    onChange={(e) => setOrg((p) => ({ ...p, mission_statement: e.target.value }))}
+                  />
                 </SField>
               </div>
             )}
@@ -545,7 +554,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                           {logoUploading === String(key) ? 'Uploading…' : 'Upload'}
                         </button>
                         {branding[key] && (
-                          <img src={branding[key] as string} alt={label} className="h-9 w-9 rounded-lg object-contain border border-silver-gray bg-cloud" />
+                          <img src={branding[key] as string} alt={label} className="h-[60px] w-[60px] rounded-lg object-contain border border-silver-gray bg-cloud" />
                         )}
                       </div>
                     </SField>
@@ -568,6 +577,9 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
                 </SField>
                 <SField label="YouTube URL">
                   <input type="url" className={inp} value={org.youtube} onChange={(e) => setOrg((p) => ({ ...p, youtube: e.target.value }))} placeholder="https://youtube.com/…" />
+                </SField>
+                <SField label="LinkedIn URL">
+                  <input type="url" className={inp} value={org.linkedin} onChange={(e) => setOrg((p) => ({ ...p, linkedin: e.target.value }))} placeholder="https://linkedin.com/…" />
                 </SField>
               </div>
             )}

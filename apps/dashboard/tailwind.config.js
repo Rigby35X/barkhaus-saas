@@ -75,6 +75,7 @@ export default {
         'skeleton': 'skeleton 1.5s ease-in-out infinite',
         'fade-up':  'fade-up 0.2s ease-out',
         'slide-in': 'slide-in 0.15s ease-out',
+        'toast-progress': 'toast-progress 4s linear forwards',
       },
       keyframes: {
         skeleton: {
@@ -88,6 +89,10 @@ export default {
         'slide-in': {
           '0%':   { opacity: '0', transform: 'translateX(-8px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        'toast-progress': {
+          '0%':   { width: '100%' },
+          '100%': { width: '0%' },
         },
       },
     },

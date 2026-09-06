@@ -34,6 +34,12 @@ const ICON_STYLES: Record<ToastType, string> = {
   info:    'bg-[#f0d0c3] text-[#804e3f]',
 };
 
+const PROGRESS_STYLES: Record<ToastType, string> = {
+  success: 'bg-green-500',
+  error:   'bg-red-500',
+  info:    'bg-[#804e3f]',
+};
+
 function ToastSingle({ toast, onClose }: { toast: ToastItem; onClose: () => void }) {
   useEffect(() => {
     const timer = setTimeout(onClose, 4000);
@@ -42,7 +48,7 @@ function ToastSingle({ toast, onClose }: { toast: ToastItem; onClose: () => void
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg
+      className={`relative overflow-hidden flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg
                   animate-fade-up max-w-sm min-w-[240px] pointer-events-auto
                   ${STYLES[toast.type]}`}
     >
@@ -58,6 +64,9 @@ function ToastSingle({ toast, onClose }: { toast: ToastItem; onClose: () => void
       >
         ×
       </button>
+      <div
+        className={`absolute bottom-0 left-0 h-0.5 ${PROGRESS_STYLES[toast.type]} animate-toast-progress`}
+      />
     </div>
   );
 }
@@ -80,7 +89,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
+      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-2 pointer-events-none">
         {toasts.map((toast) => (
           <ToastSingle
             key={toast.id}
