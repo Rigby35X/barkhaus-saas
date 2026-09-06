@@ -7,6 +7,7 @@ import Footer from "@components/Footer.astro";
 import "@styles/root.less";
 import "@styles/dark.less";
 import "../styles/tailwind.css";
+import { fetchOrganizationData } from "../utils/content-fetcher.js";
 
 // Define a type for images from the content collection
 type ContentImage = {
@@ -31,6 +32,10 @@ const { description, title, preloadedImage, organization } = Astro.props as Prop
 // Get tenant context from middleware for dynamic branding
 const { tenant } = Astro.locals;
 const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
+
+// Typography CSS variables — reuse the organization prop if the page already fetched
+// it, otherwise fetch here so every page gets branded heading/body colors and fonts.
+const orgTypography = organization ?? await fetchOrganizationData(orgId);
 
 ---
 <!-- A fully fleshed-out <head>, dynamically changing based on client.json and the page front matter -->
@@ -97,6 +102,21 @@ const orgId = tenant?.orgId?.toString() || organization?.id?.toString() || '9';
 
             <!-- Dynamic Organization Branding CSS -->
             <link rel="stylesheet" href={`/api/branding.css?orgId=${orgId}`} />
+            <style define:vars={{
+              headingColor: orgTypography?.heading_color || '#4d4c4c',
+              bodyTextColor: orgTypography?.body_text_color || '#4d4c4c',
+              headingFont: orgTypography?.heading_font || 'Noto Serif Display',
+              bodyFont: orgTypography?.body_font || 'Poppins',
+              primaryColor: orgTypography?.primary_color || '#804e3f',
+            }}>
+              :root {
+                --heading-color: var(--headingColor);
+                --body-text-color: var(--bodyTextColor);
+                --heading-font: var(--headingFont);
+                --body-font: var(--bodyFont);
+                --primary-color: var(--primaryColor);
+              }
+            </style>
 
             <!-- Netlify Identity Widget for CMS Authentication -->
             <script is:inline src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>

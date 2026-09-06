@@ -347,6 +347,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const [activePage, setActivePage] = useState('homepage');
   const [activeSectionKey, setActiveSectionKey] = useState('hero');
   const [editing, setEditing] = useState<Record<string, string>>({});
+  const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState('');
@@ -421,12 +422,18 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
 
   const handleEdit = (key: string, value: string) => {
     setEditing((prev) => ({ ...prev, [key]: value }));
+    setDirty(true);
     setImageLoadErrors((prev) => {
       if (!prev[key]) return prev;
       const next = { ...prev };
       delete next[key];
       return next;
     });
+  };
+
+  const updateTypography = (patch: Partial<typeof typographyEditing>) => {
+    setTypographyEditing((prev) => ({ ...prev, ...patch }));
+    setDirty(true);
   };
 
   const getValue = (key: string): string => {
@@ -456,10 +463,11 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
         setSections((prev) => [...prev, created]);
       }
       setEditing({});
+      setDirty(false);
       showToast('Saved ✓', 'success');
     } catch (err) {
       console.error('[WebsiteContentTab] save error:', err);
-      showToast('Save failed — please try again', 'error');
+      showToast(err instanceof Error ? `Save failed: ${err.message}` : 'Save failed — please try again', 'error');
     } finally {
       setSaving(false);
     }
@@ -471,6 +479,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     const page = PAGES.find((p) => p.key === pageKey);
     if (page?.sections[0]) setActiveSectionKey(page.sections[0].key);
     setEditing({});
+    setDirty(false);
     setShowTypography(false);
     // Brief loading state to signal section switched
     setTimeout(() => setSectionLoading(false), 300);
@@ -480,6 +489,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setSectionLoading(true);
     setActiveSectionKey(sectionKey);
     setEditing({});
+    setDirty(false);
     setShowTypography(false);
     setTimeout(() => setSectionLoading(false), 300);
   };
@@ -622,7 +632,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => void handleSave()}
-                    disabled={saving || Object.keys(editing).length === 0}
+                    disabled={saving || !dirty}
                     className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-40 transition"
                   >
                     {saving ? 'Saving…' : 'Save Changes'}
@@ -740,19 +750,19 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                               <input
                                 type="color"
                                 value={typographyEditing.heading_color || '#4d4c4c'}
-                                onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_color: e.target.value }))}
+                                onChange={(e) => updateTypography({ heading_color: e.target.value })}
                                 className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
                               />
                               <input
                                 type="text"
                                 value={typographyEditing.heading_color}
-                                onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_color: e.target.value }))}
+                                onChange={(e) => updateTypography({ heading_color: e.target.value })}
                                 placeholder="Leave empty for global"
                                 maxLength={7}
                                 className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
                               />
                               {typographyEditing.heading_color && (
-                                <button type="button" onClick={() => setTypographyEditing((p) => ({ ...p, heading_color: '' }))} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                                <button type="button" onClick={() => updateTypography({ heading_color: '' })} className="text-xs text-stone hover:text-deep-taupe">✕</button>
                               )}
                             </div>
                           </div>
@@ -763,19 +773,19 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                               <input
                                 type="color"
                                 value={typographyEditing.body_text_color || '#4d4c4c'}
-                                onChange={(e) => setTypographyEditing((p) => ({ ...p, body_text_color: e.target.value }))}
+                                onChange={(e) => updateTypography({ body_text_color: e.target.value })}
                                 className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
                               />
                               <input
                                 type="text"
                                 value={typographyEditing.body_text_color}
-                                onChange={(e) => setTypographyEditing((p) => ({ ...p, body_text_color: e.target.value }))}
+                                onChange={(e) => updateTypography({ body_text_color: e.target.value })}
                                 placeholder="Leave empty for global"
                                 maxLength={7}
                                 className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
                               />
                               {typographyEditing.body_text_color && (
-                                <button type="button" onClick={() => setTypographyEditing((p) => ({ ...p, body_text_color: '' }))} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                                <button type="button" onClick={() => updateTypography({ body_text_color: '' })} className="text-xs text-stone hover:text-deep-taupe">✕</button>
                               )}
                             </div>
                           </div>
@@ -784,7 +794,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                             <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Heading Font</label>
                             <select
                               value={typographyEditing.heading_font}
-                              onChange={(e) => setTypographyEditing((p) => ({ ...p, heading_font: e.target.value }))}
+                              onChange={(e) => updateTypography({ heading_font: e.target.value })}
                               className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white text-deep-taupe"
                             >
                               <option value="">— Use global font —</option>
@@ -796,7 +806,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                             <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Font Size Scale</label>
                             <select
                               value={typographyEditing.font_size_scale}
-                              onChange={(e) => setTypographyEditing((p) => ({ ...p, font_size_scale: e.target.value }))}
+                              onChange={(e) => updateTypography({ font_size_scale: e.target.value })}
                               className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white text-deep-taupe"
                             >
                               {SECTION_FONT_SCALE_OPTIONS.map((s) => (

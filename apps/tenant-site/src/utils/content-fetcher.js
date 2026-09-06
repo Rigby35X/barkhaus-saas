@@ -364,6 +364,11 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
       primary_color: data.primary_color,
       secondary_color: data.secondary_color,
       accent_color: data.accent_color,
+      heading_color: data.heading_color,
+      body_text_color: data.body_text_color,
+      heading_font: data.heading_font,
+      body_font: data.body_font,
+      font_scale: data.font_scale,
       socialMedia: {
         facebook: data.facebook_url || '',
         instagram: data.instagram_url || '',
