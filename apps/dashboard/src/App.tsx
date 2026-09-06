@@ -215,7 +215,7 @@ function App() {
           ...prev,
           orgConfig: {
             ...prev.orgConfig,
-            name: (data.org as string) ?? prev.orgConfig.name,
+            name: (data.name as string) ?? prev.orgConfig.name,
             logo: (data.logo_dark_url as string) ?? prev.orgConfig.logo,
             colors: {
               primary: (data.primary_color as string) ?? prev.orgConfig.colors.primary,

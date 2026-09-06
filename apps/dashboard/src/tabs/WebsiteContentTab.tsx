@@ -354,6 +354,9 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const [pendingImageField, setPendingImageField] = useState<string>('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<string, boolean>>({});
+  const [previewTimedOut, setPreviewTimedOut] = useState(false);
+  const previewLoadedRef = useRef(false);
 
   // Typography overrides per section (stored as JSONB `typography` column in website_content)
   // Run once in Supabase SQL Editor if not yet added:
@@ -418,6 +421,12 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
 
   const handleEdit = (key: string, value: string) => {
     setEditing((prev) => ({ ...prev, [key]: value }));
+    setImageLoadErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const getValue = (key: string): string => {
@@ -503,6 +512,17 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   const deviceWidth = previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '375px';
   const deviceHeight = previewDevice === 'mobile' ? '600px' : '500px';
   const previewUrl = PAGE_PREVIEW_URLS[activePage] ?? 'https://mbpr.preview.barkhaus.io/';
+
+  // Best-effort detection: if the iframe hasn't fired onLoad shortly after the URL
+  // changes, assume it's blocked (e.g. by X-Frame-Options) rather than just slow.
+  useEffect(() => {
+    previewLoadedRef.current = false;
+    setPreviewTimedOut(false);
+    const timer = setTimeout(() => {
+      if (!previewLoadedRef.current) setPreviewTimedOut(true);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, [previewUrl]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -672,16 +692,17 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                                 {uploadingField === field.key ? 'Uploading…' : 'Upload'}
                               </button>
                             </div>
-                            {val ? (
+                            {val && !imageLoadErrors[field.key] ? (
                               <img
+                                key={val}
                                 src={val}
                                 alt="preview"
-                                className="mt-2 h-16 w-auto rounded object-cover"
-                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                className="mt-2 h-[60px] w-auto rounded object-cover"
+                                onError={() => setImageLoadErrors((prev) => ({ ...prev, [field.key]: true }))}
                               />
                             ) : (
-                              <div className="mt-2 h-16 w-32 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">
-                                No image
+                              <div className="mt-2 h-[60px] w-32 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">
+                                No image set
                               </div>
                             )}
                           </div>
@@ -851,11 +872,22 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 className="border-0"
                 title="Page preview"
                 style={{ minWidth: previewDevice !== 'desktop' ? deviceWidth : undefined }}
+                onLoad={() => { previewLoadedRef.current = true; setPreviewTimedOut(false); }}
               />
             </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Preview may not load due to browser security. Use "Open Live Page" to view.
-            </p>
+            {previewTimedOut ? (
+              <p className="text-xs text-red-500 mt-2">
+                Preview unavailable — click{' '}
+                <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                  Open Live Page
+                </a>{' '}
+                to view.
+              </p>
+            ) : (
+              <p className="text-xs text-gray-400 mt-2">
+                Preview may not load due to browser security. Use "Open Live Page" to view.
+              </p>
+            )}
           </div>
         </div>
       )}

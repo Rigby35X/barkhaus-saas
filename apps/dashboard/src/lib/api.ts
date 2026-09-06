@@ -283,7 +283,7 @@ export async function saveWebsiteContentSection(
   const { data, error } = await supabase
     .from('website_content')
     .upsert(
-      { org_id: orgId, page_slug: pageSlug, section_key: sectionKey, ...content, updated_at: new Date().toISOString() },
+      { org_id: orgId, page_slug: pageSlug, section_key: sectionKey, is_visible: true, ...content, updated_at: new Date().toISOString() },
       { onConflict: 'org_id,page_slug,section_key' }
     )
     .select()
@@ -295,7 +295,7 @@ export async function saveWebsiteContentSection(
 export async function updateWebsiteSection(sectionId: number, content: Record<string, unknown>): Promise<WebsiteSection> {
   const { data, error } = await supabase
     .from('website_content')
-    .update({ ...content, updated_at: new Date().toISOString() })
+    .update({ is_visible: true, ...content, updated_at: new Date().toISOString() })
     .eq('id', sectionId)
     .select()
     .single();
