@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useToast } from '../components/Toast';
 
 interface ApplicationsTabProps {
   orgId?: number;
@@ -74,14 +75,20 @@ function StatusBadge({ status }: { status: string }) {
 
 const STATUSES = ['new', 'under_review', 'approved', 'denied', 'completed'];
 
+const FORM_TYPES = ['adoption', 'foster', 'volunteer'];
+
 export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
+  const { showToast } = useToast();
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [newStatus, setNewStatus] = useState('');
+  const [reply, setReply] = useState('');
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [search, setSearch] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -94,6 +101,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
     } catch (err) {
       console.error('[ApplicationsTab] Error fetching applications:', err);
       setError('Unable to load applications');
+      showToast('Unable to load applications', 'error');
     } finally {
       setLoading(false);
     }
@@ -104,16 +112,26 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return apps.filter((app) => {
+      const matchType = !typeFilter || app.form_type?.toLowerCase() === typeFilter;
+      const matchStatus = !statusFilter || (app.status ?? 'new').toLowerCase() === statusFilter;
+      const name = `${app.first_name ?? ''} ${app.last_name ?? ''}`.toLowerCase();
+      const matchSearch = !term || name.includes(term) || (app.email ?? '').toLowerCase().includes(term);
+      return matchType && matchStatus && matchSearch;
+    });
+  }, [apps, typeFilter, statusFilter, search]);
+
   const openApp = (app: Application) => {
     setSelectedApp(app);
     setNewStatus(app.status ?? 'new');
-    setSaveMsg('');
+    setReply('');
   };
 
   const handleSaveStatus = async () => {
     if (!selectedApp) return;
     setSaving(true);
-    setSaveMsg('');
     try {
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/applications?id=eq.${selectedApp.id}`,
@@ -133,10 +151,10 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
         prev.map((a) => (a.id === selectedApp.id ? { ...a, status: newStatus } : a))
       );
       setSelectedApp((prev) => (prev ? { ...prev, status: newStatus } : prev));
-      setSaveMsg('Saved!');
+      showToast('Application updated', 'success');
     } catch (err) {
       console.error('[ApplicationsTab] Error saving status:', err);
-      setSaveMsg('Failed to save.');
+      showToast('Failed to save status — please try again', 'error');
     } finally {
       setSaving(false);
     }
@@ -151,6 +169,39 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
         </div>
 
         <div className="p-6">
+          {/* Filters */}
+          {!loading && !error && apps.length > 0 && (
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <input
+                type="text"
+                placeholder="Search name or email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 border border-silver-gray rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+              />
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none"
+              >
+                <option value="">All Types</option>
+                {FORM_TYPES.map((t) => (
+                  <option key={t} value={t} className="capitalize">{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                ))}
+              </select>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none"
+              >
+                <option value="">All Statuses</option>
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>{s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Loading state */}
           {loading && (
             <div className="space-y-3">
@@ -184,8 +235,15 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
             </div>
           )}
 
+          {/* No results after filtering */}
+          {!loading && !error && apps.length > 0 && filtered.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-500">No applications match your filters.</p>
+            </div>
+          )}
+
           {/* Table */}
-          {!loading && !error && apps.length > 0 && (
+          {!loading && !error && filtered.length > 0 && (
             <div className="overflow-x-auto -mx-4 sm:mx-0">
               <div className="rounded-xl border border-silver-gray overflow-hidden min-w-[640px] mx-4 sm:mx-0">
                 <div className="bg-gray-50 border-b border-silver-gray px-4 py-3 grid grid-cols-6 gap-3 text-xs font-semibold text-stone uppercase tracking-wider">
@@ -197,7 +255,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
                   <span className="text-right">Actions</span>
                 </div>
                 <div className="divide-y divide-silver-gray">
-                  {apps.map((app) => (
+                  {filtered.map((app) => (
                     <div
                       key={app.id}
                       className="px-4 py-3 grid grid-cols-6 gap-3 items-center hover:bg-cloud transition text-sm"
@@ -248,16 +306,6 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
 
             {/* Modal body */}
             <div className="overflow-y-auto flex-1 p-6 space-y-4">
-              {saveMsg && (
-                <p
-                  className={`text-sm px-3 py-2 rounded-xl ${
-                    saveMsg === 'Saved!' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
-                  }`}
-                >
-                  {saveMsg}
-                </p>
-              )}
-
               {/* Contact info */}
               <div className="grid grid-cols-2 gap-3 text-sm bg-cloud rounded-xl p-4">
                 <div>
@@ -312,12 +360,25 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
                   ))}
                 </select>
               </div>
+
+              {/* Reply */}
+              <div>
+                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">
+                  Reply
+                </label>
+                <textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  placeholder="Draft a reply — opens in your email client…"
+                  className="w-full border border-silver-gray rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-warm-brown min-h-[100px] resize-y"
+                />
+              </div>
             </div>
 
             {/* Modal footer */}
             <div className="flex items-center justify-between px-6 py-4 border-t border-silver-gray gap-3">
               <a
-                href={`mailto:${selectedApp.email ?? ''}`}
+                href={`mailto:${selectedApp.email ?? ''}?subject=${encodeURIComponent('Re: Your Application')}${reply ? `&body=${encodeURIComponent(reply)}` : ''}`}
                 className="text-sm text-warm-brown hover:underline"
               >
                 Open in Email Client

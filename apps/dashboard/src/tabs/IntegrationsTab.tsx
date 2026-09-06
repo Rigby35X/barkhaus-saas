@@ -12,14 +12,16 @@ interface Integration {
 }
 
 const integrations: Integration[] = [
-  { name: 'Mailchimp', description: 'Email marketing for your donor and adopter lists', status: 'Coming Soon', color: 'bg-yellow-500' },
-  { name: 'Stripe', description: 'Accept donations and adoption fees online', status: 'Coming Soon', color: 'bg-purple-600' },
-  { name: 'Zapier', description: 'Automate workflows between Barkhaus and 5,000+ apps', status: 'Coming Soon', color: 'bg-orange-500' },
-  { name: 'Google Analytics', description: 'Track your website visitors and conversions', status: 'Coming Soon', color: 'bg-blue-600' },
-  { name: 'PetPoint', description: 'Import animals from your shelter management software', status: 'Coming Soon', color: 'bg-green-600' },
-  { name: 'Shelterluv', description: 'Sync animals and applications from Shelterluv', status: 'Coming Soon', color: 'bg-teal-600' },
-  { name: 'QuickBooks', description: 'Export donation and fee data to your accounting software', status: 'Coming Soon', color: 'bg-indigo-600' },
-  { name: 'Mailjet', description: 'Transactional email for application confirmations', status: 'Coming Soon', color: 'bg-red-500' },
+  { name: 'Mailchimp', description: 'Sync adopters and donors to your email lists automatically', status: 'Coming Soon', color: '#FFE01B' },
+  { name: 'Klaviyo', description: 'Advanced email marketing and automation for rescues', status: 'Coming Soon', color: '#4CAF50' },
+  { name: 'Stripe', description: 'Accept adoption fees and donations online', status: 'Coming Soon', color: '#635BFF' },
+  { name: 'Petfinder', description: 'Automatically sync available animals to Petfinder', status: 'Coming Soon', color: '#F68B1F' },
+  { name: 'Zapier', description: 'Connect Barkhaus to 5000+ apps without code', status: 'Coming Soon', color: '#FF4A00' },
+  { name: 'Google Analytics', description: 'Track your website visitors and conversions', status: 'Coming Soon', color: '#4285F4' },
+  { name: 'QuickBooks', description: 'Export donation and fee data to your accounting software', status: 'Coming Soon', color: '#2CA01C' },
+  { name: 'Shelterluv', description: 'Import animals and applications from Shelterluv', status: 'Coming Soon', color: '#1a73e8' },
+  { name: 'PetPoint', description: 'Sync your shelter data from PetPoint', status: 'Coming Soon', color: '#00897B' },
+  { name: 'Mailjet', description: 'Transactional email for application confirmations', status: 'Coming Soon', color: '#9C27B0' },
 ];
 
 export default function IntegrationsTab({ orgId: _orgId }: IntegrationsTabProps) {
@@ -30,7 +32,7 @@ export default function IntegrationsTab({ orgId: _orgId }: IntegrationsTabProps)
       <div className="bg-white rounded-2xl border border-silver-gray shadow-sm p-8">
         <h2 className="text-2xl font-bold text-deep-taupe mb-2">Connect Your Tools</h2>
         <p className="text-gray-500 mb-8">
-          Integrate Barkhaus with your favorite tools to automate your workflow.
+          Extend Barkhaus with your favorite apps and services.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -40,7 +42,8 @@ export default function IntegrationsTab({ orgId: _orgId }: IntegrationsTabProps)
               className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition"
             >
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg ${integration.color}`}
+                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
+                style={{ backgroundColor: integration.color }}
               >
                 {integration.name.charAt(0)}
               </div>
@@ -70,12 +73,12 @@ export default function IntegrationsTab({ orgId: _orgId }: IntegrationsTabProps)
 
         <div className="mt-10 text-center">
           <p className="text-sm text-gray-500">
-            Don't see your tool?{' '}
+            Do not see what you need?{' '}
             <a
               href="mailto:hello@barkhaus.io?subject=Integration Request"
               className="text-warm-brown hover:underline font-medium"
             >
-              Request an integration
+              Request an integration →
             </a>
           </p>
         </div>
