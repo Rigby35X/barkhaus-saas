@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
+import { updateOrganization } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/Toast';
 import { uploadImage } from '../lib/upload';
@@ -277,11 +278,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
         updates = { custom_domain: domain.domain_name };
       }
       console.log(`[SettingsTab] Saving [${activeSection}]:`, updates);
-      const { error } = await supabase
-        .from('organizations')
-        .update(updates)
-        .eq('id', orgId);
-      if (error) throw error;
+      await updateOrganization(orgId, updates);
       console.log('[SettingsTab] Save successful');
       if (activeSection === 'organization') {
         showToast('Organization info saved \u2713', 'success');
