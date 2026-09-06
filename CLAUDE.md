@@ -100,7 +100,7 @@ Barkhaus is a multi-tenant SaaS platform for animal rescue organizations. Each r
 
 ### Organizations Table — Key Columns
 ```
-id, name, slug, subdomain, is_active,
+id, org, slug, subdomain, is_active,
 primary_color, secondary_color, accent_color,
 heading_font, body_font, font_scale,
 logo_light_url, logo_dark_url, favicon_url,

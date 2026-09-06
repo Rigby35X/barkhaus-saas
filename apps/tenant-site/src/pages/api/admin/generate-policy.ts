@@ -65,11 +65,11 @@ export const POST: APIRoute = async ({ request }) => {
         )
         const { data } = await supabase
           .from('organizations')
-          .select('name, contact_email, email, address')
+          .select('org, contact_email, email, address')
           .eq('id', orgId)
           .single()
         if (data) {
-          orgName = (data.name as string) ?? orgName
+          orgName = (data.org as string) ?? orgName
           orgEmail = (data.contact_email as string) ?? (data.email as string) ?? ''
           orgAddress = (data.address as string) ?? ''
         }

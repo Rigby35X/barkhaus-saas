@@ -38,12 +38,12 @@ export async function GET({ request, locals }) {
       const rows = await res.json();
       if (!rows || rows.length === 0) throw new Error('Organization not found');
       const data = rows[0];
-      console.log('✅ Organization data fetched from Supabase:', data.name);
+      console.log('✅ Organization data fetched from Supabase:', data.org);
 
       const dynamicData = {
         id: data.id || orgId,
-        org: data.name || clientData.name,
-        name: data.name || clientData.name,
+        org: data.org || clientData.name,
+        name: data.org || clientData.name,
         slug: data.slug || clientData.slug,
         email: data.email || clientData.email,
         phone: data.phone || clientData.phoneFormatted,
@@ -109,7 +109,7 @@ export async function PUT({ request }) {
     console.log('Updating organization data for orgId:', orgId);
 
     const supabaseUpdateData = {
-      name: updateData.name,
+      org: updateData.name,
       email: updateData.email,
       phone: updateData.phoneFormatted,
       address: updateData.address?.lineOne,

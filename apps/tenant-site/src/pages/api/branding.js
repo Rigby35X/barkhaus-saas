@@ -49,7 +49,7 @@ export async function GET({ request }) {
     const rows = await res.json();
     if (!rows || rows.length === 0) throw new Error('Organization not found');
     const organization = rows[0];
-    console.log('✅ Organization fetched for branding:', organization.name);
+    console.log('✅ Organization fetched for branding:', organization.org);
 
     const branding = {
       fonts: {
@@ -72,7 +72,7 @@ export async function GET({ request }) {
         background: organization.background_color || '#ffffff'
       },
       organization: {
-        name: organization.name,
+        name: organization.org,
         slug: organization.slug
       }
     };

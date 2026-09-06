@@ -138,7 +138,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
         console.log('[SettingsTab] Loaded org data:', data);
         setOrg((prev) => ({
           ...prev,
-          name: (data.name as string) ?? prev.name,
+          name: (data.org as string) ?? prev.name,
           ein_tax_id: (data.ein as string) ?? prev.ein_tax_id,
           phone: (data.phone as string) ?? prev.phone,
           email: (data.email as string) ?? prev.email,
@@ -229,7 +229,7 @@ export default function SettingsTab({ orgId, orgConfig }: SettingsTabProps) {
       let updates: Record<string, unknown> = {};
       if (activeSection === 'organization') {
         updates = {
-          name: org.name,
+          org: org.name,
           ein: org.ein_tax_id,
           phone: org.phone,
           email: org.email,

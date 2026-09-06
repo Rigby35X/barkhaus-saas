@@ -342,8 +342,8 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
 
     return {
       id: data.id || orgId,
-      org: data.name,
-      name: data.name,
+      org: data.org,
+      name: data.org,
       slug: data.slug,
       email: data.email,
       phone: data.phone,

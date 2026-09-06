@@ -108,7 +108,7 @@ a:hover { color: var(--primaryLight); }
 .org-secondary-bg { background-color: var(--secondary) !important; }
 `;
 
-    console.log('📤 Returning dynamic CSS for:', organization.name);
+    console.log('📤 Returning dynamic CSS for:', organization.org);
 
     return new Response(css, {
       status: 200,

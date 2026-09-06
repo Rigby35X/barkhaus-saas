@@ -33,7 +33,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         organizationData = rows[0];
         orgId = organizationData.id;
         tenantSlug = organizationData.slug;
-        console.log('✅ Found organization by subdomain:', subdomain, '-> orgId:', orgId, organizationData.name);
+        console.log('✅ Found organization by subdomain:', subdomain, '-> orgId:', orgId, organizationData.org);
       } else {
         console.log('❌ No organization found for subdomain:', subdomain);
       }
@@ -45,7 +45,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         organizationData = rows[0];
         orgId = organizationData.id;
         tenantSlug = organizationData.slug;
-        console.log('✅ Found organization via custom domain:', orgId, organizationData.name);
+        console.log('✅ Found organization via custom domain:', orgId, organizationData.org);
       } else {
         console.log('❌ No organization found for domain:', host);
       }
@@ -57,7 +57,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const rows = await supabaseGet(`organizations?select=*&id=eq.9`);
       if (rows && rows.length > 0) {
         organizationData = rows[0];
-        console.log('✅ Using demo organization:', orgId, organizationData.name);
+        console.log('✅ Using demo organization:', orgId, organizationData.org);
       }
     }
   } catch (error) {

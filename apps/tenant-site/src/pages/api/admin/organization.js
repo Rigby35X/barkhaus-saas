@@ -33,11 +33,11 @@ export async function GET({ request }) {
     const rows = await res.json();
     if (!rows || rows.length === 0) throw new Error('Organization not found');
     const data = rows[0];
-    console.log('✅ Organization fetched from Supabase:', data.name);
+    console.log('✅ Organization fetched from Supabase:', data.org);
 
     const organization = {
       id: data.id,
-      name: data.name,
+      name: data.org,
       email: data.email,
       phone: data.phone,
       address: data.address,
@@ -90,7 +90,7 @@ export async function PUT({ request }) {
     const orgId = body.orgId || url.searchParams.get('orgId') || '9';
 
     const supabaseData = {
-      name: body.name || body.org,
+      org: body.name || body.org,
       email: body.email,
       phone: body.phone,
       address: body.address,
