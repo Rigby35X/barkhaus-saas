@@ -369,6 +369,7 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
       heading_font: data.heading_font,
       body_font: data.body_font,
       font_scale: data.font_scale,
+      link_color: data.link_color,
       socialMedia: {
         facebook: data.facebook_url || '',
         instagram: data.instagram_url || '',

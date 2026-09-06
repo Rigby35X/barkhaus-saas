@@ -63,6 +63,9 @@ export async function GET({ request }) {
     const bodyFont = organization.body_font || 'Poppins';
     const fontScaleMap = { 'Small': '0.875rem', 'Medium': '1rem', 'Large': '1.125rem', 'Extra Large': '1.25rem' };
     const bodyFontSize = fontScaleMap[organization.font_scale] || '1rem';
+    // Accepts both the dashboard's saved labels (Medium/Extra Large) and Small/Normal/Large/XL.
+    const fontScaleMultiplierMap = { 'Small': 0.875, 'Normal': 1, 'Medium': 1, 'Large': 1.125, 'Extra Large': 1.25, 'XL': 1.25 };
+    const fontScaleMultiplier = fontScaleMultiplierMap[organization.font_scale] ?? 1;
     const googleFontsUrl = generateGoogleFontsUrl([headingFont, bodyFont]);
 
     const css = `
@@ -83,7 +86,8 @@ export async function GET({ request }) {
     --headingFont: '${headingFont}', sans-serif;
     --bodyFont: '${bodyFont}', sans-serif;
     --topperFontSize: clamp(0.8125rem, 1.6vw, 1rem);
-    --headerFontSize: clamp(1.9375rem, 3.9vw, 3.0625rem);
+    --font-scale: ${fontScaleMultiplier};
+    --headerFontSize: calc(clamp(1.9375rem, 3.9vw, 3.0625rem) * var(--font-scale));
     --bodyFontSize: ${bodyFontSize};
     --sectionPadding: clamp(3.75rem, 7.82vw, 6.25rem) 1rem;
 }
