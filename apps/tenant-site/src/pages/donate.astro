@@ -1,743 +1,119 @@
 ---
-import BaseLayout from "@layouts/BaseLayout.astro";
-import CTA from "@components/CTA.astro";
-import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
-
-// Get tenant context from middleware
-const { tenant } = Astro.locals;
-const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
-
-// Fetch dynamic content for donate page
-const { content, organization } = await fetchAllPageData('donate', orgId, Astro.url.origin);
-
-// Use dynamic content with fallbacks
-const heroContent = content.hero || {};
-const impactContent = content.impact || {};
-
-// Stripe is not connected until an org sets a publishable key in Settings → Payments.
-const stripePublishableKey = organization?.stripe_publishable_key || null;
-const donationAmounts = organization?.donation_amounts?.length ? organization.donation_amounts : [25, 50, 100, 250];
+import MBPRLayout from "../layouts/MBPRLayout.astro";
 ---
+<MBPRLayout title="Donate | Mission Bay Puppy Rescue" description="Support Mission Bay Puppy Rescue with a one-time or monthly donation, workplace giving, or a wish-list gift.">
+<section class="page-intro">
+  <div class="container" style="text-align:center;">
+    <span class="eyebrow" style="justify-content:center;">Every Dollar Keeps Us Saying Yes</span>
+    <h1>Help Us Keep Saying Yes</h1>
+    <p class="lede" style="margin-left:auto; margin-right:auto;">Your gift covers vet bills, surgeries, food, and love for pups who have nowhere else to go.</p>
+  </div>
+</section>
 
-<BaseLayout
-  title={heroContent.headline ? `${heroContent.headline} - ${organization?.org || 'Mission Bay Puppy Rescue'}` : "Mission Bay Puppy Rescue - Donate"}
-  description={heroContent.body_text || "Support Mission Bay Puppy Rescue with a donation. Your contribution directly helps animals in need get medical care, food, shelter, and love."}
-  organization = {organization}
->
-  <!-- ============================================ -->
-  <!--                 Page Header                  -->
-  <!-- ============================================ -->
-  
-  <section id="page-header" style={buildSectionStyle(heroContent?.typography)}>
-    <div class="cs-container">
-      <h1 class="cs-title">{heroContent.headline || "Support Our Mission"}</h1>
-      <p class="cs-text">
-        {heroContent.body_text || "Your donation directly impacts the lives of animals in need. Every dollar helps us provide medical care, food, shelter, and love to animals waiting for their forever homes."}
-      </p>
+<section class="section tight">
+  <div class="container">
+    <div style="max-width:820px; margin:0 auto; background:var(--white); border:1px solid var(--sand-line); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:38px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+        <h3 style="margin:0;">Give Monthly</h3>
+        <span class="tag-count" style="background:var(--gold-pale); color:var(--gold-deep); font-family:var(--font-display); font-size:.8rem; padding:6px 14px; border-radius:100px;">[Club Name] <span class="draft-flag">Content Needed</span></span>
+      </div>
+      <p style="opacity:.75; margin-bottom:22px;">A recurring gift means we can plan ahead for the pups who need us most &mdash; not just react. [DRAFT &mdash; MBPR-specific monthly amount &amp; story, e.g. tied to founding year or a meaningful rescue milestone]<span class="draft-flag">Content Needed</span></p>
+      <div class="grid grid-4" style="gap:12px; margin-bottom:22px;">
+        <button class="btn btn-outline btn-block" type="button">$&#8203;__ /mo</button>
+        <button class="btn btn-outline btn-block" type="button">$&#8203;__ /mo</button>
+        <button class="btn btn-gold btn-block" type="button">$&#8203;__ /mo</button>
+        <button class="btn btn-outline btn-block" type="button">Other</button>
+      </div>
+      <a class="btn btn-navy btn-block" href="#">Give Monthly</a>
+      <div style="text-align:center; margin:18px 0; opacity:.5; font-size:.85rem;">or make a one-time gift</div>
+      <a class="btn btn-outline btn-block" href="#">Give Once</a>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================ -->
-  <!--              Givebutter Widget               -->
-  <!-- ============================================ -->
-
-  <section id="givebutter-section">
-    <div class="cs-container">
-      <givebutter-widget id="g6VR2g" align="center"></givebutter-widget>
+<section class="section sand-deep">
+  <div class="container">
+    <span class="eyebrow" style="justify-content:center; display:flex;">What It Costs</span>
+    <h2 style="text-align:center; margin-bottom:10px;">Every Pup, From Rescue To Home</h2>
+    <p class="lede" style="text-align:center; margin:0 auto 30px;">A puppy&rsquo;s care adds up quickly &mdash; here&rsquo;s where a typical gift goes.</p>
+    <div class="cost-orbit">
+      <div class="cost-bubble"><span class="dot"></span> <b>Vaccinations</b>&nbsp;&amp; wellness exams</div>
+      <div class="cost-bubble"><span class="dot"></span> <b>Spay / Neuter</b> surgery</div>
+      <div class="cost-bubble"><span class="dot"></span> <b>Microchipping</b></div>
+      <div class="cost-bubble"><span class="dot"></span> <b>Food</b>&nbsp;&amp; daily care</div>
+      <div class="cost-bubble"><span class="dot"></span> <b>Emergency</b>&nbsp;medical care</div>
+      <div class="cost-bubble"><span class="dot"></span> <b>Foster</b>&nbsp;supplies</div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================ -->
-  <!--              Donation Impact                 -->
-  <!-- ============================================ -->
-  
-  <section id="donation-impact" style={buildSectionStyle(impactContent?.typography)}>
-    <div class="cs-container">
-      <div class="cs-content">
-        <div class="cs-text-content">
-          <h2>{impactContent.headline || "Your Impact"}</h2>
-          <p>
-            {impactContent.body_text || "Every donation, no matter the size, makes a real difference in the lives of animals. Here's how your generosity helps us continue our life-saving work:"}
-          </p>
-          
-          <div class="cs-impact-stats">
-            <div class="cs-stat">
-              <div class="cs-number">500+</div>
-              <div class="cs-label">Animals Rescued This Year</div>
-            </div>
-            <div class="cs-stat">
-              <div class="cs-number">95%</div>
-              <div class="cs-label">Adoption Success Rate</div>
-            </div>
-            <div class="cs-stat">
-              <div class="cs-number">24/7</div>
-              <div class="cs-label">Emergency Care Available</div>
-            </div>
-          </div>
+<section class="section">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">Transparency</span>
+      <h2>Where Your Donation Goes</h2>
+      <p style="opacity:.8; margin-bottom:18px;">[DRAFT &mdash; real category breakdown, pending MoneyMinder numbers]<span class="draft-flag">Content Needed</span></p>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:.86rem; margin-bottom:6px;"><span>Veterinary &amp; Medical</span><span>&mdash;%</span></div>
+          <div class="progress"><div class="fill" style="width:62%;"></div></div>
         </div>
-        
-        <div class="cs-image-content">
-          <img 
-            src="/assets/images/donation-impact.jpg" 
-            alt="Rescued animals receiving care"
-            width="500"
-            height="400"
-            loading="lazy"
-          />
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:.86rem; margin-bottom:6px;"><span>Food &amp; Supplies</span><span>&mdash;%</span></div>
+          <div class="progress"><div class="fill" style="width:22%;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex; justify-content:space-between; font-size:.86rem; margin-bottom:6px;"><span>Operations</span><span>&mdash;%</span></div>
+          <div class="progress"><div class="fill" style="width:16%;"></div></div>
         </div>
       </div>
     </div>
-  </section>
+    <div style="background:var(--lagoon-pale); border-radius:var(--radius-lg); padding:32px;">
+      <h3 style="margin-bottom:10px;">Why Our Adoption Fee Is $800</h3>
+      <p style="opacity:.85;">[DRAFT &mdash; explain what the $800 adoption fee covers: vaccines, spay/neuter, microchip, and care leading up to adoption day, so it reads as value rather than a price tag]<span class="draft-flag">Content Needed</span></p>
+    </div>
+  </div>
+</section>
 
-  <!-- ============================================ -->
-  <!--              Donation Levels                 -->
-  <!-- ============================================ -->
-
-  {stripePublishableKey ? (
-    <section id="donation-levels">
-      <div class="cs-container">
-        <h2 class="cs-section-title">{organization?.donation_headline || "Choose Your Impact Level"}</h2>
-        {organization?.donation_description && (
-          <p class="cs-donation-description">{organization.donation_description}</p>
-        )}
-
-        <div class="cs-amount-grid">
-          {donationAmounts.map((amount) => (
-            <button class="cs-amount-button" data-amount={amount}>${amount}</button>
-          ))}
-        </div>
-
-        <div class="cs-custom-donation">
-          <h3>Custom Amount</h3>
-          <p>Choose your own donation amount to support our mission</p>
-          <div class="cs-custom-form">
-            <input type="number" id="custom-amount" placeholder="Enter amount" min="1" />
-          </div>
-        </div>
-
-        <div class="cs-donor-form">
-          <h3>Your Information</h3>
-          <div class="cs-donor-fields">
-            <input type="text" id="donor-name" placeholder="Your Name" />
-            <input type="email" id="donor-email" placeholder="Your Email" />
-          </div>
-          <button class="cs-donate-button" id="donate-now-button">Donate Now</button>
-          <p id="payment-status-message" class="cs-payment-status" style="display:none;"></p>
-        </div>
+<section class="section sand-deep">
+  <div class="container">
+    <span class="eyebrow">More Ways To Give</span>
+    <h2 style="margin-bottom:30px;">Beyond A One-Time Gift</h2>
+    <div class="grid grid-3">
+      <div class="action-block">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="1.5"/><path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3.5 13h17"/></svg></div>
+        <h3>Workplace Giving</h3>
+        <p>Many employers match donations. We&rsquo;re listed on Benevity [and DRAFT &mdash; second platform name]<span class="draft-flag">Content Needed</span>.</p>
       </div>
-    </section>
-  ) : (
-    <section id="donation-coming-soon">
-      <div class="cs-container">
-        <p>Donations coming soon — we're setting up secure payment processing. Check back shortly!</p>
+      <div class="action-block gold">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.2"/><path d="M4 13h16"/><path d="M12 9v11"/><path d="M12 9C10.5 9 8.5 8 8.5 6.2 8.5 5 9.4 4 10.6 4c1.6 0 1.9 2.5 1.4 5zM12 9c1.5 0 3.5-1 3.5-2.8 0-1.2-.9-2.2-2.1-2.2-1.6 0-1.9 2.5-1.4 5z"/></svg></div>
+        <h3>Corporate Sponsorship</h3>
+        <p>Meaningful partnerships that provide substantial, ongoing support for our mission.</p>
+        <a class="link-quiet" href="/contact">Inquire &rarr;</a>
       </div>
-    </section>
-  )}
-
-  <!-- ============================================ -->
-  <!--              Monthly Giving                  -->
-  <!-- ============================================ -->
-  
-  <section id="monthly-giving">
-    <div class="cs-container">
-      <div class="cs-monthly-content">
-        <div class="cs-text-side">
-          <h2>Become a Monthly Hero</h2>
-          <p>
-            Monthly donations provide steady support that allows us to plan ahead and 
-            respond quickly to emergencies. As a monthly donor, you become part of our 
-            inner circle of animal heroes.
-          </p>
-          
-          <div class="cs-monthly-benefits">
-            <h3>Monthly Donor Benefits:</h3>
-            <ul>
-              <li>Exclusive updates on animals you've helped</li>
-              <li>Priority invitations to special events</li>
-              <li>Annual donor appreciation gifts</li>
-              <li>Behind-the-scenes facility tours</li>
-              <li>Tax-deductible receipts automatically sent</li>
-            </ul>
-          </div>
-          
-          <div class="cs-monthly-options">
-            <button class="cs-monthly-button" data-monthly="15">$15/month</button>
-            <button class="cs-monthly-button" data-monthly="25">$25/month</button>
-            <button class="cs-monthly-button" data-monthly="50">$50/month</button>
-          </div>
-        </div>
-        
-        <div class="cs-image-side">
-          <img 
-            src="/assets/images/monthly-giving.jpg" 
-            alt="Happy adopted pets with their families"
-            width="500"
-            height="400"
-            loading="lazy"
-          />
-        </div>
+      <div class="action-block seafoam">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M3 13l3 3 4-4"/><path d="M12 20s-6-3.7-7.6-7.2C3.6 10.5 5 8 7.3 8c1.3 0 2.2.8 2.7 1.4.5-.6 1.4-1.4 2.7-1.4 2.3 0 3.7 2.5 2.9 4.8-.4 1.1-1 2.1-1.6 3"/><path d="M12 4l1.5 1.5L15 4"/></svg></div>
+        <h3>Legacy Giving</h3>
+        <p>Include MBPR in a will, trust, or estate plan. [DRAFT copy]<span class="draft-flag">Content Needed</span></p>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================ -->
-  <!--              Other Ways to Give              -->
-  <!-- ============================================ -->
-  
-  <section id="other-ways">
-    <div class="cs-container">
-      <h2 class="cs-section-title">Other Ways to Support Us</h2>
-      
-      <div class="cs-ways-grid">
-        <div class="cs-way-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/wishlist.svg" alt="Wishlist icon" width="50" height="50" />
-          </div>
-          <h3>Wishlist Items</h3>
-          <p>Donate supplies directly from our Amazon wishlist</p>
-          <a href="#" class="cs-way-button">View Wishlist</a>
-        </div>
-        
-        <div class="cs-way-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/legacy.svg" alt="Legacy icon" width="50" height="50" />
-          </div>
-          <h3>Legacy Giving</h3>
-          <p>Include us in your will or estate planning</p>
-          <a href="/contact" class="cs-way-button">Learn More</a>
-        </div>
-        
-        <div class="cs-way-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/corporate.svg" alt="Corporate icon" width="50" height="50" />
-          </div>
-          <h3>Corporate Sponsorship</h3>
-          <p>Partner with us for corporate giving opportunities</p>
-          <a href="/contact" class="cs-way-button">Contact Us</a>
-        </div>
-        
-        <div class="cs-way-card">
-          <div class="cs-icon">
-            <img src="/assets/svgs/fundraiser.svg" alt="Fundraiser icon" width="50" height="50" />
-          </div>
-          <h3>Host a Fundraiser</h3>
-          <p>Organize your own fundraising event for our animals</p>
-          <a href="/contact" class="cs-way-button">Get Started</a>
-        </div>
+<section class="section">
+  <div class="container split reverse">
+    <div class="media" style="order:2;">
+      <img src="https://missionbaypuppyrescue.org/cdn/shop/files/black-white-puppy-floppy-ears-bright-eyes_1024x1024.webp?v=1738512467" alt="A puppy cared for by Mission Bay Puppy Rescue">
+    </div>
+    <div style="order:1;">
+      <span class="eyebrow">Wish List</span>
+      <h2>Give Exactly What The Pups Need</h2>
+      <p style="opacity:.8; margin-bottom:20px;">Rather than dropping off used items, our Amazon Wish List and gift cards let us get exactly what&rsquo;s needed &mdash; no storage, no waste.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:14px;">
+        <a class="btn btn-outline" href="#">Amazon Wish List</a>
+        <a class="btn btn-outline" href="#">PetSmart Gift Cards</a>
       </div>
     </div>
-  </section>
-
-  <!-- ============================================ -->
-  <!--              Transparency                    -->
-  <!-- ============================================ -->
-  
-  <section id="transparency">
-    <div class="cs-container">
-      <div class="cs-transparency-content">
-        <h2>Financial Transparency</h2>
-        <p>
-          We believe in complete transparency about how your donations are used. 
-          Here's how every dollar is allocated to maximize impact for animals in need.
-        </p>
-        
-        <div class="cs-allocation-chart">
-          <div class="cs-allocation-item">
-            <div class="cs-percentage">75%</div>
-            <div class="cs-category">Direct Animal Care</div>
-            <div class="cs-description">Medical care, food, shelter, and daily needs</div>
-          </div>
-          <div class="cs-allocation-item">
-            <div class="cs-percentage">15%</div>
-            <div class="cs-category">Facility & Operations</div>
-            <div class="cs-description">Utilities, maintenance, and equipment</div>
-          </div>
-          <div class="cs-allocation-item">
-            <div class="cs-percentage">10%</div>
-            <div class="cs-category">Administration</div>
-            <div class="cs-description">Staff, insurance, and organizational costs</div>
-          </div>
-        </div>
-        
-        <div class="cs-documents">
-          <h3>Financial Documents</h3>
-          <div class="cs-document-links">
-            <a href="#" class="cs-document-link">Annual Report 2023</a>
-            <a href="#" class="cs-document-link">IRS Form 990</a>
-            <a href="#" class="cs-document-link">Financial Statements</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <CTA />
-</BaseLayout>
-
-<style lang="less">
-  /* Page Header */
-  #page-header {
-    padding: var(--sectionPadding);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primaryDark) 100%);
-    color: white;
-    text-align: center;
-
-    .cs-container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .cs-title {
-      font-size: clamp(2.5rem, 5vw, 4rem);
-      margin-bottom: 1rem;
-      color: rgb(0, 0, 0) !important;
-    }
-
-    .cs-text {
-      font-size: 1.125rem;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.9);
-    }
-  }
-
-  /* Donation Impact */
-  #donation-impact {
-    padding: var(--sectionPadding);
-
-    .cs-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .cs-text-content {
-      h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        font-size: 1.125rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-        color: var(--bodyTextColor);
-      }
-    }
-
-    .cs-impact-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .cs-stat {
-      text-align: center;
-      padding: 1.5rem;
-      background: white;
-      border: 2px solid var(--accent);
-      border-radius: 12px;
-
-      .cs-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.5rem;
-      }
-
-      .cs-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--headerColor);
-      }
-    }
-
-    .cs-image-content {
-      img {
-        width: 100%;
-        height: 400px;
-        object-fit: cover;
-        border-radius: 12px;
-      }
-    }
-  }
-
-  /* Donation Levels */
-  #donation-levels {
-    padding: var(--sectionPadding);
-    background: #f8f9fa;
-    text-align: center;
-
-    .cs-donation-description {
-      max-width: 600px;
-      margin: 0 auto 2rem;
-      color: var(--bodyTextColor);
-      font-size: 1.125rem;
-      line-height: 1.6;
-    }
-
-    .cs-amount-grid {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .cs-amount-button {
-      padding: 1rem 2rem;
-      border: 2px solid var(--primary);
-      background: white;
-      color: var(--primary);
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 1.125rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      &:hover,
-      &.active {
-        background: var(--primary);
-        color: white;
-      }
-    }
-
-    .cs-custom-donation,
-    .cs-donor-form {
-      text-align: center;
-      max-width: 500px;
-      margin: 0 auto 1.5rem;
-      padding: 2rem;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-
-      h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        margin-bottom: 1.5rem;
-        color: var(--bodyTextColor);
-      }
-
-      .cs-custom-form,
-      .cs-donor-fields {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-
-        input {
-          flex: 1;
-          padding: 1rem;
-          border: 2px solid #ddd;
-          border-radius: 8px;
-          font-size: 1rem;
-
-          &:focus {
-            outline: none;
-            border-color: var(--primary);
-          }
-        }
-      }
-
-      button {
-        width: 100%;
-        padding: 1rem 2rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.3s ease;
-
-        &:hover {
-          background: var(--primaryDark);
-        }
-      }
-
-      .cs-payment-status {
-        margin: 1rem 0 0;
-        padding: 0.75rem;
-        background: #e3f2fd;
-        border-radius: 8px;
-        color: #1565c0;
-        font-weight: 600;
-      }
-    }
-  }
-
-  /* Donations coming soon */
-  #donation-coming-soon {
-    padding: var(--sectionPadding);
-    background: #f8f9fa;
-    text-align: center;
-
-    p {
-      font-size: 1.25rem;
-      color: var(--bodyTextColor);
-    }
-  }
-
-  /* Monthly Giving */
-  #monthly-giving {
-    padding: var(--sectionPadding);
-
-    .cs-monthly-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3rem;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .cs-text-side {
-      h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        font-size: 1.125rem;
-        line-height: 1.6;
-        margin-bottom: 2rem;
-        color: var(--bodyTextColor);
-      }
-
-      .cs-monthly-benefits {
-        margin-bottom: 2rem;
-
-        h3 {
-          font-size: 1.25rem;
-          margin-bottom: 1rem;
-          color: var(--headerColor);
-        }
-
-        ul {
-          list-style: none;
-          padding: 0;
-
-          li {
-            padding: 0.5rem 0;
-
-            &:before {
-              content: "★";
-              color: var(--primary);
-              font-weight: bold;
-              margin-right: 0.5rem;
-            }
-          }
-        }
-      }
-
-      .cs-monthly-options {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-      }
-
-      .cs-monthly-button {
-        padding: 1rem 1.5rem;
-        background: transparent;
-        color: var(--primary);
-        border: 2px solid var(--primary);
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: var(--primary);
-          color: white;
-        }
-      }
-    }
-
-    .cs-image-side {
-      img {
-        width: 100%;
-        height: 400px;
-        object-fit: cover;
-        border-radius: 12px;
-      }
-    }
-  }
-
-  /* Other Ways */
-  #other-ways {
-    padding: var(--sectionPadding);
-    background: #f8f9fa;
-
-    .cs-section-title {
-      font-size: 2.5rem;
-      text-align: center;
-      margin-bottom: 3rem;
-      color: var(--headerColor);
-    }
-
-    /* Way card icon filter override */
-    .cs-way-card .cs-icon img {
-      filter: brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1237%) hue-rotate(14deg) brightness(94%) contrast(91%);
-    }
-  }
-
-  /* Transparency */
-  #transparency {
-    padding: var(--sectionPadding);
-
-    .cs-transparency-content {
-      max-width: 1000px;
-      margin: 0 auto;
-      text-align: center;
-
-      h2 {
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
-        color: var(--headerColor);
-      }
-
-      p {
-        font-size: 1.125rem;
-        line-height: 1.6;
-        margin-bottom: 3rem;
-        color: var(--bodyTextColor);
-      }
-    }
-
-    /* Allocation chart spacing override */
-    .cs-allocation-chart {
-      margin-bottom: 3rem;
-    }
-
-    .cs-documents {
-      h3 {
-        font-size: 1.5rem;
-        margin-bottom: 1.5rem;
-        color: var(--headerColor);
-      }
-
-      .cs-document-links {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .cs-document-link {
-        padding: 0.75rem 1.5rem;
-        background: transparent;
-        color: var(--primary);
-        border: 2px solid var(--primary);
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: var(--primary);
-          color: white;
-        }
-      }
-    }
-  }
-
-  /* Page-specific mobile responsive */
-  @media only screen and (max-width: 768px) {
-    #donation-impact .cs-content,
-    #monthly-giving .cs-monthly-content {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-
-    .cs-custom-form,
-    .cs-donor-fields {
-      flex-direction: column;
-    }
-
-    .cs-monthly-options {
-      justify-content: center;
-    }
-
-    .cs-document-links {
-      flex-direction: column;
-      align-items: center;
-    }
-  }
-</style>
-
-<script define:vars={{ stripePublishableKey }}>
-  // Load Stripe.js when a publishable key is configured. Actual Checkout Session
-  // creation requires a server-side function using the secret key — not built yet,
-  // so the Donate Now click below is stubbed with a console.log + status message.
-  let stripeInstance = null;
-  if (stripePublishableKey) {
-    const stripeScript = document.createElement('script');
-    stripeScript.src = 'https://js.stripe.com/v3/';
-    stripeScript.onload = () => {
-      stripeInstance = window.Stripe(stripePublishableKey);
-      console.log('Stripe.js initialized with publishable key');
-    };
-    document.head.appendChild(stripeScript);
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const amountButtons = document.querySelectorAll('.cs-amount-button[data-amount]');
-    const customAmountInput = document.getElementById('custom-amount') as HTMLInputElement | null;
-    const donateNowButton = document.getElementById('donate-now-button');
-    const donorNameInput = document.getElementById('donor-name') as HTMLInputElement | null;
-    const donorEmailInput = document.getElementById('donor-email') as HTMLInputElement | null;
-    const statusMessage = document.getElementById('payment-status-message');
-    const monthlyButtons = document.querySelectorAll('.cs-monthly-button[data-monthly]');
-
-    let selectedAmount: number | null = null;
-
-    amountButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        amountButtons.forEach((b) => b.classList.remove('active'));
-        button.classList.add('active');
-        selectedAmount = parseFloat(button.getAttribute('data-amount') || '0');
-        if (customAmountInput) customAmountInput.value = '';
-      });
-    });
-
-    customAmountInput?.addEventListener('input', () => {
-      amountButtons.forEach((b) => b.classList.remove('active'));
-      selectedAmount = parseFloat(customAmountInput.value) || null;
-    });
-
-    donateNowButton?.addEventListener('click', () => {
-      const amount = selectedAmount || parseFloat(customAmountInput?.value || '0');
-      if (!amount || amount <= 0) {
-        alert('Please select or enter a donation amount.');
-        return;
-      }
-
-      const donorName = donorNameInput?.value || '';
-      const donorEmail = donorEmailInput?.value || '';
-
-      // Stub: real Stripe Checkout Session creation requires a server function.
-      console.log('Stripe checkout stub:', { amount, donorName, donorEmail });
-
-      if (statusMessage) {
-        statusMessage.textContent = 'Payment processing coming soon — thank you for your patience!';
-        statusMessage.style.display = 'block';
-      }
-    });
-
-    // Handle monthly donations
-    monthlyButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const amount = this.getAttribute('data-monthly');
-        alert(`Redirecting to monthly donation setup for $${amount}/month`);
-      });
-    });
-  });
-</script>
+  </div>
+</section>
+</MBPRLayout>
