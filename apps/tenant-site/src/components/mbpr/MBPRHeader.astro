@@ -1,0 +1,38 @@
+---
+const { currentPath = "/" } = Astro.props;
+const nav = [
+  { href: "/", label: "Home" },
+  { href: "/available-pups", label: "Available Pups" },
+  { href: "/adopt", label: "Adopt" },
+  { href: "/foster", label: "Foster" },
+  { href: "/about", label: "About" },
+  { href: "/resources", label: "Resources" },
+  { href: "/donate", label: "Donate" },
+  { href: "/faq", label: "FAQ" },
+];
+const isCurrent = (href) => href === "/" ? currentPath === "/" : currentPath === href || currentPath.startsWith(href + "/");
+---
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="/">
+      <img src="https://cdn.shopify.com/s/files/1/0752/2317/1383/files/MBPR_Logo_s-5.png?v=1728336857" alt="Mission Bay Puppy Rescue logo" />
+    </a>
+    <nav class="main-nav" id="main-nav" aria-label="Primary">
+      <ul>
+        {nav.map((item) => (
+          <li class={isCurrent(item.href) ? "current" : undefined}>
+            <a class="top-link" href={item.href}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-gold btn-sm" href="/adopt"><span class="btn-sm-label">Apply to Adopt</span></a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="icon-open" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="icon-close" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
