@@ -1,0 +1,4 @@
+---
+const {animal}=Astro.props;const image=animal.image_url||"";const href=animal.id?`/animal-details/${animal.id}`:(animal.name==="Rocket"?"/puppy-rocket":"/adopt");
+---
+<article class="pup-card"><a class="pup-photo" href={href} aria-label={`Meet ${animal.name}`}><span class="status-ribbon status-available">{animal.status||"Available Now"}</span>{image?<img src={image} alt={`${animal.name}, available for adoption`} loading="lazy"/>:<div class="pup-photo no-photo">Photo coming soon</div>}</a><div class="pup-body"><h3 class="pup-name">{animal.name}</h3><div class="pup-facts">{animal.gender&&<span>{animal.gender}</span>}{animal.size&&<span>{animal.size}</span>}{animal.age&&<span>{animal.age}</span>}</div>{animal.breed&&<p class="text-small">{animal.breed}</p>}<a class="btn btn-navy btn-sm" href={href}>Meet {animal.name}</a></div></article>
