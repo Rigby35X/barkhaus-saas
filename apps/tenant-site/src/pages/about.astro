@@ -1,689 +1,117 @@
 ---
-import BaseLayout from "@layouts/BaseLayout.astro";
-import CTA from "@components/CTA.astro";
-import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
-
-// Optimize our landing image and pass it as props to the BaseLayout (for preloading) and Landing (for rendering)
-import landingImage from "@assets/images/about-hero.png"; // <-- THE PATH TO THE ASSET YOU WANT TO PRELOAD - The asset must live in src
-import { getImage } from "astro:assets";
-const optimizedImage = await getImage({src: landingImage, format: 'avif'});
-
-// Get tenant context from middleware
-const { tenant } = Astro.locals;
-const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
-
-// Fetch dynamic content for about page
-const { content, organization } = await fetchAllPageData('about', orgId, Astro.url.origin);
-
-// Use dynamic content with fallbacks
-const heroContent = content.hero || {};
-const missionContent = content.our_story || content.mission || {};
-const whatWeDoContent = content.what_we_do_expanded || content.what_we_do || {};
-const defaultFaqSection = {
-  headline: "Frequently Asked Questions",
-  subheadline: "Common Questions",
-  body_text: "Find answers to the most common questions about our adoption process.",
-  faq_question_1: "How long does the adoption process take?",
-  faq_answer_1: "Our adoption process typically takes 3-7 days from application to bringing your new companion home.",
-  faq_question_2: "What is included in the adoption fee?",
-  faq_answer_2: "All dogs come spayed/neutered, vaccinated, microchipped, and with a health certificate.",
-  faq_question_3: "Can I meet the dog before adopting?",
-  faq_answer_3: "Absolutely! We encourage meet-and-greets to ensure a perfect match for both you and the dog.",
-  faq_question_4: "Do you have a return policy?",
-  faq_answer_4: "Yes, if for any reason the adoption doesn't work out, we welcome the dog back with open arms.",
-  faq_question_5: "What if I have other pets?",
-  faq_answer_5: "We can arrange supervised introductions to ensure all pets get along before finalizing the adoption."
-};
-
-const teamContent = content.team || {};
-const faqSection = { ...defaultFaqSection, ...(content.faq_section || {}) };
-const ctaContent = content.cta || {};
-const footerContent = content.footer || {};
+import MBPRLayout from "../layouts/MBPRLayout.astro";
 ---
+<MBPRLayout title="About | Mission Bay Puppy Rescue" description="Learn the story behind Mission Bay Puppy Rescue, a San Diego non-profit dog and puppy rescue.">
+<section class="page-intro">
+  <div class="container">
+    <span class="eyebrow">The Humans Behind The Puppies</span>
+    <h1>About Mission Bay Puppy Rescue</h1>
+    <p class="lede">The story is interesting &mdash; here it is, without the scroll.</p>
+  </div>
+</section>
 
+<section class="section tight">
+  <div class="container split">
+    <div class="content-flow">
+      <span class="eyebrow">How It All Started</span>
+      <h2>It Began With 10 Puppies On Our Front Lawn</h2>
+      <p class="lede">30 years ago, while searching for a rescue dog of our own, we were unexpectedly asked to foster. Our journey began with a family of 10 puppies &mdash; and while they played on our front lawn, passersby couldn&rsquo;t resist their charm.</p>
+      <p style="opacity:.8;">After years of working with rescue organizations and placing hundreds of puppies, we made it official. In December 2022, Mission Bay Puppy Rescue became a 501(c)(3) nonprofit.</p>
+    </div>
+    <div class="media">
+      <img src="https://missionbaypuppyrescue.org/cdn/shop/files/gray-white-pit-bull-type-puppy-blue-banner-mission-bay-rescue-partners-text_1024x1024.webp?v=1738512518" alt="A rescued puppy, part of the Mission Bay Puppy Rescue story">
+    </div>
+  </div>
+</section>
 
+<section class="section navy">
+  <div class="container">
+    <span class="eyebrow on-dark" style="justify-content:center; display:flex;">MBPR By The Numbers</span>
+    <h2 style="text-align:center; margin-bottom:30px;">30 Years Of Impact</h2>
+    <div class="stat-strip">
+      <div class="stat"><div class="num">30+</div><div class="label">Years Rescuing</div></div>
+      <div class="stat"><div class="num">2,000+</div><div class="label">Pups &amp; Mamas Placed</div></div>
+      <div class="stat"><div class="num">2022</div><div class="label">Became A 501(c)(3)</div></div>
+      <div class="stat"><div class="num">100%</div><div class="label">Foster-Based Care</div></div>
+    </div>
+    <p style="text-align:center; opacity:.6; font-size:.82rem; margin-top:16px;">[DRAFT &mdash; confirm exact stats to publish]<span class="draft-flag">Content Needed</span></p>
+  </div>
+</section>
 
-<BaseLayout
-  title={organization?.org ? `About ${organization.org}` : "About Mission Bay Puppy Rescue"}
-  description={heroContent.body_text || "Learn about our mission to rescue and rehome puppies in the San Diego area."}
-  preloadedImage = {optimizedImage}
-  organization = {organization}
->
-  <!-- ============================================ -->
-  <!--                    LANDING                   -->
-  <!-- ============================================ -->
-  <!--                 HERO                         -->
-  <!-- ============================================ -->
-
-  <section id="hero-1060" style={buildSectionStyle(heroContent?.typography)}>
-    <div class="cs-container">
-      <div class="cs-content">
-        <h1 class="cs-title">{heroContent.headline || "About Mission Bay Puppy Rescue"}</h1>
-        <p class="cs-text">
-          {heroContent.body_text || "Learn about our mission to rescue and rehome puppies in the San Diego area."}
-        </p>
+<section class="section sand-deep">
+  <div class="container">
+    <span class="eyebrow">What We Do</span>
+    <h2 style="margin-bottom:30px;">From Rescue To Forever Home</h2>
+    <div class="grid grid-4">
+      <div class="resource-tile">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M5 8.5c0-2 1.4-3.5 3-3.5.9 0 1.6.6 2 1 .8-.4 1.9-.6 3-.6s2.2.2 3 .6c.4-.4 1.1-1 2-1 1.6 0 3 1.5 3 3.5 0 1.3-.6 2.4-1.5 3l.5 2c.3 1.5-.7 3-2.3 3H8.3c-1.6 0-2.6-1.5-2.3-3l.5-2C5.6 10.9 5 9.8 5 8.5z"/><circle cx="9.5" cy="10.5" r=".6" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10.5" r=".6" fill="currentColor" stroke="none"/></svg></div>
+        <h4>Orphaned Litters</h4>
+        <p>Puppies stay together until at least 8 weeks old.</p>
+      </div>
+      <div class="resource-tile">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.5-9C1 7.5 3 4 6.5 4c2 0 3.4 1.2 4 2 .6-.8 2-2 4-2C18 4 20 7.5 18.5 11c-2 4.4-6.5 9-6.5 9z"/></svg></div>
+        <h4>Pregnant Mamas &amp; Newborns</h4>
+        <p>A safe, peaceful place to care for their puppies.</p>
+      </div>
+      <div class="resource-tile">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4.5 9.5l10-10a3.5 3.5 0 015 5l-10 10a3.5 3.5 0 01-5-5z"/><path d="M13 4.5l6.5 6.5"/><circle cx="9" cy="9" r="1"/><circle cx="12.5" cy="12.5" r="1"/></svg></div>
+        <h4>Medical Care</h4>
+        <p>Vaccinations, microchipping, and spay/neuter for every pup.</p>
+      </div>
+      <div class="resource-tile">
+        <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
+        <h4>Forever Families</h4>
+        <p>Matched with loving homes, ready for the next chapter.</p>
       </div>
     </div>
-    <!--Background Image-->
-    <picture class="cs-background">
-      <source media="(max-width: 600px)" srcset={heroContent.background_image_url || "/assets/images/about-hero-m.jpg"}>
-      <source media="(min-width: 601px)" srcset={heroContent.background_image_url || "/assets/images/about-hero.jpg"}>
-      <img loading="lazy" decoding="async" src={heroContent.background_image_url || "/assets/images/about-hero.jpg"} alt="about hero" width="2250" height="1500" aria-hidden="true">
-    </picture>
-  </section>
+  </div>
+</section>
 
-  <!-- ============================================ -->
-  <!--                 Side By Side                 -->
-  <!-- ============================================ -->
-
-  <section id="sbs" style={buildSectionStyle(missionContent?.typography)}>
-    <div class="cs-container">
-      <!-- Left Image Section -->
-      <div class="cs-left">
-        <picture class="cs-picture cs-picture1">
-          <source media="(max-width: 600px)" srcset="/assets/images/about1.jpg" />
-          <source media="(min-width: 601px)" srcset="/assets/images/about1.jpg" />
-          <img
-            aria-hidden="true"
-            decoding="async"
-            src="/assets/images/about1.jpg"
-            alt="cabinets"
-            loading="lazy"
-            width="400"
-            height="563"
-          />
-        </picture>
-        <picture class="cs-picture cs-picture2">
-          <source media="(max-width: 600px)" srcset="/assets/images/about2.jpg" />
-          <source media="(min-width: 601px)" srcset="/assets/images/about2.jpg" />
-          <img
-            aria-hidden="true"
-            decoding="async"
-            src="/assets/images/about2.jpg"
-            alt="house"
-            loading="lazy"
-            width="400"
-            height="563"
-          />
-        </picture>
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Meet The Humans</span>
+    <h2 style="margin-bottom:30px;">Behind Every Rescue</h2>
+    <div class="grid grid-3">
+      <div class="quote-card" style="text-align:center; align-items:center;">
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--sand-deep); margin-bottom:6px;"></div>
+        <h3 style="margin-bottom:0;">Jackie</h3>
+        <div class="who">Founder</div>
+        <p style="opacity:.7;">[DRAFT bio]<span class="draft-flag">Content Needed</span></p>
       </div>
-      <!-- Right Content Section-->
-      <div class="cs-right">
-        <span class="cs-topper">{missionContent.subheadline || "Our Story"}</span>
-        <h2 class="cs-title">{missionContent.headline || "Our Story of Saving Lives"}</h2>
-        <div class="cs-text" set:html={missionContent.body_text?.replace(/\n/g, '<br>') || "Mission Bay Puppy Rescue was founded in 2018 by a group of passionate dog lovers who saw the overwhelming need for dog rescue in our community. What started as a small group of volunteers has grown into a comprehensive rescue organization that has saved over 800 puppies. We work with local shelters, take in owner surrenders, and rescue puppies from difficult situations, providing them with medical care, training, and love until they find their perfect forever homes."}>
-        </div>
-        {missionContent.secondary_text && (
-          <div class="cs-text" set:html={missionContent.secondary_text.replace(/\n/g, '<br>')}>
-          </div>
-        )}
-        <div class="cs-flex-group">
-         <!--   <p class="cs-flex-p">
-            In consequat tincidunt turpis sit amet imperdiet. Praesent Classei
-            consequat tincidunt turpis sit amet imperdiet for mind.
-          </p>
-          <span class="cs-name">Justin Time</span>
-          <span class="cs-job">CEO-Founder</span>
-          <img
-            class="cs-quote-icon"
-            loading="lazy"
-            decoding="async"
-            src="https://csimg.nyc3.digitaloceanspaces.com/SideBySide/quote-white.svg"
-            alt="gavel"
-            width="136"
-            height="77"
-          /> -->
-        </div>
-        <a href="/projects" class="cs-button-solid">Our Projects</a>
+      <div class="quote-card" style="text-align:center; align-items:center;">
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--sand-deep); margin-bottom:6px;"></div>
+        <h3 style="margin-bottom:0;">Steve</h3>
+        <div class="who">Co-Founder</div>
+        <p style="opacity:.7;">[DRAFT bio]<span class="draft-flag">Content Needed</span></p>
+      </div>
+      <div class="quote-card" style="text-align:center; align-items:center;">
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--sand-deep); margin-bottom:6px;"></div>
+        <h3 style="margin-bottom:0;">Kristin</h3>
+        <div class="who">Web &amp; Data</div>
+        <p style="opacity:.7;">[DRAFT bio]<span class="draft-flag">Content Needed</span></p>
       </div>
     </div>
-  </section>
+    <p style="text-align:center; opacity:.6; font-size:.82rem; margin-top:20px;">[DRAFT &mdash; confirm who to feature + titles]<span class="draft-flag">Content Needed</span></p>
+  </div>
+</section>
 
-  <!-- What We Do Section -->
-  {whatWeDoContent.headline && (
-    <section id="what-we-do" class="cs-section">
-      <div class="cs-container">
-        <div class="cs-content">
-          <span class="cs-topper">{whatWeDoContent.subheadline || "What We Do"}</span>
-          <h2 class="cs-title">{whatWeDoContent.headline}</h2>
-          <div class="cs-text" set:html={whatWeDoContent.body_text?.replace(/\n/g, '<br>')}>
-          </div>
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section id="faq-1741">
-    <div class="cs-container">
-      <div class="cs-content">
-        <span class="cs-topper">{faqSection.subheadline}</span>
-        <h2 class="cs-title">{faqSection.headline}</h2>
-        <p class="cs-text">{faqSection.body_text}</p>
-      </div>
-      <div class="cs-flex-group">
-        <ul class="cs-faq-group">
-          {faqSection.faq_question_1 && (
-            <li class="cs-faq-item active">
-              <button class="cs-button">
-                <span class="cs-button-text">{faqSection.faq_question_1}</span>
-              </button>
-              <p class="cs-item-text">{faqSection.faq_answer_1}</p>
-            </li>
-          )}
-          {faqSection.faq_question_2 && (
-            <li class="cs-faq-item">
-              <button class="cs-button">
-                <span class="cs-button-text">{faqSection.faq_question_2}</span>
-              </button>
-              <p class="cs-item-text">{faqSection.faq_answer_2}</p>
-            </li>
-          )}
-          {faqSection.faq_question_3 && (
-            <li class="cs-faq-item">
-              <button class="cs-button">
-                <span class="cs-button-text">{faqSection.faq_question_3}</span>
-              </button>
-              <p class="cs-item-text">{faqSection.faq_answer_3}</p>
-            </li>
-          )}
-          {faqSection.faq_question_4 && (
-            <li class="cs-faq-item">
-              <button class="cs-button">
-                <span class="cs-button-text">{faqSection.faq_question_4}</span>
-              </button>
-              <p class="cs-item-text">{faqSection.faq_answer_4}</p>
-            </li>
-          )}
-          {faqSection.faq_question_5 && (
-            <li class="cs-faq-item">
-              <button class="cs-button">
-                <span class="cs-button-text">{faqSection.faq_question_5}</span>
-              </button>
-              <p class="cs-item-text">{faqSection.faq_answer_5}</p>
-            </li>
-          )}
-        </ul>
-      </div>
+<section class="section sand-deep">
+  <div class="container split">
+    <div>
+      <span class="eyebrow">In The News</span>
+      <h2>&ldquo;Mission Bay Puppy Rescue: Saving Dogs For 30 Years&rdquo;</h2>
+      <p style="opacity:.8; margin-bottom:20px;">SDNews.com covered MBPR&rsquo;s long-standing history and the heart behind the mission.</p>
+      <a class="btn btn-outline" href="https://sdnews.com/mission-bay-puppy-rescue-saving-dogs-for-30-years/" target="_blank" rel="noopener">Read the SDNews.com Article</a>
     </div>
-  </section>
+    <div class="media">
+      <img src="https://missionbaypuppyrescue.org/cdn/shop/files/black-white-puppy-floppy-ears-bright-eyes_1024x1024.webp?v=1738512467" alt="A Mission Bay Puppy Rescue puppy">
+    </div>
+  </div>
+</section>
 
-  <!-- Dynamic CTA Section -->
-  {ctaContent.headline ? (
-    <section id="cta" class="cs-cta">
-      <div class="container">
-        <h2 class="title">{ctaContent.headline}</h2>
-        <div class="cs-text" set:html={ctaContent.body_text?.replace(/\n/g, '<br>')}>
-        </div>
-        {ctaContent.button_text && ctaContent.button_link && (
-          <a href={ctaContent.button_link} class="cs-button-solid">{ctaContent.button_text}</a>
-        )}
-      </div>
-    </section>
-  ) : (
-    <CTA />
-  )}
-</BaseLayout>
-
-<style lang="less">
-  /* PAGE-SPECIFIC STYLES FOR THE ABOUT PAGE */
-
-  /*-- --------------------------
-    Hero Section
-  -------------------------- --*/
-
-  /* Mobile - 360px */
-  @media only screen and (min-width: 0em) {
-    #hero-1060 {
-      /* 200px - 300px - leaving extra space for the navigation */
-      padding: clamp(12.5rem, 25.95vw, 18.75em) (16/16rem);
-      /* prevents the topper line from causing an overflow */
-      overflow: hidden;
-      position: relative;
-      z-index: 1;
-
-      .cs-container {
-        width: 100%;
-        max-width: (1280/16rem);
-        margin: auto;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        /* 48px - 64px */
-        gap: clamp(3rem, 6vw, 4rem);
-      }
-
-      .cs-content {
-        /* set text align to left if content needs to be left aligned */
-        text-align: center;
-        width: 100%;
-        max-width: (630/16rem);
-        display: flex;
-        flex-direction: column;
-        /* centers content horizontally, set to flex-start to left align */
-        align-items: center;
-      }
-
-      .cs-title {
-        /* 39px - 61px */
-        font-size: clamp(2.4375rem, 6.4vw, 3.8125rem);
-        font-weight: 900;
-        line-height: 1.2em;
-        text-align: inherit;
-        max-width: (700/16rem);
-        color: var(--bodyTextColorWhite);
-        margin: 0 0 (16/16rem) 0;
-      }
-
-      .cs-text {
-        /* 16px - 20px */
-        font-size: clamp(1rem, 1.95vw, 1.25rem);
-        line-height: 1.5em;
-        text-align: inherit;
-        width: 100%;
-        max-width: (630/16rem);
-        color: var(--bodyTextColorWhite);
-        margin: 0;
-      }
-
-      .cs-background {
-        width: 100%;
-        height: 100%;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -2;
-
-        &:before {
-          /* Overlay */
-          content: '';
-          width: 100%;
-          height: 100%;
-          background: #000;
-          opacity: .48;
-          position: absolute;
-          display: block;
-          top: 0;
-          left: 0;
-          z-index: 1;
-          /* prevents the cursor from interacting with it */
-          pointer-events: none;
-        }
-
-        img {
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          width: 100%;
-          /* Makes img tag act as a background image */
-          object-fit: cover;
-        }
-      }
-    }
-  }
-
-  /*-- --------------------------
-    What We Do Section
-  -------------------------- --*/
-
-  #what-we-do {
-    padding: var(--sectionPadding);
-    background-color: #f7f7f7;
-
-    .cs-container {
-      width: 100%;
-      max-width: (1280/16rem);
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .cs-content {
-      text-align: center;
-      width: 100%;
-      max-width: (630/16rem);
-    }
-  }
-
-  /*-- --------------------------
-    Side By Side
-  -------------------------- --*/
-
-  /* Mobile - 360px */
-  @media only screen and (min-width: 0em) {
-    #sbs {
-      padding: var(--sectionPadding);
-
-      .cs-container {
-        width: 100%;
-        max-width: (1280/16rem);
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        row-gap: (40/16rem);
-      }
-
-      .cs-left {
-        /* scaling the font size with the view width */
-        font-size: ~"min(2.31vw, .7em)";
-        /* using ems so we can use font size to scale the whole section */
-        width: (631/16em);
-        height: (636/16em);
-        position: relative;
-      }
-
-      .cs-picture {
-        border-radius: (24/16em);
-        display: block;
-        position: absolute;
-        /* clips img tag corners */
-        overflow: hidden;
-        img {
-          width: 100%;
-          height: 100%;
-          /* makes image act like a background image */
-          object-fit: cover;
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-      }
-
-      .cs-picture1 {
-        width: (522/16em);
-        height: (581/16em);
-        top: 0;
-        left: 0;
-      }
-
-      .cs-picture2 {
-        width: (414/16em);
-        height: (400/16em);
-        background-color: #fff;
-        box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 40px;
-        /* 6px - 12px */
-        border: clamp(0.375em, 1.5vw, 0.75em) solid #fff;
-        right: 0;
-        bottom: 0;
-      }
-
-      .cs-right {
-        max-width: (542/16rem);
-        margin: auto;
-      }
-
-      .cs-topper {
-        text-align: left;
-        margin-bottom: (4/16rem);
-      }
-
-      .cs-title {
-        text-align: left;
-        max-width: (800/16rem);
-      }
-
-      .cs-text {
-        text-align: left;
-        max-width: (750/16rem);
-        margin-bottom: (16/16rem);
-        color: var(--bodyTextColor);
-
-        &:last-of-type {
-          margin-bottom: (32/16rem);
-        }
-      }
-
-      .cs-flex-group {
-        /* 16px - 32px */
-        padding: clamp(1rem, 3vw, 2rem);
-        background-color: #f7f7f7;
-        border-radius: (16/16rem);
-        position: relative;
-      }
-
-      .cs-flex-p {
-        /* 14px - 16px */
-        font-size: clamp(0.875rem, 1.5vw, 1rem);
-        line-height: 1.5em;
-        margin: 0 0 (16/16rem);
-        color: #353535;
-      }
-
-      .cs-name {
-        font-size: (16/16rem);
-        font-weight: bold;
-        line-height: 1.2em;
-        text-transform: uppercase;
-        margin: 0 0 (4/16rem);
-        color: var(--headerColor);
-        display: block;
-      }
-
-      .cs-job {
-        font-size: (14/16rem);
-        line-height: 1.5em;
-        color: #353535;
-        display: block;
-      }
-
-      .cs-quote-icon {
-        /* 60px - 136px */
-        width: clamp(3.75rem, 10vw, 8.5rem);
-        height: auto;
-        position: absolute;
-        /* 16px - 32px */
-        right: clamp(1rem, 4vw, 2rem);
-        bottom: (0/16rem);
-      }
-
-      .cs-button-solid {
-        margin-top: (32/16rem);
-      }
-    }
-  }
-
-  /* Desktop - 1024px */
-  @media only screen and (min-width: 64em) {
-    #sbs {
-      .cs-container {
-        flex-flow: row;
-        justify-content: space-between;
-        gap: (52/16rem);
-      }
-
-      .cs-left {
-        font-size: ~"min(1.2vw, 1em)";
-        flex: none;
-      }
-
-      .cs-right {
-        margin: 0;
-      }
-    }
-  }
-
-  /* FAQ Section */
-  @media only screen and (min-width: 0em) {
-    #faq-1741 {
-      padding: var(--sectionPadding);
-
-      .cs-container {
-        width: 100%;
-        max-width: (1280/16rem);
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-        gap: clamp(2rem, 6vw, 3rem);
-      }
-
-      .cs-content {
-        text-align: center;
-        max-width: (674/16rem);
-        margin: 0 auto;
-
-        .cs-text {
-          margin-bottom: 0;
-        }
-      }
-
-      .cs-flex-group {
-        display: flex;
-        flex-direction: column;
-        gap: clamp(1.5rem, 4vw, 2rem);
-      }
-
-      .cs-faq-group {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        display: grid;
-        gap: 1rem;
-      }
-
-      .cs-faq-item {
-        border-radius: (16/16rem);
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        background: #fff;
-        transition: border 0.3s ease, box-shadow 0.3s ease;
-        overflow: hidden;
-        cursor: pointer;
-
-        &.active {
-          border-color: var(--primary);
-          box-shadow: 0 20px 45px rgba(16, 24, 40, 0.12);
-
-          .cs-item-text {
-            max-height: 500px;
-            padding-bottom: 1rem;
-            opacity: 1;
-          }
-        }
-
-        .cs-button {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          padding: clamp(1rem, 3vw, 1.25rem);
-          font-size: clamp(1rem, 2.5vw, 1.1rem);
-          font-weight: 600;
-          background: transparent;
-          border: none;
-          text-align: left;
-          color: var(--headerColor);
-          cursor: pointer;
-        }
-
-        .cs-item-text {
-          max-height: 0;
-          overflow: hidden;
-          padding: 0 clamp(1rem, 3vw, 1.25rem);
-          font-size: 0.95rem;
-          color: var(--bodyTextColor);
-          line-height: 1.6;
-          transition: max-height 0.3s ease, opacity 0.3s ease, padding-bottom 0.3s ease;
-          opacity: 0;
-        }
-      }
-    }
-  }
-
-  @media only screen and (min-width: 48em) {
-    #faq-1741 {
-      .cs-flex-group {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-
-      .cs-faq-group {
-        width: 100%;
-      }
-    }
-  }
-
-  /* Dark Mode */
-  @media only screen and (min-width: 0em) {
-    body.dark-mode {
-      #sbs {
-        .cs-left {
-          &:before,
-          &:after {
-            background: var(--accent);
-          }
-        }
-
-        .cs-picture2 {
-          background-color: var(--dark);
-          /* 6px - 12px */
-          border: clamp(0.375em, 1.5vw, 0.75em) solid var(--dark);
-        }
-
-        .cs-topper {
-          color: var(--primaryLight);
-        }
-
-        .cs-title,
-        .cs-text,
-        .cs-h3,
-        .cs-flex-p,
-        .cs-name {
-          color: var(--bodyTextColorWhite);
-        }
-
-        .cs-flex-group {
-          background-color: var(--accent);
-        }
-
-        .cs-job {
-          color: var(--bodyTextColorWhite);
-          opacity: 0.8;
-        }
-
-        .cs-quote-icon {
-          opacity: 0.2;
-        }
-      }
-
-      #faq-1741 {
-        .cs-faq-item {
-          border-color: rgba(255, 255, 255, 0.24);
-          background: rgba(255, 255, 255, 0.05);
-
-          &.active {
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
-          }
-
-          .cs-button,
-          .cs-item-text {
-            color: var(--bodyTextColorWhite);
-          }
-        }
-      }
-    }
-  }
-</style>
-
-<script>
-const initFaq = () => {
-  const faqItems = Array.from(document.querySelectorAll('#faq-1741 .cs-faq-item'));
-  if (!faqItems.length) return;
-
-  for (const item of faqItems) {
-    if (item.dataset.bound === 'true') continue;
-    item.dataset.bound = 'true';
-    item.addEventListener('click', () => {
-      item.classList.toggle('active');
-    });
-  }
-};
-
-document.addEventListener('DOMContentLoaded', initFaq);
-document.addEventListener('astro:page-load', initFaq);
-</script>
+<section class="section" style="text-align:center;">
+  <div class="container">
+    <a class="btn btn-gold" href="/donate">Support Our Mission</a>
+  </div>
+</section>
+</MBPRLayout>
