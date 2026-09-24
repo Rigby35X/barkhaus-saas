@@ -1025,3 +1025,49 @@ p:last-child{ margin-bottom:0; }
 }
 
 /* Redeploy marker: animal UI redesign */
+
+
+/* Footer credit + animal availability refinement */
+.footer-credit{
+  padding-top:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  text-align:center;
+  font-size:.8rem;
+}
+.footer-credit > a:first-child{
+  opacity:.72;
+}
+.footer-credit > a:first-child:hover{
+  opacity:1;
+}
+.back-to-top{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  font-family:var(--font-display);
+  font-size:.75rem !important;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  opacity:.85 !important;
+}
+.back-to-top:hover{ opacity:1 !important; }
+.back-to-top__arrow{
+  font-size:1.35rem;
+  line-height:1;
+  color:var(--lagoon);
+}
+
+.animal-card__availability{
+  margin:5px 0 0;
+  color:var(--bay-navy);
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  opacity:.72;
+}
