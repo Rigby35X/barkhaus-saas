@@ -18,39 +18,60 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
   )}
 
   {secondaryPhotos.length > 0 && (
-    <div class="animal-gallery__thumbs" aria-label={`More photos of ${animal.name}`}>
-      {photos.slice(0, 5).map((photo, index) => (
-        <button
-          type="button"
-          class:list={["animal-gallery__thumb", index === 0 && "is-active"]}
-          data-gallery-thumb
-          data-photo={photo}
-          aria-label={`Show photo ${index + 1} of ${animal.name}`}
-          aria-pressed={index === 0 ? "true" : "false"}
-        >
-          <img src={photo} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
-        </button>
-      ))}
+    <div class="animal-gallery__rail-wrap">
+      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--prev" type="button" data-gallery-prev aria-label="Previous photos">←</button>
+      <div class="animal-gallery__rail" data-gallery-rail aria-label={`More photos of ${animal.name}`}>
+        {secondaryPhotos.map((photo, index) => (
+          <button
+            type="button"
+            class="animal-gallery__thumb"
+            data-gallery-thumb
+            data-photo={photo}
+            aria-label={`Show photo ${index + 2} of ${animal.name}`}
+            aria-pressed="false"
+          >
+            <img src={photo} alt="" loading="eager" decoding="async" />
+          </button>
+        ))}
+      </div>
+      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--next" type="button" data-gallery-next aria-label="More photos">→</button>
     </div>
   )}
 </div>
 
 <script>
-  document.addEventListener("click", (event) => {
-    const thumb = event.target.closest("[data-gallery-thumb]");
-    if (!thumb) return;
+  const initAnimalGalleries = () => {
+    document.querySelectorAll("[data-animal-gallery]").forEach((gallery) => {
+      if (gallery.dataset.galleryReady === "true") return;
+      gallery.dataset.galleryReady = "true";
 
-    const gallery = thumb.closest("[data-animal-gallery]");
-    const main = gallery?.querySelector("[data-gallery-main]");
-    const photo = thumb.getAttribute("data-photo");
+      const main = gallery.querySelector("[data-gallery-main]");
+      const rail = gallery.querySelector("[data-gallery-rail]");
+      const thumbs = [...gallery.querySelectorAll("[data-gallery-thumb]")];
 
-    if (!main || !photo) return;
+      thumbs.forEach((thumb) => {
+        thumb.addEventListener("click", () => {
+          const photo = thumb.getAttribute("data-photo");
+          if (!main || !photo) return;
+          main.setAttribute("src", photo);
+          thumbs.forEach((button) => {
+            const active = button === thumb;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+        });
+      });
 
-    main.setAttribute("src", photo);
-    gallery.querySelectorAll("[data-gallery-thumb]").forEach((button) => {
-      const active = button === thumb;
-      button.classList.toggle("is-active", active);
-      button.setAttribute("aria-pressed", active ? "true" : "false");
+      const scrollRail = (direction) => {
+        if (!rail) return;
+        rail.scrollBy({ left: direction * Math.max(rail.clientWidth * 0.72, 220), behavior: "smooth" });
+      };
+
+      gallery.querySelector("[data-gallery-prev]")?.addEventListener("click", () => scrollRail(-1));
+      gallery.querySelector("[data-gallery-next]")?.addEventListener("click", () => scrollRail(1));
     });
-  });
+  };
+
+  initAnimalGalleries();
+  document.addEventListener("astro:page-load", initAnimalGalleries);
 </script>
