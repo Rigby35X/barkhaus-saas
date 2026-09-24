@@ -1,0 +1,24 @@
+---
+const { animal } = Astro.props;
+const photos = (animal.photos?.length ? animal.photos : [animal.primary_photo || animal.image_url]).filter(Boolean);
+const [primaryPhoto, ...secondaryPhotos] = photos;
+---
+<div class="animal-gallery" data-photo-count={photos.length}>
+  {primaryPhoto ? (
+    <figure class="animal-gallery__primary">
+      <img src={primaryPhoto} alt={`${animal.name}, available for adoption`} fetchpriority="high" />
+    </figure>
+  ) : (
+    <div class="animal-gallery__primary animal-gallery__placeholder">Photo coming soon</div>
+  )}
+
+  {secondaryPhotos.length > 0 && (
+    <div class="animal-gallery__thumbs" aria-label={`More photos of ${animal.name}`}>
+      {secondaryPhotos.slice(0, 4).map((photo, index) => (
+        <figure class="animal-gallery__thumb">
+          <img src={photo} alt={`${animal.name}, photo ${index + 2}`} loading="lazy" decoding="async" />
+        </figure>
+      ))}
+    </div>
+  )}
+</div>
