@@ -3,13 +3,12 @@ import AnimalCard from "./AnimalCard.astro";
 import { getPublicAnimals } from "../../lib/public-animals";
 
 const animals = await getPublicAnimals(Astro.locals);
-const groups = new Map();
 
-for (const animal of animals) {
-  const key = animal.litter || "Available Pups";
-  if (!groups.has(key)) groups.set(key, []);
-  groups.get(key).push(animal);
-}
+const unique = (values) => [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
+const statuses = unique(animals.map((animal) => animal.status || animal.availability));
+const litters = unique(animals.map((animal) => animal.litter));
+const genders = unique(animals.map((animal) => animal.gender));
+const sizes = unique(animals.map((animal) => animal.size));
 ---
 {animals.length === 0 ? (
   <div class="animal-empty">
@@ -18,20 +17,107 @@ for (const animal of animals) {
     <p>Please check back shortly for our current adoptable dogs.</p>
   </div>
 ) : (
-  <div class="animal-catalog">
-    {Array.from(groups.entries()).map(([litter, items]) => (
-      <section class="animal-group">
-        <div class="animal-group__header">
-          <div>
-            <span class="eyebrow">Available now</span>
-            <h2>{litter}</h2>
-          </div>
-          <span class="animal-group__count">{items.length} {items.length === 1 ? "pup" : "pups"}</span>
+  <div class="animal-catalog" data-animal-catalog>
+    <div class="animal-filter-bar" aria-label="Filter available pups">
+      <div class="animal-filter">
+        <label for="filter-availability">Availability</label>
+        <select id="filter-availability" data-filter="status">
+          <option value="">All</option>
+          {statuses.map((value) => <option value={value}>{value}</option>)}
+        </select>
+      </div>
+
+      <div class="animal-filter">
+        <label for="filter-litter">Litter</label>
+        <select id="filter-litter" data-filter="litter">
+          <option value="">All litters</option>
+          {litters.map((value) => <option value={value}>{value}</option>)}
+        </select>
+      </div>
+
+      <div class="animal-filter">
+        <label for="filter-gender">Gender</label>
+        <select id="filter-gender" data-filter="gender">
+          <option value="">All</option>
+          {genders.map((value) => <option value={value}>{value}</option>)}
+        </select>
+      </div>
+
+      <div class="animal-filter">
+        <label for="filter-size">Size when grown</label>
+        <select id="filter-size" data-filter="size">
+          <option value="">All sizes</option>
+          {sizes.map((value) => <option value={value}>{value}</option>)}
+        </select>
+      </div>
+
+      <button type="button" class="animal-filter-clear" data-filter-clear>Clear filters</button>
+    </div>
+
+    <div class="animal-catalog__summary">
+      <p><strong data-animal-count>{animals.length}</strong> pups currently shown</p>
+    </div>
+
+    <div class="animal-grid animal-grid--catalog">
+      {animals.map((animal) => (
+        <div
+          data-animal-item
+          data-status={(animal.status || animal.availability || "").toLowerCase()}
+          data-litter={(animal.litter || "").toLowerCase()}
+          data-gender={(animal.gender || "").toLowerCase()}
+          data-size={(animal.size || "").toLowerCase()}
+        >
+          <AnimalCard animal={animal} />
         </div>
-        <div class="animal-grid">
-          {items.map((animal) => <AnimalCard animal={animal} />)}
-        </div>
-      </section>
-    ))}
+      ))}
+    </div>
+
+    <div class="animal-filter-empty" data-filter-empty hidden>
+      <h3>No pups match those filters.</h3>
+      <p>Try clearing one or more filters to see the rest of the pack.</p>
+    </div>
   </div>
 )}
+
+<script>
+  const initAnimalFilters = () => {
+    document.querySelectorAll("[data-animal-catalog]").forEach((catalog) => {
+      if (catalog.dataset.filtersReady === "true") return;
+      catalog.dataset.filtersReady = "true";
+
+      const selects = [...catalog.querySelectorAll("[data-filter]")];
+      const items = [...catalog.querySelectorAll("[data-animal-item]")];
+      const count = catalog.querySelector("[data-animal-count]");
+      const empty = catalog.querySelector("[data-filter-empty]");
+      const clear = catalog.querySelector("[data-filter-clear]");
+
+      const apply = () => {
+        const filters = Object.fromEntries(
+          selects.map((select) => [select.dataset.filter, select.value.trim().toLowerCase()])
+        );
+
+        let visible = 0;
+        items.forEach((item) => {
+          const matches = Object.entries(filters).every(([key, value]) => {
+            if (!value) return true;
+            return (item.dataset[key] || "") === value;
+          });
+          item.hidden = !matches;
+          if (matches) visible += 1;
+        });
+
+        if (count) count.textContent = String(visible);
+        if (empty) empty.hidden = visible !== 0;
+      };
+
+      selects.forEach((select) => select.addEventListener("change", apply));
+      clear?.addEventListener("click", () => {
+        selects.forEach((select) => { select.value = ""; });
+        apply();
+      });
+    });
+  };
+
+  initAnimalFilters();
+  document.addEventListener("astro:page-load", initAnimalFilters);
+</script>
