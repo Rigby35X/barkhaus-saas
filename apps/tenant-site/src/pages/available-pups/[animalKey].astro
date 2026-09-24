@@ -56,8 +56,8 @@ const description = animal.story
           <AnimalFacts animal={animal} birthday={birthday} />
 
           <div class="animal-profile__actions">
-            <a class="btn btn-gold" href="/adopt">Apply to Adopt {animal.name}</a>
-            <a class="btn btn-outline" href="/faq">Adoption FAQ</a>
+            <a class="btn btn-gold animal-profile__action-btn" href="/adopt">Apply to Adopt {animal.name}</a>
+            <a class="btn btn-outline animal-profile__action-btn" href="/faq">Adoption FAQ</a>
           </div>
         </aside>
       </div>
@@ -66,9 +66,14 @@ const description = animal.story
         <div class="animal-profile__story">
           <span class="eyebrow">Meet {animal.name}</span>
           <h2>About {animal.name}</h2>
-          {animal.story
-            ? <div class="animal-story">{animal.story}</div>
-            : <p>More about {animal.name} is coming soon.</p>}
+          {animal.story ? (
+            <div class="animal-story-wrap" data-story-wrap>
+              <div class="animal-story" data-story>{animal.story}</div>
+              <button class="animal-story-toggle" type="button" data-story-toggle aria-expanded="false">Read full story</button>
+            </div>
+          ) : (
+            <p>More about {animal.name} is coming soon.</p>
+          )}
         </div>
 
         <aside class="animal-profile__side-card">
@@ -76,7 +81,7 @@ const description = animal.story
           <h3>Think {animal.name} could be your match?</h3>
           <p>Start with an adoption application. Our team will review it and help determine whether the fit makes sense for both you and the pup.</p>
           <a class="btn btn-navy btn-block" href="/adopt">Start Application</a>
-          <a class="link-quiet" href="/available-pups">Browse all available pups</a>
+          <a class="btn btn-outline btn-block animal-profile__browse-btn" href="/available-pups">Browse All Available Pups</a>
         </aside>
       </div>
     </div>
@@ -98,4 +103,17 @@ const description = animal.story
       </div>
     </section>
   )}
+  <script>
+    document.addEventListener("click", (event) => {
+      const toggle = event.target.closest("[data-story-toggle]");
+      if (!toggle) return;
+
+      const wrap = toggle.closest("[data-story-wrap]");
+      if (!wrap) return;
+
+      const expanded = wrap.classList.toggle("is-expanded");
+      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      toggle.textContent = expanded ? "Show less" : "Read full story";
+    });
+  </script>
 </MBPRLayout>
