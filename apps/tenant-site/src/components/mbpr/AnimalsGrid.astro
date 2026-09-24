@@ -12,23 +12,26 @@ for (const animal of animals) {
 }
 ---
 {animals.length === 0 ? (
-  <div class="empty-state" style="text-align:center; padding:48px 20px;">
+  <div class="animal-empty">
+    <span class="eyebrow">Checking in with the pack</span>
     <h2>Available pups are loading</h2>
     <p>Please check back shortly for our current adoptable dogs.</p>
   </div>
 ) : (
-  Array.from(groups.entries()).map(([litter, items]) => (
-    <section class="litter-block">
-      <div class="litter-header">
-        <div>
-          <span class="eyebrow">Available Now</span>
-          <h2>{litter}</h2>
+  <div class="animal-catalog">
+    {Array.from(groups.entries()).map(([litter, items]) => (
+      <section class="animal-group">
+        <div class="animal-group__header">
+          <div>
+            <span class="eyebrow">Available now</span>
+            <h2>{litter}</h2>
+          </div>
+          <span class="animal-group__count">{items.length} {items.length === 1 ? "pup" : "pups"}</span>
         </div>
-        <span class="tag-count">{items.length} {items.length === 1 ? "pup" : "pups"}</span>
-      </div>
-      <div class="grid grid-4">
-        {items.map((animal) => <AnimalCard animal={animal} />)}
-      </div>
-    </section>
-  ))
+        <div class="animal-grid">
+          {items.map((animal) => <AnimalCard animal={animal} />)}
+        </div>
+      </section>
+    ))}
+  </div>
 )}
