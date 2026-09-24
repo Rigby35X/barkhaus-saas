@@ -3,10 +3,15 @@ const { animal } = Astro.props;
 const photos = (animal.photos?.length ? animal.photos : [animal.primary_photo || animal.image_url]).filter(Boolean);
 const [primaryPhoto, ...secondaryPhotos] = photos;
 ---
-<div class="animal-gallery" data-photo-count={photos.length}>
+<div class="animal-gallery" data-animal-gallery>
   {primaryPhoto ? (
     <figure class="animal-gallery__primary">
-      <img src={primaryPhoto} alt={`${animal.name}, available for adoption`} fetchpriority="high" />
+      <img
+        src={primaryPhoto}
+        alt={`${animal.name}, available for adoption`}
+        fetchpriority="high"
+        data-gallery-main
+      />
     </figure>
   ) : (
     <div class="animal-gallery__primary animal-gallery__placeholder">Photo coming soon</div>
@@ -14,11 +19,38 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
 
   {secondaryPhotos.length > 0 && (
     <div class="animal-gallery__thumbs" aria-label={`More photos of ${animal.name}`}>
-      {secondaryPhotos.slice(0, 4).map((photo, index) => (
-        <figure class="animal-gallery__thumb">
-          <img src={photo} alt={`${animal.name}, photo ${index + 2}`} loading="lazy" decoding="async" />
-        </figure>
+      {photos.slice(0, 5).map((photo, index) => (
+        <button
+          type="button"
+          class:list={["animal-gallery__thumb", index === 0 && "is-active"]}
+          data-gallery-thumb
+          data-photo={photo}
+          aria-label={`Show photo ${index + 1} of ${animal.name}`}
+          aria-pressed={index === 0 ? "true" : "false"}
+        >
+          <img src={photo} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
+        </button>
       ))}
     </div>
   )}
 </div>
+
+<script>
+  document.addEventListener("click", (event) => {
+    const thumb = event.target.closest("[data-gallery-thumb]");
+    if (!thumb) return;
+
+    const gallery = thumb.closest("[data-animal-gallery]");
+    const main = gallery?.querySelector("[data-gallery-main]");
+    const photo = thumb.getAttribute("data-photo");
+
+    if (!main || !photo) return;
+
+    main.setAttribute("src", photo);
+    gallery.querySelectorAll("[data-gallery-thumb]").forEach((button) => {
+      const active = button === thumb;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  });
+</script>
