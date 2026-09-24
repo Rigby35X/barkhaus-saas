@@ -27,7 +27,6 @@ type AnimalApiListResponse = {
 };
 
 const API_BASE = (import.meta.env.PUBLIC_ANIMALS_API_BASE || "https://animals-proxy.vercel.app").replace(/\/$/, "");
-const PHOTO_BASE = "https://animals-proxy-git-main-rigby35xs-projects.vercel.app";
 
 
 function normalizePhotoUrl(value: any): string {
@@ -40,10 +39,10 @@ function normalizePhotoUrl(value: any): string {
   try {
     const parsed = new URL(url);
     if (parsed.pathname.includes("/api/animals/") && parsed.pathname.includes("/photo/")) {
-      return PHOTO_BASE + parsed.pathname + parsed.search;
+      return API_BASE + parsed.pathname + parsed.search;
     }
   } catch {
-    if (url.startsWith("/api/animals/")) return PHOTO_BASE + url;
+    if (url.startsWith("/api/animals/")) return API_BASE + url;
   }
 
   return url;
