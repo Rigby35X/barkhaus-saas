@@ -18,6 +18,14 @@ const moreAnimals = allAnimals
 const photos = (animal.photos?.length ? animal.photos : [animal.primary_photo || animal.image_url]).filter(Boolean);
 const primaryPhoto = photos[0] || "";
 const extraPhotos = photos.slice(1, 3);
+const formatDate = (value?: string) => {
+  if (!value) return "";
+  const parsed = new Date(value + (value.length === 10 ? "T12:00:00" : ""));
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : parsed.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+};
+const birthday = formatDate(animal.birthday);
 const title = `${animal.name} | Mission Bay Puppy Rescue`;
 const description = animal.story
   ? animal.story.replace(/<[^>]*>/g, "").slice(0, 155)
@@ -58,12 +66,12 @@ const description = animal.story
             {animal.gender && <div class="fact"><div class="k">Sex</div><div class="v">{animal.gender}</div></div>}
             {animal.breed && <div class="fact"><div class="k">Breed / Mix</div><div class="v">{animal.breed}</div></div>}
             {animal.size && <div class="fact"><div class="k">Adult Size</div><div class="v">{animal.size}</div></div>}
-            {animal.birthday && <div class="fact"><div class="k">Birthday</div><div class="v">{animal.birthday}</div></div>}
+            {birthday && <div class="fact"><div class="k">Birthday</div><div class="v">{birthday}</div></div>}
           </div>
 
           <h3>About {animal.name}</h3>
           {animal.story
-            ? <div class="animal-story" set:html={animal.story}></div>
+            ? <div class="animal-story" style="white-space:pre-line;">{animal.story}</div>
             : <p style="opacity:.85;">More about {animal.name} is coming soon.</p>}
 
           {animal.litter && (
