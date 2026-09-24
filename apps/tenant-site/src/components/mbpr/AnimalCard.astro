@@ -7,13 +7,14 @@ const meta = [animal.gender, animal.size].filter(Boolean);
 <article class="animal-card">
   <a class="animal-card__link" href={href} aria-label={`Meet ${animal.name}`}>
     <div class="animal-card__media">
-      <span class="animal-card__status">{animal.status || "Available Now"}</span>
       {image
         ? <img src={image} alt={`${animal.name}, available for adoption`} loading="lazy" decoding="async" />
         : <div class="animal-card__placeholder">Photo coming soon</div>}
     </div>
 
     <div class="animal-card__body">
+      <span class="animal-card__status">{animal.status || "Available Now"}</span>
+
       <div class="animal-card__heading">
         <h3>{animal.name}</h3>
         <span class="animal-card__arrow" aria-hidden="true">→</span>
@@ -22,7 +23,7 @@ const meta = [animal.gender, animal.size].filter(Boolean);
       {meta.length > 0 && <p class="animal-card__meta">{meta.join(" · ")}</p>}
       {animal.breed && <p class="animal-card__breed">{animal.breed}</p>}
 
-      <span class="animal-card__cta">Meet {animal.name}</span>
+      <span class="btn btn-navy btn-sm animal-card__button">Meet {animal.name}</span>
     </div>
   </a>
 </article>
