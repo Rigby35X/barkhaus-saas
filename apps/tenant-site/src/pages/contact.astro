@@ -1,476 +1,93 @@
 ---
-import BaseLayout from "@layouts/BaseLayout.astro";
-import client from "@data/client.json";
-import Landing from "@components/Landing.astro";
-import { fetchAllPageData, buildSectionStyle } from "../utils/content-fetcher.js";
-
-// Optimize our landing image and pass it as props to the BaseLayout (for preloading) and Landing (for rendering)
-import landingImage from "@assets/images/landing.jpg" // <-- THE PATH TO THE ASSET YOU WANT TO PRELOAD - The asset must live in src
-import { getImage } from "astro:assets";
-const optimizedImage = await getImage({src: landingImage, format: 'avif'})
-
-// Get tenant context from middleware
-const { tenant } = Astro.locals;
-const orgId = tenant?.orgId?.toString() || '9'; // Fallback to Mission Bay if no tenant
-
-// Fetch dynamic content for contact page
-const { content, organization } = await fetchAllPageData('contact', orgId, Astro.url.origin);
-
-// Use dynamic content with fallbacks
-const heroContent = content.hero || {};
-const contactInfoContent = content.contact_info || {};
+import MBPRLayout from "../layouts/MBPRLayout.astro";
 ---
+<MBPRLayout title="Contact | Mission Bay Puppy Rescue" description="Get in touch with Mission Bay Puppy Rescue — find the right form for adoption, fostering, surrender, or general questions.">
+<section class="page-intro">
+  <div class="container">
+    <span class="eyebrow">Let&rsquo;s Get You To The Right Place</span>
+    <h1>Contact Mission Bay Puppy Rescue</h1>
+    <p class="lede">Choose what best matches why you&rsquo;re reaching out &mdash; most people find their answer before ever needing the general form below.</p>
+  </div>
+</section>
 
-<BaseLayout
-  title={heroContent.headline || "Get in Touch"}
-  description={heroContent.body_text || "Have questions about adoption, volunteering, or how you can help? We'd love to hear from you."}
-  preloadedImage = {optimizedImage}
-  organization = {organization}
->
-  <!-- ============================================ -->
-  <!--                    LANDING                   -->
-  <!-- ============================================ -->
+<section class="section tight">
+  <div class="container">
+    <div class="route-grid">
+      <a class="route-tile" href="/adopt">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
+      <h4>I Want To Adopt</h4>
+      <p>Check the FAQ, then start your application.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="/foster">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.5-9C1 7.5 3 4 6.5 4c2 0 3.4 1.2 4 2 .6-.8 2-2 4-2C18 4 20 7.5 18.5 11c-2 4.4-6.5 9-6.5 9z"/></svg></div>
+      <h4>I Want To Foster</h4>
+      <p>See what fostering involves and apply.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="/relinquishment">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="6" y="4.5" width="12" height="16" rx="1.5"/><rect x="9" y="3" width="6" height="3" rx="1"/><path d="M9 11h6M9 14.5h6M9 17.5h3.5"/></svg></div>
+      <h4>I Need To Surrender A Dog</h4>
+      <p>Fill out the relinquishment form.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="/resources#partners">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></div>
+      <h4>I Found A Stray</h4>
+      <p>Get instructions and local resources.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="#general-form">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></div>
+      <h4>Request Puppies At An Event</h4>
+      <p>Tell us about your event.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="#general-form">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="3.5" y="8" width="17" height="11" rx="1.5"/><path d="M8 8V6a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M3.5 13h17"/></svg></div>
+      <h4>Corporate / Product Partnership</h4>
+      <p>Tell us about your proposal.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="/donate">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.2"/><path d="M4 13h16"/><path d="M12 9v11"/><path d="M12 9C10.5 9 8.5 8 8.5 6.2 8.5 5 9.4 4 10.6 4c1.6 0 1.9 2.5 1.4 5zM12 9c1.5 0 3.5-1 3.5-2.8 0-1.2-.9-2.2-2.1-2.2-1.6 0-1.9 2.5-1.4 5z"/></svg></div>
+      <h4>I Want To Donate</h4>
+      <p>Give once or set up a monthly gift.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+<a class="route-tile" href="/faq">
+      <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4 5.5C6 4.4 9 4 12 5.2 15 4 18 4.4 20 5.5v13c-2-1.1-5-1.5-8-.3-3-1.2-6-.8-8 .3z"/><path d="M12 5.2v13"/></svg></div>
+      <h4>I Have Another Question</h4>
+      <p>Check the FAQ first.</p>
+      <span class="link-quiet">Go &rarr;</span>
+    </a>
+    </div>
+  </div>
+</section>
 
-  <Landing
-    title={heroContent.headline || "Get in Touch"}
-    description={heroContent.body_text || "Have questions about adoption, volunteering, or how you can help? We'd love to hear from you."}
-    image={optimizedImage}
-  />
-
-  <!-- ============================================ -->
-  <!--                Contact Form                  -->
-  <!-- ============================================ -->
-
-  <section id="cs-contact" style={buildSectionStyle(contactInfoContent?.typography)}>
-    <div class="cs-container">
-      <form id="cs-form" name="Contact Form" method="post">
-        <div class="cs-content">
-          <span class="cs-topper">{contactInfoContent.subheadline || "Contact"}</span>
-          <h2 class="cs-title">{contactInfoContent.headline || "Get in Touch"}</h2>
-          <p class="cs-text">
-            {contactInfoContent.body_text || "Have questions about adoption, volunteering, or how you can help? We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible."}
-          </p>
+<section class="section sand-deep" id="general-form">
+  <div class="container" style="max-width:640px;">
+    <span class="eyebrow" style="justify-content:center; display:flex;">Something Else?</span>
+    <h2 style="text-align:center;">General Contact Form</h2>
+    <p class="lede" style="text-align:center; margin:0 auto 26px;">If none of the options above fit, send us a message and we&rsquo;ll get back to you as soon as we can.</p>
+    <div style="background:var(--white); border:1px solid var(--sand-line); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:30px;">
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div>
+          <label style="font-family:var(--font-display); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; opacity:.7;">Name</label>
+          <div style="margin-top:6px; border:1px solid var(--sand-line); border-radius:10px; height:46px; background:var(--sand);"></div>
         </div>
-        <label>
-          Name
-          <input
-            required
-            type="text"
-            id="name"
-            name="name"
-            placeholder="Name"
-          />
-        </label>
-        <label>
-          Email
-          <input
-            required
-            type="text"
-            id="email"
-            name="email"
-            placeholder="Email"
-          />
-        </label>
-        <label>
-          Phone
-          <input
-            required
-            type="text"
-            id="phone"
-            name="phone"
-            placeholder="Phone"
-          />
-        </label>
-        <label>
-          How Did You Find Us
-          <input
-            type="text"
-            id="find"
-            name="find-us"
-            placeholder="How did you find us?"
-          />
-        </label>
-        <label class="cs-label-message">
-          Message
-          <textarea
-            required
-            name="Message"
-            id="message"
-            placeholder="Write message..."></textarea>
-        </label>
-        <button class="cs-button-solid" type="submit">Submit Message</button>
-      </form>
-      <div class="cs-right-section">
-        <!--Email-->
-        <span class="cs-header">Email</span>
-        <a class="cs-link" href={`mailto:${client.email}`}>{client.email}</a>
-        <!--Phone-->
-        <span class="cs-header">Phone</span>
-        <a class="cs-link" href={`tel:${client.phoneForTel}`}
-          >{client.phoneFormatted}</a
-        >
-        <!--Address-->
-        <span class="cs-header">Address</span>
-        <a class="cs-link" href={client.address.mapLink}>
-          {client.address.lineOne},
-          <br />
-          {client.address.lineTwo},
-          <br />
-          <span class="cs-block">
-            {client.address.city}
-            {client.address.state}
-            {client.address.zip}
-          </span>
-        </a>
-
-        <!-- Background Image-->
-        <picture class="cs-bg-picture">
-          <source
-            media="(min-width: 601px)"
-            srcset="/assets/images/skyscraper.jpg"
-          />
-          <img
-            aria-hidden="true"
-            decoding="async"
-            src="/assets/images/skyscraper.jpg"
-            alt="building"
-            loading="lazy"
-            width="2500"
-            height="1667"
-          />
-        </picture>
+        <div>
+          <label style="font-family:var(--font-display); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; opacity:.7;">Email</label>
+          <div style="margin-top:6px; border:1px solid var(--sand-line); border-radius:10px; height:46px; background:var(--sand);"></div>
+        </div>
+        <div>
+          <label style="font-family:var(--font-display); font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; opacity:.7;">Message</label>
+          <div style="margin-top:6px; border:1px solid var(--sand-line); border-radius:10px; height:110px; background:var(--sand);"></div>
+        </div>
+        <a class="btn btn-gold btn-block" href="#">Send Message</a>
       </div>
     </div>
-  </section>
-</BaseLayout>
-
-<style lang="less">
-  /* PAGE-SPECIFIC STYLES FOR THE CONTACT PAGE */
-
-  /*-- -------------------------- -->
-<---          Contact           -->
-<--- -------------------------- -*/
-
-  /* Mobile - 360px */
-  @media only screen and (min-width: 0em) {
-    :root {
-      /* 13px - 16px */
-      --topperFontSize: clamp(0.8125rem, 1.6vw, 1rem);
-      /* 31px - 49px */
-      --headerFontSize: clamp(1.9375rem, 4.5vw, 3.0625rem);
-      --bodyFontSize: 1rem;
-
-      /* 60px - 100px top and bottom */
-      --sectionPadding: clamp(3.75em, 7.82vw, 6.25em) 1rem;
-    }
-
-    #cs-contact {
-      font-family: "Roboto", "Arial", sans-serif;
-      padding: var(--sectionPadding);
-
-      .cs-container {
-        width: 100%;
-        /* changes to 1280px at desktop */
-        max-width: (800/16rem);
-        margin: auto;
-      }
-
-      .cs-content {
-        width: 100%;
-      }
-
-      .cs-topper {
-        text-align: left;
-        /* 8px - 12px */
-        margin-bottom: clamp(0.5rem, 1.4vw, 0.75rem);
-      }
-
-      .cs-title {
-        text-align: left;
-        max-width: (800/16rem);
-      }
-
-      .cs-text {
-        text-align: left;
-        /* 404px - 522px */
-        max-width: clamp(25.25rem, 30vw, 32.625rem);
-        margin: 0 auto 0 0;
-        /* 40px - 48px */
-        margin-bottom: clamp(2.5rem, 6.3vw, 3rem);
-      }
-
-      #cs-form {
-        margin-bottom: (40/16rem);
-        label {
-          font-size: (16/16rem);
-          font-weight: 700;
-          line-height: 1.5em;
-          /* 12px - 20px */
-          margin-bottom: clamp(0.75rem, 1.3em, 1.25rem);
-          color: var(--headerColor);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: flex-start;
-        }
-
-        .cs-label-message {
-          /* 32px - 48px */
-          margin-bottom: clamp(2rem, 6.3vw, 3rem);
-        }
-
-        input,
-        textarea {
-          font-size: (16/16rem);
-          width: 100%;
-          height: (64/16rem);
-          margin-top: (4/16rem);
-          /* prevents border & padding from affecting height */
-          box-sizing: border-box;
-          padding-left: (20/16rem);
-          border: 1px solid #b4b2c7;
-          border-radius: (8/16rem);
-          transition: border 0.3s;
-
-          &:hover {
-            border: 1px solid var(--primary);
-          }
-        }
-
-        textarea {
-          font-family: inherit;
-          min-height: (120/16rem);
-          padding-top: (20/16rem);
-        }
-
-        .cs-button-solid {
-          align-self: flex-start;
-        }
-      }
-
-      .cs-right-section {
-        height: (320/16rem);
-        /* 24px - 40px top & bottom */
-        /* 20px - 40px left & right */
-        padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1.25rem, 3vw, 2.5rem);
-        border-radius: (8/16rem);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        align-items: flex-start;
-        position: relative;
-        /* cuts off corners on img tag */
-        overflow: hidden;
-      }
-
-      .cs-header {
-        /* 16px - 20px */
-        font-size: clamp(1rem, 3vw, 1.25rem);
-        font-weight: 700;
-        line-height: 1.2em;
-        margin-bottom: (8/16rem);
-        color: var(--bodyTextColorWhite);
-        display: block;
-      }
-
-      .cs-link {
-        /* 16px - 20px */
-        font-size: clamp(1rem, 3vw, 1.25rem);
-        line-height: 1.2em;
-        text-decoration: none;
-        margin-bottom: (20/16rem);
-        color: var(--bodyTextColorWhite);
-        display: block;
-        position: relative;
-
-        &:before {
-          /* Animated underline */
-          content: "";
-          width: 0%;
-          height: 2px;
-          /* current color of the parent */
-          background: currentColor;
-          opacity: 1;
-          display: block;
-          position: absolute;
-          bottom: (-2/16rem);
-          left: 0;
-          transition: width 0.3s;
-        }
-
-        &:hover {
-          &:before {
-            width: 100%;
-          }
-        }
-
-        &:last-of-type {
-          margin-bottom: 0;
-        }
-      }
-
-      .cs-block {
-        /* sends second address line to the bottom on its own line */
-        display: block;
-      }
-
-      .cs-bg-picture {
-        width: 100%;
-        height: 100%;
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: -1;
-        transition: transform 0.6s;
-
-        &:before {
-          /* background color overlay */
-          content: "";
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, 0.8) 100%
-          );
-          display: block;
-          position: absolute;
-          top: 0;
-          left: 0;
-          z-index: 1;
-        }
-
-        img {
-          width: 100%;
-          height: 100%;
-          /* Makes img tag act as a background image */
-          object-fit: cover;
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-      }
-    }
-  }
-
-  /* Tablet - 700px */
-  @media only screen and (min-width: 43.75em) {
-    #cs-contact {
-      #cs-form {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        flex-wrap: wrap;
-
-        label {
-          width: 48%;
-        }
-
-        .cs-label-message {
-          width: 100%;
-        }
-      }
-    }
-  }
-
-  /* Small Desktop - 1024px */
-  @media only screen and (min-width: 64em) {
-    #cs-contact {
-      .cs-container {
-        max-width: (1280/16rem);
-        display: flex;
-        justify-content: flex-end;
-        align-items: flex-start;
-        gap: (80/16rem);
-      }
-
-      #cs-form {
-        max-width: (630/16rem);
-        label {
-          width: 100%;
-        }
-      }
-
-      .cs-right-section {
-        width: 40%;
-        max-width: (542/16rem);
-        /* changes to 578px at 1300px wide */
-        height: (686/16rem);
-        /* prevents flexbox from squishing it */
-        flex: none;
-
-        &:hover {
-          .cs-bg-picture {
-            transform: scale(1.1);
-          }
-        }
-      }
-
-      .cs-block {
-        /* goes back to inline so it stays "in line" with the rest of the text */
-        display: inline-block;
-      }
-    }
-  }
-
-  /* Small Desktop - 1300px */
-  @media only screen and (min-width: 81.25em) {
-    #cs-contact {
-      #cs-form {
-        column-gap: (0/16rem);
-        label {
-          width: 48%;
-          max-width: (305/16rem);
-        }
-
-        .cs-label-message {
-          max-width: 100%;
-        }
-      }
-
-      .cs-right-section {
-        height: (578/16rem);
-      }
-    }
-  }
-
-  /* Dark Mode */
-  @media only screen and (min-width: 0em) {
-    body.dark-mode {
-      #cs-contact {
-        .cs-text,
-        .cs-title {
-          color: var(--bodyTextColorWhite);
-        }
-
-        .cs-topper {
-          color: var(--primaryLight);
-        }
-
-        #cs-form {
-          label,
-          input,
-          textarea {
-            color: var(--bodyTextColorWhite);
-            background-color: transparent;
-
-            &::placeholder {
-              /* lighten up the color of the text by 40%*/
-              filter: brightness(1.4);
-            }
-          }
-        }
-
-        .cs-bg-picture {
-          background-color: #000;
-
-          img {
-            /* lets parent background-color bleed through and darken it */
-            opacity: 0.5;
-          }
-        }
-      }
-    }
-  }
-</style>
+    <p style="text-align:center; opacity:.6; font-size:.85rem; margin-top:18px;">You&rsquo;ll get an automatic reply confirming we received your message, with quick links to Available Pups, Apply, Foster, FAQ, and Relinquishment. [DRAFT &mdash; auto-reply wording pending]<span class="draft-flag">Content Needed</span></p>
+  </div>
+</section>
+</MBPRLayout>

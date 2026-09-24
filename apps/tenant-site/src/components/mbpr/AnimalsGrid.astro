@@ -1,0 +1,34 @@
+---
+import AnimalCard from "./AnimalCard.astro";
+import { getPublicAnimals } from "../../lib/public-animals";
+
+const animals = await getPublicAnimals(Astro.locals);
+const groups = new Map();
+
+for (const animal of animals) {
+  const key = animal.litter || "Available Pups";
+  if (!groups.has(key)) groups.set(key, []);
+  groups.get(key).push(animal);
+}
+---
+{animals.length === 0 ? (
+  <div class="empty-state" style="text-align:center; padding:48px 20px;">
+    <h2>Available pups are loading</h2>
+    <p>Please check back shortly for our current adoptable dogs.</p>
+  </div>
+) : (
+  Array.from(groups.entries()).map(([litter, items]) => (
+    <section class="litter-block">
+      <div class="litter-header">
+        <div>
+          <span class="eyebrow">Available Now</span>
+          <h2>{litter}</h2>
+        </div>
+        <span class="tag-count">{items.length} {items.length === 1 ? "pup" : "pups"}</span>
+      </div>
+      <div class="grid grid-4">
+        {items.map((animal) => <AnimalCard animal={animal} />)}
+      </div>
+    </section>
+  ))
+)}
