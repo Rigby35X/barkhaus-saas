@@ -27,7 +27,7 @@ type AnimalApiListResponse = {
 };
 
 const API_BASE = (import.meta.env.PUBLIC_ANIMALS_API_BASE || "https://animals-proxy.vercel.app").replace(/\/$/, "");
-const PHOTO_BASE = "https://animals-proxy.vercel.app";
+const PHOTO_BASE = "https://animals-proxy-git-main-rigby35xs-projects.vercel.app";
 
 
 function normalizePhotoUrl(value: any): string {
