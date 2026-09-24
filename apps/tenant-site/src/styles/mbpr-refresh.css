@@ -924,3 +924,102 @@ p:last-child{ margin-bottom:0; }
   .animal-profile__story-grid{ margin-top:48px; padding-top:44px; }
   .animal-more__header{ align-items:flex-start; flex-direction:column; }
 }
+
+
+/* Animal UI refinement pass */
+.animal-card__status{
+  position:static;
+  display:inline-flex;
+  width:max-content;
+  margin-bottom:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  box-shadow:none;
+}
+.animal-card__breed{
+  min-height:0;
+  margin:7px 0 0;
+  color:var(--bay-navy);
+  font-size:.86rem;
+  font-weight:600;
+  opacity:.74;
+}
+.animal-card__button{
+  margin-top:18px;
+  width:max-content;
+}
+.animal-card__arrow{ display:none; }
+
+.animal-gallery__thumb{
+  padding:0;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.animal-gallery__thumb:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 18px rgba(7,42,66,.1);
+}
+.animal-gallery__thumb.is-active{
+  border-color:var(--bay-navy);
+}
+
+.animal-profile__actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.animal-profile__action-btn{
+  width:100%;
+  justify-content:center;
+  padding-inline:18px;
+}
+.animal-profile__browse-btn{
+  margin-top:10px;
+  justify-content:center;
+}
+
+.animal-story-wrap{
+  position:relative;
+}
+.animal-story{
+  max-height:430px;
+  overflow:hidden;
+  position:relative;
+}
+.animal-story-wrap:not(.is-expanded) .animal-story::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:110px;
+  background:linear-gradient(180deg,rgba(251,253,255,0),#fbfdff 88%);
+  pointer-events:none;
+}
+.animal-story-wrap.is-expanded .animal-story{
+  max-height:none;
+}
+.animal-story-wrap.is-expanded .animal-story::after{
+  display:none;
+}
+.animal-story-toggle{
+  margin-top:18px;
+  padding:0 0 4px;
+  border:0;
+  border-bottom:2px solid var(--gold);
+  background:transparent;
+  color:var(--bay-navy);
+  font:600 .82rem/1 var(--font-display);
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.animal-story-toggle:hover{ color:var(--lagoon-deep); }
+
+@media (max-width:620px){
+  .animal-profile__actions{ grid-template-columns:1fr; }
+  .animal-card__button{ width:100%; justify-content:center; }
+  .animal-story{ max-height:360px; }
+}
