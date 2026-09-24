@@ -2,22 +2,27 @@
 const { animal } = Astro.props;
 const image = animal.primary_photo || animal.image_url || animal.photos?.[0] || "";
 const href = animal.animal_key ? `/available-pups/${animal.animal_key}` : "/adopt";
+const meta = [animal.gender, animal.size].filter(Boolean);
 ---
-<article class="pup-card">
-  <a class="pup-photo" href={href} aria-label={`Meet ${animal.name}`}>
-    <span class="status-ribbon status-available">{animal.status || "Available Now"}</span>
-    {image
-      ? <img src={image} alt={`${animal.name}, available for adoption`} loading="lazy" decoding="async" />
-      : <div class="pup-photo no-photo">Photo coming soon</div>}
-  </a>
-  <div class="pup-body">
-    <h3 class="pup-name">{animal.name}</h3>
-    <div class="pup-facts">
-      {animal.gender && <span>{animal.gender}</span>}
-      {animal.size && <span>{animal.size}</span>}
-      {(animal.age || animal.birthday) && <span>{animal.age || animal.birthday}</span>}
+<article class="animal-card">
+  <a class="animal-card__link" href={href} aria-label={`Meet ${animal.name}`}>
+    <div class="animal-card__media">
+      <span class="animal-card__status">{animal.status || "Available Now"}</span>
+      {image
+        ? <img src={image} alt={`${animal.name}, available for adoption`} loading="lazy" decoding="async" />
+        : <div class="animal-card__placeholder">Photo coming soon</div>}
     </div>
-    {animal.breed && <p class="text-small">{animal.breed}</p>}
-    <a class="btn btn-navy btn-sm" href={href}>Meet {animal.name}</a>
-  </div>
+
+    <div class="animal-card__body">
+      <div class="animal-card__heading">
+        <h3>{animal.name}</h3>
+        <span class="animal-card__arrow" aria-hidden="true">→</span>
+      </div>
+
+      {meta.length > 0 && <p class="animal-card__meta">{meta.join(" · ")}</p>}
+      {animal.breed && <p class="animal-card__breed">{animal.breed}</p>}
+
+      <span class="animal-card__cta">Meet {animal.name}</span>
+    </div>
+  </a>
 </article>
