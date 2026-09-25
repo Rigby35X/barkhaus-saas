@@ -563,3 +563,755 @@ p:last-child{ margin-bottom:0; }
 .icon-close{ display:none; }
 .nav-toggle[aria-expanded="true"] .icon-open{ display:none; }
 .nav-toggle[aria-expanded="true"] .icon-close{ display:block; }
+
+
+/* ==========================================================================
+   ANIMAL EXPERIENCE — reusable BarkHaus tenant-site components
+   ========================================================================== */
+
+.animal-page-hero{
+  padding:72px 0 44px;
+  background:
+    radial-gradient(circle at 85% 10%, rgba(109,180,236,.18), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #f7fbfe 100%);
+  border-bottom:1px solid rgba(11,59,92,.08);
+}
+.animal-page-hero__inner{
+  display:grid;
+  grid-template-columns:minmax(0, .9fr) minmax(320px, .8fr);
+  gap:72px;
+  align-items:end;
+}
+.animal-page-hero h1{ margin-bottom:0; }
+.animal-page-hero .lede{ margin:0; max-width:52ch; }
+
+.animal-catalog-section{ padding:56px 0 80px; background:#fff; }
+.animal-catalog{ display:flex; flex-direction:column; gap:64px; }
+.animal-group{ padding:0; margin:0; }
+.animal-group + .animal-group{ padding-top:56px; border-top:1px solid rgba(11,59,92,.12); }
+.animal-group__header{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:24px;
+  margin-bottom:24px;
+}
+.animal-group__header .eyebrow{ margin-bottom:8px; }
+.animal-group__header h2{ margin:0; }
+.animal-group__count{
+  flex-shrink:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:72px;
+  padding:8px 14px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  font:600 .78rem/1 var(--font-display);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.animal-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:24px;
+}
+.animal-grid--three{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+.animal-empty{
+  max-width:680px;
+  margin:0 auto;
+  padding:72px 32px;
+  text-align:center;
+  border:1px solid rgba(11,59,92,.12);
+  border-radius:24px;
+  background:#f8fbfd;
+}
+.animal-empty .eyebrow{ justify-content:center; }
+
+.animal-card{
+  min-width:0;
+  background:#fff;
+  border:1px solid rgba(11,59,92,.12);
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 8px 24px rgba(7,42,66,.07);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.animal-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(11,59,92,.22);
+  box-shadow:0 16px 38px rgba(7,42,66,.12);
+}
+.animal-card__link{ display:block; height:100%; }
+.animal-card__media{
+  position:relative;
+  aspect-ratio:4/3;
+  overflow:hidden;
+  background:#eaf5fd;
+}
+.animal-card__media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform .35s ease;
+}
+.animal-card:hover .animal-card__media img{ transform:scale(1.025); }
+.animal-card__placeholder{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:rgba(11,59,92,.5);
+}
+.animal-card__status{
+  position:absolute;
+  z-index:2;
+  left:14px;
+  top:14px;
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(11,59,92,.92);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(7,42,66,.16);
+  font:600 .68rem/1 var(--font-display);
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.animal-card__body{ padding:20px 20px 22px; }
+.animal-card__heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.animal-card__heading h3{ margin:0; font-size:1.45rem; }
+.animal-card__arrow{
+  width:34px;
+  height:34px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  font-size:1.1rem;
+  transition:transform .2s ease, background .2s ease;
+}
+.animal-card:hover .animal-card__arrow{ transform:translateX(3px); background:var(--lagoon); }
+.animal-card__meta{
+  margin:8px 0 0;
+  color:var(--bay-navy);
+  font-size:.86rem;
+  font-weight:600;
+  opacity:.74;
+}
+.animal-card__breed{
+  margin:7px 0 0;
+  min-height:2.7em;
+  color:var(--bay-navy-ink);
+  font-size:.92rem;
+  opacity:.86;
+}
+.animal-card__cta{
+  display:inline-flex;
+  margin-top:18px;
+  color:var(--bay-navy);
+  font:600 .78rem/1 var(--font-display);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  border-bottom:2px solid var(--gold);
+  padding-bottom:3px;
+}
+
+.animal-application-band{
+  padding:52px 0;
+  background:var(--bay-navy);
+  color:#dcebf5;
+}
+.animal-application-band__inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:40px;
+}
+.animal-application-band .eyebrow{ color:var(--lagoon); }
+.animal-application-band h2{ color:#fff; margin-bottom:10px; }
+.animal-application-band p{ max-width:62ch; margin:0; opacity:.88; }
+
+.animal-profile{
+  padding:44px 0 80px;
+  background:linear-gradient(180deg,#fff 0%,#fbfdff 100%);
+}
+.animal-profile__back{ margin-bottom:28px; }
+.animal-profile__hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(340px,.85fr);
+  gap:56px;
+  align-items:start;
+}
+.animal-profile__summary{
+  position:sticky;
+  top:104px;
+  padding:8px 0 0;
+}
+.animal-profile__status{
+  display:inline-flex;
+  padding:7px 12px;
+  margin-bottom:16px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  font:600 .72rem/1 var(--font-display);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.animal-profile__summary h1{
+  font-size:clamp(3rem,5.4vw,5.3rem);
+  line-height:.95;
+  margin-bottom:12px;
+}
+.animal-profile__subhead{
+  margin:0 0 28px;
+  color:var(--bay-navy);
+  font-size:1.08rem;
+  line-height:1.5;
+  opacity:.78;
+}
+.animal-profile__actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:28px;
+}
+
+.animal-gallery{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:14px;
+}
+.animal-gallery__primary{
+  margin:0;
+  overflow:hidden;
+  border-radius:26px;
+  background:#eaf5fd;
+  aspect-ratio:5/4;
+  box-shadow:0 18px 46px rgba(7,42,66,.12);
+}
+.animal-gallery__primary img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.animal-gallery__placeholder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:rgba(11,59,92,.45);
+}
+.animal-gallery__thumbs{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+}
+.animal-gallery__thumb{
+  margin:0;
+  overflow:hidden;
+  border-radius:14px;
+  background:#eaf5fd;
+  aspect-ratio:1;
+}
+.animal-gallery__thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.animal-facts{
+  margin:0;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:0;
+  border-top:1px solid rgba(11,59,92,.14);
+  border-bottom:1px solid rgba(11,59,92,.14);
+}
+.animal-fact{
+  padding:16px 18px 16px 0;
+}
+.animal-fact:nth-child(even){ padding-left:18px; border-left:1px solid rgba(11,59,92,.12); }
+.animal-fact dt{
+  margin:0 0 4px;
+  color:rgba(18,40,58,.56);
+  font:600 .68rem/1 var(--font-display);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.animal-fact dd{
+  margin:0;
+  color:var(--bay-navy);
+  font-weight:700;
+  line-height:1.35;
+}
+
+.animal-profile__story-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);
+  gap:64px;
+  margin-top:72px;
+  padding-top:64px;
+  border-top:1px solid rgba(11,59,92,.12);
+  align-items:start;
+}
+.animal-profile__story{ max-width:72ch; }
+.animal-profile__story h2{ margin-bottom:22px; }
+.animal-story{
+  white-space:pre-line;
+  color:#2a4050;
+  font-size:1.03rem;
+  line-height:1.8;
+}
+.animal-profile__side-card{
+  padding:28px;
+  border-radius:22px;
+  background:#eaf5fd;
+  border:1px solid rgba(11,59,92,.09);
+}
+.animal-profile__side-card h3{ margin-bottom:12px; }
+.animal-profile__side-card p{ font-size:.94rem; opacity:.82; }
+.animal-profile__side-card .btn{ margin:12px 0 18px; }
+.animal-profile__side-card .link-quiet{ display:inline-flex; }
+
+.animal-more{
+  padding:64px 0 80px;
+  background:#eaf5fd;
+}
+.animal-more__header{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:24px;
+}
+.animal-more__header h2{ margin:0; }
+
+@media (max-width:900px){
+  .animal-page-hero__inner{ grid-template-columns:1fr; gap:20px; }
+  .animal-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .animal-profile__hero{ grid-template-columns:1fr; gap:36px; }
+  .animal-profile__summary{ position:static; padding-top:0; }
+  .animal-profile__story-grid{ grid-template-columns:1fr; gap:36px; }
+  .animal-application-band__inner{ align-items:flex-start; flex-direction:column; }
+}
+@media (max-width:620px){
+  .animal-page-hero{ padding:44px 0 30px; }
+  .animal-catalog-section{ padding:38px 0 56px; }
+  .animal-catalog{ gap:44px; }
+  .animal-group + .animal-group{ padding-top:40px; }
+  .animal-group__header{ align-items:center; }
+  .animal-grid,.animal-grid--three{ grid-template-columns:1fr; }
+  .animal-card__media{ aspect-ratio:16/11; }
+  .animal-profile{ padding:28px 0 56px; }
+  .animal-profile__hero{ gap:28px; }
+  .animal-profile__summary h1{ font-size:3.2rem; }
+  .animal-gallery__primary{ aspect-ratio:4/3; border-radius:20px; }
+  .animal-gallery__thumbs{ grid-template-columns:repeat(3,1fr); }
+  .animal-facts{ grid-template-columns:1fr; }
+  .animal-fact,.animal-fact:nth-child(even){ padding:14px 0; border-left:0; }
+  .animal-fact + .animal-fact{ border-top:1px solid rgba(11,59,92,.1); }
+  .animal-profile__actions{ flex-direction:column; align-items:stretch; }
+  .animal-profile__actions .btn{ justify-content:center; }
+  .animal-profile__story-grid{ margin-top:48px; padding-top:44px; }
+  .animal-more__header{ align-items:flex-start; flex-direction:column; }
+}
+
+
+/* Animal UI refinement pass */
+.animal-card__status{
+  position:static;
+  display:inline-flex;
+  width:max-content;
+  margin-bottom:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  box-shadow:none;
+}
+.animal-card__breed{
+  min-height:0;
+  margin:7px 0 0;
+  color:var(--bay-navy);
+  font-size:.86rem;
+  font-weight:600;
+  opacity:.74;
+}
+.animal-card__button{
+  margin-top:18px;
+  width:max-content;
+}
+.animal-card__arrow{ display:none; }
+
+.animal-gallery__thumb{
+  padding:0;
+  border:2px solid transparent;
+  cursor:pointer;
+  transition:border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+.animal-gallery__thumb:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 18px rgba(7,42,66,.1);
+}
+.animal-gallery__thumb.is-active{
+  border-color:var(--bay-navy);
+}
+
+.animal-profile__actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.animal-profile__action-btn{
+  width:100%;
+  justify-content:center;
+  padding-inline:18px;
+}
+.animal-profile__browse-btn{
+  margin-top:10px;
+  justify-content:center;
+}
+
+.animal-story-wrap{
+  position:relative;
+}
+.animal-story{
+  max-height:430px;
+  overflow:hidden;
+  position:relative;
+}
+.animal-story-wrap:not(.is-expanded) .animal-story::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:110px;
+  background:linear-gradient(180deg,rgba(251,253,255,0),#fbfdff 88%);
+  pointer-events:none;
+}
+.animal-story-wrap.is-expanded .animal-story{
+  max-height:none;
+}
+.animal-story-wrap.is-expanded .animal-story::after{
+  display:none;
+}
+.animal-story-toggle{
+  margin-top:18px;
+  padding:0 0 4px;
+  border:0;
+  border-bottom:2px solid var(--gold);
+  background:transparent;
+  color:var(--bay-navy);
+  font:600 .82rem/1 var(--font-display);
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.animal-story-toggle:hover{ color:var(--lagoon-deep); }
+
+@media (max-width:620px){
+  .animal-profile__actions{ grid-template-columns:1fr; }
+  .animal-card__button{ width:100%; justify-content:center; }
+  .animal-story{ max-height:360px; }
+}
+
+/* Redeploy marker: animal UI redesign */
+
+
+/* Footer credit + animal availability refinement */
+.footer-credit{
+  padding-top:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+  text-align:center;
+  font-size:.8rem;
+}
+.footer-credit > a:first-child{
+  opacity:.72;
+}
+.footer-credit > a:first-child:hover{
+  opacity:1;
+}
+.back-to-top{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  font-family:var(--font-display);
+  font-size:.75rem !important;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  opacity:.85 !important;
+}
+.back-to-top:hover{ opacity:1 !important; }
+.back-to-top__arrow{
+  font-size:1.35rem;
+  line-height:1;
+  color:var(--lagoon);
+}
+
+.animal-card__availability{
+  margin:5px 0 0;
+  color:var(--bay-navy);
+  font-size:.8rem;
+  font-weight:700;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  opacity:.72;
+}
+
+
+/* ==========================================================================
+   ANIMAL CATALOG FILTERS + PROFILE CTA STACK
+   ========================================================================== */
+.animal-filter-bar{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr)) auto;
+  gap:14px;
+  align-items:end;
+  padding:18px;
+  margin-bottom:18px;
+  border:1px solid rgba(11,59,92,.12);
+  border-radius:18px;
+  background:#f8fbfd;
+}
+.animal-filter{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.animal-filter label{
+  color:var(--bay-navy);
+  font:600 .72rem/1 var(--font-display);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.animal-filter select{
+  width:100%;
+  min-height:44px;
+  padding:0 38px 0 12px;
+  border:1px solid rgba(11,59,92,.18);
+  border-radius:12px;
+  background:#fff;
+  color:var(--bay-navy-ink);
+  font:600 .9rem/1.2 var(--font-body);
+}
+.animal-filter-clear{
+  min-height:44px;
+  padding:0 16px;
+  border:1px solid rgba(11,59,92,.22);
+  border-radius:12px;
+  background:#fff;
+  color:var(--bay-navy);
+  font:600 .75rem/1 var(--font-display);
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.animal-filter-clear:hover{ background:#eef7fd; }
+.animal-catalog__summary{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:16px;
+  color:rgba(18,40,58,.7);
+  font-size:.86rem;
+}
+.animal-catalog__summary p{ margin:0; }
+.animal-grid--catalog{ grid-template-columns:repeat(4,minmax(0,1fr)); }
+.animal-grid--catalog > [data-animal-item][hidden]{ display:none !important; }
+.animal-filter-empty{
+  padding:42px 20px;
+  text-align:center;
+  border-radius:18px;
+  background:#f8fbfd;
+}
+.animal-filter-empty h3{ margin-bottom:8px; }
+
+.animal-profile__actions{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:12px;
+}
+.animal-profile__action-btn{
+  width:100%;
+  justify-content:center;
+}
+
+/* ==========================================================================
+   FOOTER CREDIT + FLOATING BACK TO TOP
+   ========================================================================== */
+.footer-bottom__left{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:7px;
+}
+.footer-built{
+  display:block;
+  font-size:.8rem;
+  opacity:.82;
+}
+.footer-built a{
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.back-to-top-float{
+  position:fixed;
+  right:22px;
+  bottom:22px;
+  z-index:55;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--bay-navy);
+  color:#fff;
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 10px 28px rgba(7,42,66,.22);
+  font-size:1.25rem;
+  line-height:1;
+  transition:transform .16s ease, background .16s ease;
+}
+.back-to-top-float:hover{
+  transform:translateY(-3px);
+  background:var(--bay-navy-deep);
+}
+
+/* ==========================================================================
+   FAQ PAGE
+   ========================================================================== */
+.faq-page{
+  max-width:980px;
+}
+.faq-jump{
+  position:sticky;
+  top:82px;
+  z-index:10;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding:12px;
+  margin:0 0 34px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  border:1px solid rgba(11,59,92,.10);
+  border-radius:16px;
+  box-shadow:0 8px 20px rgba(7,42,66,.06);
+}
+.faq-jump a{
+  padding:8px 12px;
+  border-radius:999px;
+  background:#eef7fd;
+  color:var(--bay-navy);
+  font:600 .72rem/1 var(--font-display);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.faq-jump a:hover{ background:#dceffd; }
+.faq-sections{ display:flex; flex-direction:column; gap:52px; }
+.faq-section{
+  scroll-margin-top:150px;
+}
+.faq-section > .eyebrow{ margin-bottom:6px; }
+.faq-section > h2{ margin-bottom:18px; }
+.faq-a p{ margin:0; }
+.faq-a p + p{ margin-top:12px; }
+.faq-about__card{
+  padding:28px;
+  border:1px solid rgba(11,59,92,.12);
+  border-radius:20px;
+  background:#f8fbfd;
+}
+.faq-about__actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:22px;
+}
+
+@media (max-width:980px){
+  .animal-filter-bar{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .animal-filter-clear{ width:100%; }
+  .animal-grid--catalog{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:620px){
+  .animal-filter-bar{ grid-template-columns:1fr; }
+  .animal-grid--catalog{ grid-template-columns:1fr; }
+  .animal-catalog__summary{ justify-content:flex-start; }
+  .faq-jump{ position:static; }
+  .faq-about__actions{ flex-direction:column; }
+  .faq-about__actions .btn{ justify-content:center; width:100%; }
+  .footer-bottom{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .back-to-top-float{
+    right:16px;
+    bottom:16px;
+    width:44px;
+    height:44px;
+  }
+}
+
+
+/* Single-row swipeable animal photo rail */
+.animal-gallery__rail-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.animal-gallery__rail{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scroll-snap-type:x proximity;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  padding:2px;
+  flex:1;
+}
+.animal-gallery__rail::-webkit-scrollbar{ display:none; }
+.animal-gallery__thumb{
+  flex:0 0 118px;
+  aspect-ratio:1;
+  scroll-snap-align:start;
+}
+.animal-gallery__rail-arrow{
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  border:1px solid rgba(11,59,92,.16);
+  background:#fff;
+  color:var(--bay-navy);
+  box-shadow:0 6px 18px rgba(7,42,66,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1rem;
+}
+.animal-gallery__rail-arrow:hover{
+  background:#eef7fd;
+}
+@media (max-width:620px){
+  .animal-gallery__rail-arrow{ display:none; }
+  .animal-gallery__thumb{ flex-basis:96px; }
+}

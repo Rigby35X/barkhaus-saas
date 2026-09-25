@@ -3,49 +3,30 @@ import MBPRLayout from "../layouts/MBPRLayout.astro";
 import AnimalsGrid from "../components/mbpr/AnimalsGrid.astro";
 ---
 <MBPRLayout title="Available Pups | Mission Bay Puppy Rescue" description="See every puppy and rescue dog currently available for adoption at Mission Bay Puppy Rescue in San Diego.">
-<section class="page-intro">
-  <div class="container">
-    <span class="eyebrow">The Most Important Page On This Site</span>
-    <h1>Available Pups</h1>
-    <p class="lede">Every current pup in one place. Littermates are grouped together with one shared story &mdash; scroll to see who&rsquo;s ready now.</p>
-  </div>
-</section>
-
-<section class="section tight"><div class="container"><AnimalsGrid /></div></section>
-
-<section class="section sand-deep tight">
-  <div class="container" style="text-align:center;">
-    <span class="eyebrow" style="justify-content:center;">Don&rsquo;t See The Right Fit Yet?</span>
-    <h2>Get On Our Radar</h2>
-    <p class="lede" style="margin:0 auto 22px;">We rescue based on need first, not breed &mdash; but if you tell us what you&rsquo;re hoping for, we&rsquo;ll keep an eye out as new pups come in.</p>
-    <a class="btn btn-gold" href="/adopt">Complete an Application</a>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <span class="eyebrow">Happy Endings</span>
-    <h2 style="margin-bottom:26px;">What Our Families Say</h2>
-    <div class="grid grid-3">
-      <div class="quote-card">
-        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p>&ldquo;[DRAFT testimonial &mdash; pending Jackie&rsquo;s pick of 3 reviews]&rdquo;<span class="draft-flag">Content Needed</span></p>
-        <div class="who">Adopter Family</div>
+  <section class="animal-page-hero">
+    <div class="container animal-page-hero__inner">
+      <div>
+        <span class="eyebrow">Meet the pack</span>
+        <h1>Available Pups</h1>
       </div>
-      <div class="quote-card">
-        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p>&ldquo;[DRAFT testimonial]&rdquo;<span class="draft-flag">Content Needed</span></p>
-        <div class="who">Adopter Family</div>
-      </div>
-      <div class="quote-card">
-        <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-        <p>&ldquo;[DRAFT testimonial]&rdquo;<span class="draft-flag">Content Needed</span></p>
-        <div class="who">Adopter Family</div>
-      </div>
+      <p class="lede">Meet the dogs currently looking for homes. Littermates stay grouped together, and every profile is kept current from our rescue records.</p>
     </div>
-    <div style="text-align:center; margin-top:24px;">
-      <a class="link-quiet" href="/happy-tails">Share Your Own Happy Tail &rarr;</a>
+  </section>
+
+  <section class="animal-catalog-section">
+    <div class="container">
+      <AnimalsGrid />
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="animal-application-band">
+    <div class="container animal-application-band__inner">
+      <div>
+        <span class="eyebrow">Don&rsquo;t see the right fit yet?</span>
+        <h2>Tell us what you&rsquo;re looking for.</h2>
+        <p>We rescue based on need first, not breed. An application helps us learn what kind of dog may be a good match when new pups arrive.</p>
+      </div>
+      <a class="btn btn-gold" href="/adopt">Start an Application</a>
+    </div>
+  </section>
 </MBPRLayout>

@@ -29,9 +29,30 @@ type AnimalApiListResponse = {
 const API_BASE = (import.meta.env.PUBLIC_ANIMALS_API_BASE || "https://animals-proxy.vercel.app").replace(/\/$/, "");
 
 
+function normalizePhotoUrl(value: any): string {
+  const url = String(value || "").trim();
+  if (!url) return "";
+
+  // Public animal photo URLs may have been generated on an older Vercel
+  // preview hostname. Re-anchor any known proxy photo path to the currently
+  // configured API base so expired preview aliases cannot break images.
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.includes("/api/animals/") && parsed.pathname.includes("/photo/")) {
+      return API_BASE + parsed.pathname + parsed.search;
+    }
+  } catch {
+    if (url.startsWith("/api/animals/")) return API_BASE + url;
+  }
+
+  return url;
+}
+
 function normalizeAnimal(animal: any): PublicAnimal {
-  const photos = Array.isArray(animal?.photos) ? animal.photos.filter(Boolean) : [];
-  const primary = animal?.primary_photo || animal?.image_url || photos[0] || "";
+  const photos = Array.isArray(animal?.photos)
+    ? animal.photos.filter(Boolean).map(normalizePhotoUrl)
+    : [];
+  const primary = normalizePhotoUrl(animal?.primary_photo || animal?.image_url || photos[0] || "");
   return {
     ...animal,
     name: animal?.name || "Available pup",

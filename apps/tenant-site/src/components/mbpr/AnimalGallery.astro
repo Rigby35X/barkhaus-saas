@@ -1,0 +1,94 @@
+---
+const { animal } = Astro.props;
+const photos = (animal.photos?.length ? animal.photos : [animal.primary_photo || animal.image_url]).filter(Boolean);
+const [primaryPhoto, ...secondaryPhotos] = photos;
+---
+<div class="animal-gallery" data-animal-gallery data-photos={JSON.stringify(photos)}>
+  {primaryPhoto ? (
+    <figure class="animal-gallery__primary">
+      <img
+        src={primaryPhoto}
+        alt={`${animal.name}, available for adoption`}
+        fetchpriority="high"
+        data-gallery-main
+      />
+    </figure>
+  ) : (
+    <div class="animal-gallery__primary animal-gallery__placeholder">Photo coming soon</div>
+  )}
+
+  {photos.length > 1 && (
+    <div class="animal-gallery__rail-wrap">
+      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--prev" type="button" data-gallery-prev aria-label="Previous photo">←</button>
+      <div class="animal-gallery__rail" data-gallery-rail aria-label={`More photos of ${animal.name}`}>
+        {secondaryPhotos.map((photo, index) => (
+          <button
+            type="button"
+            class="animal-gallery__thumb"
+            data-gallery-thumb
+            data-photo={photo}
+            data-photo-index={index + 1}
+            aria-label={`Show photo ${index + 2} of ${animal.name}`}
+            aria-pressed="false"
+          >
+            <img src={photo} alt="" loading="eager" decoding="async" />
+          </button>
+        ))}
+      </div>
+      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--next" type="button" data-gallery-next aria-label="Next photo">→</button>
+    </div>
+  )}
+</div>
+
+<script>
+  const initAnimalGalleries = () => {
+    document.querySelectorAll("[data-animal-gallery]").forEach((gallery) => {
+      if (gallery.dataset.galleryReady === "true") return;
+      gallery.dataset.galleryReady = "true";
+
+      const main = gallery.querySelector("[data-gallery-main]");
+      const rail = gallery.querySelector("[data-gallery-rail]");
+      const thumbs = [...gallery.querySelectorAll("[data-gallery-thumb]")];
+      const photos = JSON.parse(gallery.getAttribute("data-photos") || "[]");
+      let currentIndex = 0;
+
+      const showPhoto = (index) => {
+        if (!main || !photos.length) return;
+        currentIndex = (index + photos.length) % photos.length;
+        main.setAttribute("src", photos[currentIndex]);
+
+        thumbs.forEach((button) => {
+          const thumbIndex = Number(button.getAttribute("data-photo-index"));
+          const active = thumbIndex === currentIndex;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", active ? "true" : "false");
+          if (active) {
+            button.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+          }
+        });
+      };
+
+      thumbs.forEach((thumb) => {
+        thumb.addEventListener("click", () => {
+          const index = Number(thumb.getAttribute("data-photo-index"));
+          showPhoto(Number.isFinite(index) ? index : 0);
+        });
+      });
+
+      gallery.querySelector("[data-gallery-prev]")?.addEventListener("click", () => showPhoto(currentIndex - 1));
+      gallery.querySelector("[data-gallery-next]")?.addEventListener("click", () => showPhoto(currentIndex + 1));
+
+      if (rail) {
+        rail.addEventListener("wheel", (event) => {
+          if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+            rail.scrollLeft += event.deltaY;
+            event.preventDefault();
+          }
+        }, { passive: false });
+      }
+    });
+  };
+
+  initAnimalGalleries();
+  document.addEventListener("astro:page-load", initAnimalGalleries);
+</script>
