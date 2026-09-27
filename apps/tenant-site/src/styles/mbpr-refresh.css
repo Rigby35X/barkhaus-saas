@@ -1742,3 +1742,54 @@ p:last-child{ margin-bottom:0; }
 .animal-card__button{
   padding:14px 24px;
 }
+
+
+/* ==========================================================================
+   2026-09-26 ADOPT PAGE COPY / CTA / PAW REFINEMENT
+   ========================================================================== */
+
+.adopt-faq-inline{
+  display:inline-flex;
+  margin-top:4px;
+  font-size:.95rem;
+}
+
+.adopt-body-copy{
+  font-size:1rem;
+  line-height:1.6;
+  color:var(--bay-navy-ink);
+  margin-bottom:0;
+}
+
+/* Keep both adopt CTAs equal, but prevent the longer label from clipping */
+.adopt-actions{
+  grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+}
+.adopt-action-btn{
+  min-height:58px;
+  padding:14px 20px;
+  font-size:.86rem;
+  white-space:normal;
+  line-height:1.15;
+}
+
+/* Cleaner, resolution-independent paw icon */
+.paw-list li{
+  align-items:flex-start;
+}
+.paw-list .paw-icon{
+  width:22px;
+  height:22px;
+  flex:0 0 22px;
+  margin-top:3px;
+  color:var(--bay-navy);
+}
+
+@media (max-width:620px){
+  .adopt-actions{
+    grid-template-columns:1fr;
+  }
+  .adopt-action-btn{
+    width:100%;
+  }
+}
