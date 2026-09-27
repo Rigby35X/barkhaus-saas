@@ -1,0 +1,46 @@
+---
+const {
+  eyebrow = "MBPR Resource Center",
+  title,
+  intro,
+  topics = [],
+  note = "",
+} = Astro.props;
+---
+<section class="page-intro resource-category-hero">
+  <div class="container">
+    <a class="resource-back-link" href="/resources">&larr; Back to Resource Center</a>
+    <span class="eyebrow">{eyebrow}</span>
+    <h1>{title}</h1>
+    <p class="lede">{intro}</p>
+  </div>
+</section>
+
+<section class="section tight">
+  <div class="container">
+    <div class="resource-topic-grid">
+      {topics.map((topic) => (
+        <article class="resource-topic-card">
+          <div class="resource-topic-card__icon" aria-hidden="true">{topic.icon || "•"}</div>
+          <div>
+            <h3>{topic.title}</h3>
+            <p>{topic.description || "Guide content will be added here."}</p>
+            <span class="resource-topic-card__status">Guide coming soon</span>
+          </div>
+        </article>
+      ))}
+    </div>
+    {note && <div class="resource-education-note"><strong>Important:</strong> {note}</div>}
+  </div>
+</section>
+
+<section class="section sand-deep">
+  <div class="container resource-return-cta">
+    <div>
+      <span class="eyebrow">Need Something Else?</span>
+      <h2>Explore The Full Resource Center</h2>
+      <p>Jump back to all MBPR guides, shopping recommendations, and rescue/community resources.</p>
+    </div>
+    <a class="btn btn-navy" href="/resources">Back To Resource Center</a>
+  </div>
+</section>
