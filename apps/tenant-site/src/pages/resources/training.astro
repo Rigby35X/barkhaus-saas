@@ -1,0 +1,26 @@
+---
+import MBPRLayout from "../../layouts/MBPRLayout.astro";
+import ResourceCenterCategory from "../../components/mbpr/ResourceCenterCategory.astro";
+const topics = [
+  { title: "Potty Training", description: "Build a predictable routine and reduce accidents.", icon: "✓" },
+  { title: "Crate Training", description: "Help your puppy learn to settle safely.", icon: "▦" },
+  { title: "Puppy Biting / Mouthiness", description: "Redirect normal puppy biting into better habits.", icon: "◇" },
+  { title: "Jumping", description: "Teach calmer greetings and four paws on the floor.", icon: "↑" },
+  { title: "Chewing", description: "Manage puppy chewing and protect your home.", icon: "○" },
+  { title: "Barking", description: "Understand common triggers and build calmer habits.", icon: "◌" },
+  { title: "Walking on a Leash", description: "Start with simple leash skills and positive practice.", icon: "↗" },
+  { title: "Recall / Coming When Called", description: "Build a reliable response to their name and recall cue.", icon: "←" },
+  { title: "Basic Commands", description: "Foundational cues for everyday life.", icon: "★" },
+  { title: "Separation / Learning to Be Alone", description: "Help puppies gradually build independence.", icon: "⌛" },
+  { title: "Introducing New People & Dogs", description: "Make new introductions safe and positive.", icon: "♡" },
+  { title: "Recommended Trainers / Resources", description: "Trusted local and online training support.", icon: "◎" },
+];
+---
+<MBPRLayout title="Training Center | Mission Bay Puppy Rescue" description="Practical help for the puppy problems families actually call us about.">
+  <ResourceCenterCategory
+    title="Training Center"
+    intro="Practical help for the puppy problems families actually call us about."
+    topics={topics}
+    note=""
+  />
+</MBPRLayout>

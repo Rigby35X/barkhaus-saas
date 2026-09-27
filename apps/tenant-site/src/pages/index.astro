@@ -10,7 +10,7 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
       Your browser does not support video playback.
     </video>
     <div class="hero-caption">
-      <span class="eyebrow on-dark">San Diego &middot; Since 2022 &middot; 30 Years of Rescue</span>
+      <span class="eyebrow on-dark">San Diego &middot; Since 1994 &middot; Over 30 Years of Rescue</span>
       <h1>Happy. Simple.<br>Puppy&#8209;First.</h1>
       <p class="lede">Watch our puppies in action.</p>
     </div>
@@ -26,19 +26,18 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
   <path class="w1" d="M0,55 C 240,20 480,80 720,50 C 960,20 1200,70 1440,45 L1440,90 L0,90 Z"></path>
 </svg>
 
-<section class="section tight"><div class="container"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:30px;"><div><span class="eyebrow">Right Now At MBPR</span><h2 style="margin-bottom:0;">Pups Looking For Homes</h2></div><a class="link-quiet" href="/available-pups">See All Available Pups &rarr;</a></div><FeaturedAnimals /></div></section>
+<section class="section tight"><div class="container"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:30px;"><div><span class="eyebrow">Meet the MBPR Pups</span><h2 style="margin-bottom:0;">Pups Looking For Homes</h2></div><a class="link-quiet" href="/available-pups">See All Available Pups &rarr;</a></div><FeaturedAnimals /></div></section>
 
 <section class="section sand-deep">
   <div class="container split">
     <div class="content-flow">
       <span class="eyebrow">Our Story</span>
-      <h2>30 Years Of Puppies On Our Front Lawn</h2>
-      <p class="lede">It started with a family of 10 puppies and a front yard. Today Mission Bay Puppy Rescue is an official 501(c)(3), still run the same way &mdash; with our own home, our own hands, and a whole lot of foster families.</p>
-      <p style="opacity:.8;">[DRAFT COPY &mdash; short homepage story, final wording pending Jackie + ChatGPT]<span class="draft-flag">Content Needed</span></p>
+      <h2>30+ Years Of Puppies On Our Front Lawn</h2>
+      <p class="lede">It started with a family of 10 puppies in our front yard. Today Mission Bay Puppy Rescue is an official 501(c)(3), still run the same way &mdash; in our own home, with a whole lot of love.</p>
       <a class="btn btn-navy" href="/about">Read Our Full Story</a>
     </div>
     <div class="media">
-      <img src="https://missionbaypuppyrescue.org/cdn/shop/files/gray-white-pit-bull-type-puppy-blue-banner-mission-bay-rescue-partners-text_1024x1024.webp?v=1738512518" alt="A rescued puppy at Mission Bay Puppy Rescue">
+      <img src="/mbpr-story-family.jpg" alt="Mission Bay Puppy Rescue founders holding rescue puppies">
     </div>
   </div>
 </section>
@@ -47,24 +46,24 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
   <div class="container">
     <span class="eyebrow">Three Ways To Help</span>
     <h2 style="margin-bottom:34px;">Say Yes With Us</h2>
-    <div class="action-blocks">
-      <div class="action-block">
+    <div class="action-blocks help-action-blocks">
+      <div class="action-block help-action-card help-action-card--white">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
         <h3>Adopt</h3>
         <p>Bring home a rescue pup or a mama who&rsquo;s ready for her forever family.</p>
-        <a class="link-quiet" href="/adopt">Start an Application &rarr;</a>
+        <a class="btn btn-navy btn-sm help-action-card__button" href="/adopt">Start an Application</a>
       </div>
-      <div class="action-block gold">
+      <div class="action-block help-action-card help-action-card--light">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.5-9C1 7.5 3 4 6.5 4c2 0 3.4 1.2 4 2 .6-.8 2-2 4-2C18 4 20 7.5 18.5 11c-2 4.4-6.5 9-6.5 9z"/></svg></div>
         <h3>Foster</h3>
         <p>Open your home short-term so we can say yes when a shelter calls.</p>
-        <a class="link-quiet" href="/foster">Learn About Fostering &rarr;</a>
+        <a class="btn btn-outline btn-sm help-action-card__button" href="/foster">Learn About Fostering</a>
       </div>
-      <div class="action-block seafoam">
+      <div class="action-block help-action-card help-action-card--dark">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.2"/><path d="M4 13h16"/><path d="M12 9v11"/><path d="M12 9C10.5 9 8.5 8 8.5 6.2 8.5 5 9.4 4 10.6 4c1.6 0 1.9 2.5 1.4 5zM12 9c1.5 0 3.5-1 3.5-2.8 0-1.2-.9-2.2-2.1-2.2-1.6 0-1.9 2.5-1.4 5z"/></svg></div>
         <h3>Donate</h3>
         <p>Cover vet bills, food, and care for pups waiting on their people.</p>
-        <a class="link-quiet" href="/donate">Give Today &rarr;</a>
+        <a class="btn btn-gold btn-sm help-action-card__button" href="/donate">Give Today</a>
       </div>
     </div>
   </div>
@@ -79,12 +78,27 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
       </div>
       <a class="btn btn-outline on-dark btn-sm" href="https://www.instagram.com/missionbaypuppyrescue" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/></svg> @missionbaypuppyrescue</a>
     </div>
-    <div class="grid grid-4" style="gap:16px;">
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_19d56075-bd12-49f5-adce-cb64dec34d37.jpg?v=1787949564" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_e22e4075-10f2-4c1d-aec1-10136024c87a.jpg?v=1787949952" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_9136a313-bf49-4d2c-8cb1-6ee6c6a1b6d5.jpg?v=1787949454" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_ca97845a-384a-45e2-8b4e-7a92302f8802.jpg?v=1787949827" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="mbpr-instagram-feed" aria-label="Mission Bay Puppy Rescue Instagram feed">
+      <script is:inline src="https://elfsightcdn.com/platform.js" async></script>
+      <div class="elfsight-app-2d90a8e5-28a3-4c0b-9ca6-ac8be5e1948a" data-elfsight-app-lazy></div>
     </div>
   </div>
 </section>
+
+<section class="section testimonial-section">
+  <div class="container">
+    <div class="testimonial-section__head">
+      <div>
+        <span class="eyebrow">Testimonials</span>
+        <h2>What Our Families Say</h2>
+      </div>
+      <a class="btn btn-outline btn-sm" href="/testimonials">See More Testimonials</a>
+    </div>
+    <div class="testimonial-widget-wrap">
+      <script is:inline src="https://elfsightcdn.com/platform.js" async></script>
+      <div class="elfsight-app-3d7df505-5c5d-4fa1-a984-7322ab7e01ac" data-elfsight-app-lazy></div>
+    </div>
+  </div>
+</section>
+
 </MBPRLayout>

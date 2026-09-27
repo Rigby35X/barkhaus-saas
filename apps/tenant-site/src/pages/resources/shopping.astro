@@ -1,0 +1,28 @@
+---
+import MBPRLayout from "../../layouts/MBPRLayout.astro";
+import ResourceCenterCategory from "../../components/mbpr/ResourceCenterCategory.astro";
+const topics = [
+  { title: "Puppy Pens", description: "Safe containment options for young puppies.", icon: "▦" },
+  { title: "Crates", description: "Crate styles and sizing basics.", icon: "□" },
+  { title: "Beds & Blankets", description: "Comfortable, washable sleep setups.", icon: "☾" },
+  { title: "Food", description: "Feeding products and practical storage ideas.", icon: "◉" },
+  { title: "Bowls", description: "Food and water bowl options.", icon: "○" },
+  { title: "Leashes", description: "Everyday leash options for puppies.", icon: "↗" },
+  { title: "Collars / Harnesses", description: "Fit, comfort, and practical choices.", icon: "◇" },
+  { title: "ID Tags", description: "Simple identification basics.", icon: "#" },
+  { title: "Toys & Chews", description: "Age-appropriate enrichment and chewing options.", icon: "★" },
+  { title: "Grooming Supplies", description: "Brushes, nail care, and cleanup essentials.", icon: "✧" },
+  { title: "Potty / Cleanup Supplies", description: "Tools that make accidents easier to manage.", icon: "✓" },
+  { title: "Enzyme Cleaners", description: "Products for properly cleaning puppy accidents.", icon: "◌" },
+  { title: "Car & Travel Supplies", description: "Safer travel and transportation gear.", icon: "→" },
+  { title: "Puppy-Proofing Supplies", description: "Helpful barriers, storage, and safety gear.", icon: "⌂" },
+];
+---
+<MBPRLayout title="Shopping Center | Mission Bay Puppy Rescue" description="Products MBPR actually uses, recommends, or thinks are worth considering.">
+  <ResourceCenterCategory
+    title="Shopping Center"
+    intro="Products MBPR actually uses, recommends, or thinks are worth considering."
+    topics={topics}
+    note=""
+  />
+</MBPRLayout>

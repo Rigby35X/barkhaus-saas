@@ -1,0 +1,29 @@
+---
+import MBPRLayout from "../../layouts/MBPRLayout.astro";
+import ResourceCenterCategory from "../../components/mbpr/ResourceCenterCategory.astro";
+const topics = [
+  { title: "Bringing Your Puppy Home", description: "First days home, routines, and helping your puppy settle in.", icon: "⌂" },
+  { title: "The First Night", description: "What to expect and how to make bedtime easier.", icon: "☾" },
+  { title: "Puppy Pen / Safe-Space Setup", description: "Build a comfortable daytime puppy space.", icon: "□" },
+  { title: "Crate Setup", description: "Create a safe, positive crate environment.", icon: "▦" },
+  { title: "Feeding & Water", description: "Simple feeding, water, and routine basics.", icon: "◉" },
+  { title: "Potty Schedule", description: "A practical schedule for young puppies.", icon: "✓" },
+  { title: "Sleeping", description: "Healthy sleep expectations and routines.", icon: "☾" },
+  { title: "Introducing Resident Dogs", description: "Help current pets meet a new puppy safely.", icon: "↔" },
+  { title: "Children & Puppies", description: "Set up safe, positive interactions with kids.", icon: "♡" },
+  { title: "Puppy-Proofing Your Home", description: "Prepare your home before curious paws arrive.", icon: "⌂" },
+  { title: "When Can My Puppy Go Out in Public?", description: "Public exposure considerations for young puppies.", icon: "◎" },
+  { title: "Socialization", description: "Build confidence through safe new experiences.", icon: "✦" },
+  { title: "Grooming Basics", description: "Bathing, brushing, nails, ears, and teeth.", icon: "✧" },
+  { title: "Car Rides & Travel", description: "Make transportation safer and less stressful.", icon: "→" },
+  { title: "What Is Normal?", description: "Common new-puppy questions and behaviors.", icon: "?" },
+];
+---
+<MBPRLayout title="New Puppy Center | Mission Bay Puppy Rescue" description="For families bringing home a new puppy.">
+  <ResourceCenterCategory
+    title="New Puppy Center"
+    intro="For families bringing home a new puppy."
+    topics={topics}
+    note=""
+  />
+</MBPRLayout>

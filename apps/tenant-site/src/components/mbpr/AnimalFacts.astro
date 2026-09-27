@@ -1,0 +1,20 @@
+---
+const { animal, birthday = "" } = Astro.props;
+
+const facts = [
+  animal.gender ? { label: "Sex", value: animal.gender } : null,
+  animal.size ? { label: "Adult size", value: animal.size } : null,
+  birthday ? { label: "Birthday", value: birthday } : null,
+  animal.breed ? { label: "Breed / mix", value: animal.breed } : null,
+].filter(Boolean);
+---
+{facts.length > 0 && (
+  <dl class="animal-facts" aria-label="Dog details">
+    {facts.map((fact) => (
+      <div class="animal-fact">
+        <dt>{fact.label}</dt>
+        <dd>{fact.value}</dd>
+      </div>
+    ))}
+  </dl>
+)}
