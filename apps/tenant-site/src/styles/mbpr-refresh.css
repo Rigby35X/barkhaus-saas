@@ -2248,3 +2248,56 @@ p:last-child{ margin-bottom:0; }
   font:inherit;
   font-weight:600;
 }
+
+
+/* ==========================================================================
+   2026-09-27 NAV HOVER + COST PILL SPACING + VENMO
+   ========================================================================== */
+.site-header .main-nav a.top-link:hover,
+.site-header .main-nav li:hover > a.top-link,
+.site-header .main-nav li:focus-within > a.top-link{
+  color:#fff;
+}
+
+.cost-bubble{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  white-space:nowrap;
+  text-transform:none;
+}
+.cost-bubble span:not(.dot){
+  font-family:var(--font-display);
+  font-weight:600;
+  text-transform:capitalize;
+}
+
+.donation-alt-option{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:24px;
+  padding-top:22px;
+  border-top:1px solid rgba(11,59,92,.12);
+}
+.donation-alt-option > span{
+  font-family:var(--font-display);
+  font-weight:600;
+  color:var(--bay-navy);
+  letter-spacing:.02em;
+}
+
+@media (max-width:620px){
+  .cost-bubble{
+    white-space:normal;
+  }
+  .donation-alt-option{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .donation-alt-option .btn{
+    width:100%;
+  }
+}
