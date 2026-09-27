@@ -1679,3 +1679,44 @@ p:last-child{ margin-bottom:0; }
   overflow:hidden;
   border-radius:18px;
 }
+
+
+/* ==========================================================================
+   2026-09-26 NAV SPACING + FOSTER BUTTON HOVER FIX
+   ========================================================================== */
+
+/* Spread desktop navigation across more of the header width */
+@media (min-width:981px){
+  .site-header .bar{
+    grid-template-columns:minmax(120px,1fr) minmax(640px,760px) minmax(150px,1fr);
+  }
+  .site-header .main-nav{
+    width:100%;
+  }
+  .site-header .main-nav > ul{
+    width:100%;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .site-header .main-nav a.top-link{
+    padding-left:10px;
+    padding-right:10px;
+  }
+}
+
+/* Keep the light-blue Foster card outline CTA readable on hover */
+.help-action-card--light .help-action-card__button{
+  background:#fff;
+  color:var(--bay-navy);
+  border-color:var(--bay-navy);
+}
+.help-action-card--light .help-action-card__button:hover{
+  background:var(--bay-navy);
+  color:#fff;
+  border-color:var(--bay-navy);
+}
+
+/* Avoid a giant empty social block if the widget container has no rendered content */
+.mbpr-instagram-feed:empty{
+  min-height:0;
+}
