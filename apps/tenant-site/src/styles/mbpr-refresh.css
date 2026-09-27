@@ -1720,3 +1720,25 @@ p:last-child{ margin-bottom:0; }
 .mbpr-instagram-feed:empty{
   min-height:0;
 }
+
+
+/* ==========================================================================
+   2026-09-26 BUTTON ALIGNMENT
+   ========================================================================== */
+
+/* Ensure link-based buttons center their labels vertically and horizontally */
+.btn,
+.animal-card__button,
+.animal-profile__actions .btn,
+.adopt-action-btn,
+.help-action-card__button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  line-height:1.1;
+}
+
+.animal-card__button{
+  padding:14px 24px;
+}
