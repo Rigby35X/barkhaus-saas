@@ -1,0 +1,29 @@
+---
+import MBPRLayout from "../../layouts/MBPRLayout.astro";
+import ResourceCenterCategory from "../../components/mbpr/ResourceCenterCategory.astro";
+const topics = [
+  { title: "MBPR Vaccine Information", description: "The vaccine information MBPR provides adopters.", icon: "✚" },
+  { title: "Puppy Vaccine Schedule", description: "A simple overview of common puppy vaccine timing.", icon: "▤" },
+  { title: "Public-Area Protection", description: "Why young puppies need extra protection in public spaces.", icon: "◆" },
+  { title: "Spay & Neuter Information", description: "What adopters should know about spay and neuter care.", icon: "✚" },
+  { title: "Parasites / Deworming", description: "Common puppy parasites and routine prevention basics.", icon: "○" },
+  { title: "Fleas & Ticks", description: "Prevention and what to watch for.", icon: "◇" },
+  { title: "Giardia / Coccidia Basics", description: "Common intestinal parasites in puppies.", icon: "◎" },
+  { title: "Parvo Information", description: "Why parvo prevention matters so much for puppies.", icon: "!" },
+  { title: "Is My Puppy Sick?", description: "Common warning signs that deserve a call to your veterinarian.", icon: "?" },
+  { title: "When To Call Your Vet", description: "Situations that need veterinary guidance.", icon: "☎" },
+  { title: "When It Is An Emergency", description: "Red flags that need urgent care.", icon: "!" },
+  { title: "Recommended Regular Veterinarians", description: "Trusted options for ongoing veterinary care.", icon: "♡" },
+  { title: "Emergency Veterinarians", description: "Emergency-care options for urgent situations.", icon: "✚" },
+  { title: "Affordable Vet / Spay-Neuter Resources", description: "Lower-cost care resources where available.", icon: "$" },
+  { title: "Pet Insurance Information", description: "Questions to consider when evaluating coverage.", icon: "▣" },
+];
+---
+<MBPRLayout title="Vet & Health Center | Mission Bay Puppy Rescue" description="Straightforward educational resources to help families understand routine puppy health and recognize when professional care is needed.">
+  <ResourceCenterCategory
+    title="Vet & Health Center"
+    intro="Straightforward educational resources to help families understand routine puppy health and recognize when professional care is needed."
+    topics={topics}
+    note="These resources are educational only. Serious medical concerns should always be directed to your veterinarian or an emergency hospital."
+  />
+</MBPRLayout>
