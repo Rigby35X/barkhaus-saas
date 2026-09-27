@@ -1,7 +1,7 @@
 ---
 const { animal } = Astro.props;
 const photos = (animal.photos?.length ? animal.photos : [animal.primary_photo || animal.image_url]).filter(Boolean);
-const [primaryPhoto, ...secondaryPhotos] = photos;
+const primaryPhoto = photos[0];
 ---
 <div class="animal-gallery" data-animal-gallery data-photos={JSON.stringify(photos)}>
   {primaryPhoto ? (
@@ -12,30 +12,31 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
         fetchpriority="high"
         data-gallery-main
       />
+      {photos.length > 1 && (
+        <>
+          <button class="animal-gallery__main-arrow animal-gallery__main-arrow--prev" type="button" data-gallery-prev aria-label="Previous photo">←</button>
+          <button class="animal-gallery__main-arrow animal-gallery__main-arrow--next" type="button" data-gallery-next aria-label="Next photo">→</button>
+        </>
+      )}
     </figure>
   ) : (
     <div class="animal-gallery__primary animal-gallery__placeholder">Photo coming soon</div>
   )}
 
   {photos.length > 1 && (
-    <div class="animal-gallery__rail-wrap">
-      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--prev" type="button" data-gallery-prev aria-label="Previous photo">←</button>
-      <div class="animal-gallery__rail" data-gallery-rail aria-label={`More photos of ${animal.name}`}>
-        {secondaryPhotos.map((photo, index) => (
-          <button
-            type="button"
-            class="animal-gallery__thumb"
-            data-gallery-thumb
-            data-photo={photo}
-            data-photo-index={index + 1}
-            aria-label={`Show photo ${index + 2} of ${animal.name}`}
-            aria-pressed="false"
-          >
-            <img src={photo} alt="" loading="eager" decoding="async" />
-          </button>
-        ))}
-      </div>
-      <button class="animal-gallery__rail-arrow animal-gallery__rail-arrow--next" type="button" data-gallery-next aria-label="Next photo">→</button>
+    <div class="animal-gallery__rail" data-gallery-rail aria-label={`Photos of ${animal.name}`}>
+      {photos.map((photo, index) => (
+        <button
+          type="button"
+          class:list={["animal-gallery__thumb", index === 0 && "is-active"]}
+          data-gallery-thumb
+          data-photo-index={index}
+          aria-label={`Show photo ${index + 1} of ${animal.name}`}
+          aria-pressed={index === 0 ? "true" : "false"}
+        >
+          <img src={photo} alt="" loading="eager" decoding="async" />
+        </button>
+      ))}
     </div>
   )}
 </div>
@@ -51,8 +52,9 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
       const thumbs = [...gallery.querySelectorAll("[data-gallery-thumb]")];
       const photos = JSON.parse(gallery.getAttribute("data-photos") || "[]");
       let currentIndex = 0;
+      let timer;
 
-      const showPhoto = (index) => {
+      const showPhoto = (index, userInitiated = false) => {
         if (!main || !photos.length) return;
         currentIndex = (index + photos.length) % photos.length;
         main.setAttribute("src", photos[currentIndex]);
@@ -62,21 +64,41 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
           const active = thumbIndex === currentIndex;
           button.classList.toggle("is-active", active);
           button.setAttribute("aria-pressed", active ? "true" : "false");
-          if (active) {
+          if (active && userInitiated) {
             button.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
           }
         });
       };
 
+      const restartAuto = () => {
+        if (timer) window.clearInterval(timer);
+        if (photos.length > 1) {
+          timer = window.setInterval(() => showPhoto(currentIndex + 1), 6000);
+        }
+      };
+
       thumbs.forEach((thumb) => {
         thumb.addEventListener("click", () => {
           const index = Number(thumb.getAttribute("data-photo-index"));
-          showPhoto(Number.isFinite(index) ? index : 0);
+          showPhoto(Number.isFinite(index) ? index : 0, true);
+          restartAuto();
         });
       });
 
-      gallery.querySelector("[data-gallery-prev]")?.addEventListener("click", () => showPhoto(currentIndex - 1));
-      gallery.querySelector("[data-gallery-next]")?.addEventListener("click", () => showPhoto(currentIndex + 1));
+      gallery.querySelector("[data-gallery-prev]")?.addEventListener("click", () => {
+        showPhoto(currentIndex - 1, true);
+        restartAuto();
+      });
+
+      gallery.querySelector("[data-gallery-next]")?.addEventListener("click", () => {
+        showPhoto(currentIndex + 1, true);
+        restartAuto();
+      });
+
+      gallery.addEventListener("mouseenter", () => {
+        if (timer) window.clearInterval(timer);
+      });
+      gallery.addEventListener("mouseleave", restartAuto);
 
       if (rail) {
         rail.addEventListener("wheel", (event) => {
@@ -86,6 +108,8 @@ const [primaryPhoto, ...secondaryPhotos] = photos;
           }
         }, { passive: false });
       }
+
+      restartAuto();
     });
   };
 
