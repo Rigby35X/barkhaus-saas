@@ -2234,3 +2234,17 @@ p:last-child{ margin-bottom:0; }
     width:100%;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-27 COST OF RESCUE TYPOGRAPHY
+   ========================================================================== */
+.cost-bubble{
+  font-family:var(--font-display);
+  font-weight:600;
+  letter-spacing:.01em;
+}
+.cost-bubble b{
+  font:inherit;
+  font-weight:600;
+}
