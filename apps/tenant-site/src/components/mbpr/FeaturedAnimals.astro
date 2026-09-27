@@ -1,4 +1,9 @@
 ---
-import AnimalCard from "./AnimalCard.astro";import {getPublicAnimals} from "../../lib/public-animals";const animals=(await getPublicAnimals(Astro.locals)).slice(0,4);
+import AnimalCard from "./AnimalCard.astro";
+import { getPublicAnimals } from "../../lib/public-animals";
+
+const animals = (await getPublicAnimals(Astro.locals)).slice(0, 4);
 ---
-<div class="grid grid-4">{animals.map(animal=><AnimalCard animal={animal}/>)}</div>
+<div class="grid grid-4 featured-animal-grid">
+  {animals.map((animal) => <AnimalCard animal={animal} statusPill={true} />)}
+</div>
