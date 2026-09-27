@@ -10,18 +10,20 @@ const {
 <section class="page-intro resource-category-hero">
   <div class="container">
     <a class="resource-back-link" href="/resources">&larr; Back to Resource Center</a>
-    <span class="eyebrow">{eyebrow}</span>
-    <h1>{title}</h1>
-    <p class="lede">{intro}</p>
+
+    <div class="resource-category-heading">
+      <span class="eyebrow">{eyebrow}</span>
+      <h1>{title}</h1>
+      <p class="lede">{intro}</p>
+    </div>
   </div>
 </section>
 
-<section class="section tight">
+<section class="section tight resource-category-content">
   <div class="container">
     <div class="resource-topic-grid">
       {topics.map((topic) => (
         <article class="resource-topic-card">
-          <div class="resource-topic-card__icon" aria-hidden="true">{topic.icon || "•"}</div>
           <div>
             <h3>{topic.title}</h3>
             <p>{topic.description || "Guide content will be added here."}</p>
