@@ -2158,3 +2158,79 @@ p:last-child{ margin-bottom:0; }
     border-radius:18px;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-27 TESTIMONIALS + ADOPT BRIDGE + PUP COST SUPPORT
+   ========================================================================== */
+.testimonial-section__head,
+.adopt-pups-bridge__head,
+.testimonial-share-cta{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:28px;
+}
+.testimonial-widget-wrap{
+  width:100%;
+  min-height:220px;
+}
+.testimonial-page .testimonial-widget-wrap{
+  min-height:360px;
+}
+.testimonial-share-cta{
+  margin-bottom:0;
+  align-items:center;
+}
+.testimonial-share-cta p{
+  max-width:62ch;
+  margin-bottom:0;
+}
+
+.adopt-pups-bridge__head{
+  align-items:flex-start;
+}
+.adopt-pups-bridge__head p{
+  max-width:58ch;
+  margin:8px 0 0;
+}
+.adopt-pups-bridge__actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+  max-width:520px;
+}
+.adopt-pups-bridge__actions .btn{
+  min-width:150px;
+}
+
+.pups-cost-support__cta{
+  display:flex;
+  justify-content:center;
+  margin-top:28px;
+}
+
+#shopping-center,
+#other-ways-to-give,
+#partners{
+  scroll-margin-top:150px;
+}
+
+@media (max-width:780px){
+  .testimonial-section__head,
+  .adopt-pups-bridge__head,
+  .testimonial-share-cta{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .adopt-pups-bridge__actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+  .adopt-pups-bridge__actions .btn,
+  .testimonial-share-cta .btn{
+    width:100%;
+  }
+}
