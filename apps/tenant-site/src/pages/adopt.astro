@@ -1,5 +1,6 @@
 ---
 import MBPRLayout from "../layouts/MBPRLayout.astro";
+import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
 ---
 <MBPRLayout title="Adopt | Mission Bay Puppy Rescue" description="Learn who should apply and start your adoption application with Mission Bay Puppy Rescue in San Diego.">
 <section class="page-intro">
@@ -42,6 +43,24 @@ import MBPRLayout from "../layouts/MBPRLayout.astro";
         <p style="opacity:.85; font-size:.94rem; margin:0;">Before the full application, we ask a few short questions &mdash; timing, living situation, and work schedule &mdash; so we can point you in the right direction right away instead of after a long form. If it&rsquo;s not the right fit yet, we&rsquo;ll let you know gently and point you to resources for the future.</p>
       </div> -->
     </div>
+  </div>
+</section>
+
+<section class="section adopt-pups-bridge">
+  <div class="container">
+    <div class="adopt-pups-bridge__head">
+      <div>
+        <span class="eyebrow">Meet the MBPR Pups</span>
+        <h2>Pups Looking For Homes</h2>
+        <p>Already have a pup in mind? Browse who&rsquo;s available, review the adoption FAQs, or jump straight to the application.</p>
+      </div>
+      <div class="adopt-pups-bridge__actions">
+        <a class="btn btn-gold" href="#application">Start My Application</a>
+        <a class="btn btn-outline" href="/faq">Adoption FAQs</a>
+        <a class="btn btn-navy" href="/available-pups">View Available Pups</a>
+      </div>
+    </div>
+    <FeaturedAnimals />
   </div>
 </section>
 
