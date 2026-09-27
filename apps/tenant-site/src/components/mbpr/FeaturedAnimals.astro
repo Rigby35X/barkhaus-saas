@@ -2,8 +2,12 @@
 import AnimalCard from "./AnimalCard.astro";
 import { getPublicAnimals } from "../../lib/public-animals";
 
-const animals = (await getPublicAnimals(Astro.locals)).slice(0, 4);
+const animals = await getPublicAnimals(Astro.locals);
 ---
-<div class="grid grid-4 featured-animal-grid">
-  {animals.map((animal) => <AnimalCard animal={animal} statusPill={true} />)}
+<div class="featured-animal-scroller" aria-label="Available pups">
+  {animals.map((animal) => (
+    <div class="featured-animal-scroller__item">
+      <AnimalCard animal={animal} statusPill={true} />
+    </div>
+  ))}
 </div>
