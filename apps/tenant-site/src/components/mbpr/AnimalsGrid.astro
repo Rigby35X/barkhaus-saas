@@ -54,10 +54,6 @@ const sizes = unique(animals.map((animal) => animal.size));
       <button type="button" class="animal-filter-clear" data-filter-clear>Clear filters</button>
     </div>
 
-    <div class="animal-catalog__summary">
-      <p><strong data-animal-count>{animals.length}</strong> pups currently shown</p>
-    </div>
-
     <div class="animal-grid animal-grid--catalog">
       {animals.map((animal) => (
         <div
@@ -87,7 +83,6 @@ const sizes = unique(animals.map((animal) => animal.size));
 
       const selects = [...catalog.querySelectorAll("[data-filter]")];
       const items = [...catalog.querySelectorAll("[data-animal-item]")];
-      const count = catalog.querySelector("[data-animal-count]");
       const empty = catalog.querySelector("[data-filter-empty]");
       const clear = catalog.querySelector("[data-filter-clear]");
 
@@ -105,8 +100,6 @@ const sizes = unique(animals.map((animal) => animal.size));
           item.hidden = !matches;
           if (matches) visible += 1;
         });
-
-        if (count) count.textContent = String(visible);
         if (empty) empty.hidden = visible !== 0;
       };
 
