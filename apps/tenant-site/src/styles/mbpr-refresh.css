@@ -1944,3 +1944,34 @@ p:last-child{ margin-bottom:0; }
     padding:22px;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-26 ABOUT COPY + ADOPT BULLET CLEANUP
+   ========================================================================== */
+
+.about-story-copy{
+  margin:0 0 18px;
+  color:var(--bay-navy-ink);
+  font-family:var(--font-body);
+  font-size:1rem;
+  line-height:1.65;
+  opacity:.88;
+}
+
+.adopt-requirement-list{
+  margin:0;
+  padding-left:1.35rem;
+  color:var(--bay-navy-ink);
+}
+.adopt-requirement-list li{
+  display:list-item;
+  margin:0 0 16px;
+  padding-left:6px;
+  font-size:1rem;
+  line-height:1.55;
+}
+.adopt-requirement-list li::marker{
+  color:var(--bay-navy);
+  font-size:1.05em;
+}
