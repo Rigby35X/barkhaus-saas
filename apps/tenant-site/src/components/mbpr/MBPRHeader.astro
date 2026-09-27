@@ -1,14 +1,16 @@
 ---
 const { currentPath = "/" } = Astro.props;
 const nav = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Home", children: [
+    { href: "/about", label: "About" },
+  ]},
   { href: "/available-pups", label: "Available Pups" },
   { href: "/adopt", label: "Adopt" },
   { href: "/donate", label: "Donate" },
   { href: "/foster", label: "Foster" },
-  { href: "/resources", label: "Resources" },
-  { href: "/about", label: "About", children: [
+  { href: "/resources", label: "Resources", children: [
     { href: "/faq", label: "FAQ" },
+    { href: "/contact", label: "Contact" },
   ]},
 ];
 const isCurrent = (href) => href === "/" ? currentPath === "/" : currentPath === href || currentPath.startsWith(href + "/");
