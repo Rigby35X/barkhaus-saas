@@ -1,113 +1,87 @@
 ---
 import MBPRLayout from "../layouts/MBPRLayout.astro";
 
-const centers = [
+const resourceSections = [
   {
-    title: "New Puppy Center",
-    description: "First days home, sleeping, puppy pen setup, feeding, socialization and more.",
+    id: "new-puppy",
+    eyebrow: "New Puppy Center",
+    title: "Start Strong At Home",
+    description: "First days home, sleep, puppy pen setup, feeding, socialization, puppy-proofing, and the questions nearly every new puppy family asks.",
     href: "/resources/new-puppy",
-    className: "resource-center-card--blue",
-    icon: "⌂",
+    featured: ["Bringing Your Puppy Home", "The First Night", "Puppy Pen / Safe-Space Setup"],
   },
   {
-    title: "Training Center",
-    description: "Potty training, crate training, biting, jumping, leash skills, recall and common behaviors.",
+    id: "training",
+    eyebrow: "Training Center",
+    title: "Practical Help For Everyday Puppy Problems",
+    description: "Simple, useful guidance for potty training, crate training, biting, jumping, leash skills, recall, chewing, barking, and learning to be alone.",
     href: "/resources/training",
-    className: "resource-center-card--gold",
-    icon: "★",
+    featured: ["Potty Training", "Crate Training", "Puppy Biting / Mouthiness"],
   },
   {
-    title: "Vet & Health Center",
-    description: "Vaccines, public exposure, spay/neuter, parasites, illness warning signs and vet resources.",
+    id: "vet-health",
+    eyebrow: "Vet & Health Center",
+    title: "Know What To Watch For",
+    description: "Educational guidance on vaccines, parasites, public exposure, spay and neuter, common illnesses, and when to call a veterinarian or seek emergency care.",
     href: "/resources/vet-health",
-    className: "resource-center-card--coral",
-    icon: "✚",
+    featured: ["Puppy Vaccine Schedule", "Is My Puppy Sick?", "When It Is An Emergency"],
   },
   {
-    title: "Shopping Center",
-    description: "Crates, pens, food, toys, grooming supplies, cleanup products, travel gear and more.",
-    href: "/resources/shopping",
-    className: "resource-center-card--green",
-    icon: "▣",
     id: "shopping-center",
+    eyebrow: "Shopping Center",
+    title: "What MBPR Actually Uses",
+    description: "Practical product recommendations for puppy pens, crates, food, toys, grooming, cleanup, travel, and puppy-proofing — focused on what is genuinely useful.",
+    href: "/resources/shopping",
+    featured: ["Puppy Pens", "Crates", "Toys & Chews"],
   },
   {
-    title: "Rescue & Community Resources",
-    description: "Found dogs, owner relinquishment, local shelters, low-cost care and trusted rescue resources.",
+    id: "community",
+    eyebrow: "Rescue & Community Resources",
+    title: "Help Beyond Adoption",
+    description: "Resources for found dogs, lost pets, owner relinquishment, local shelters, low-cost veterinary care, financial assistance, and trusted rescue partners.",
     href: "/resources/community",
-    className: "resource-center-card--sky",
-    icon: "♡",
+    featured: ["I Found A Dog", "Owner Relinquishment", "Low-Cost Veterinary Care"],
   },
-];
-
-const popularGuides = [
-  { title: "Your Puppy’s First Night", center: "New Puppy Center", href: "/resources/new-puppy" },
-  { title: "Setting Up Your Puppy Pen", center: "New Puppy Center", href: "/resources/new-puppy" },
-  { title: "Potty Training", center: "Training Center", href: "/resources/training" },
-  { title: "Puppy Vaccine & Public Exposure Guide", center: "Vet & Health Center", href: "/resources/vet-health" },
-  { title: "When To Call The Vet", center: "Vet & Health Center", href: "/resources/vet-health" },
-  { title: "What To Buy Before Bringing Puppy Home", center: "Shopping Center", href: "/resources/shopping" },
 ];
 ---
 <MBPRLayout title="Resource Center | Mission Bay Puppy Rescue" description="Puppy care guides, training help, veterinary information, shopping recommendations, and community rescue resources from Mission Bay Puppy Rescue.">
-  <section class="resource-center-hero">
-    <div class="container resource-center-hero__inner">
-      <div class="resource-center-hero__copy">
-        <span class="eyebrow">Resources</span>
-        <h1>MBPR Puppy Resource Center</h1>
-        <p class="lede">Bringing home a new puppy is exciting — and sometimes a little overwhelming. We&rsquo;ve put our favorite advice, trusted resources, and tried-and-true products all in one place to help you and your puppy get off to the best start.</p>
-      </div>
-      <div class="resource-center-hero__visual" aria-hidden="true">
-        <div class="resource-center-hero__puppy">🐶</div>
-        <span>Happy Puppies.<br/>Happier Lives.</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="section tight resource-center-main">
+  <section class="page-intro resource-hub-hero">
     <div class="container">
-      <div class="resource-center-grid">
-        {centers.map((center) => (
-          <article id={center.id} class:list={["resource-center-card", center.className]}>
-            <div class="resource-center-card__media">
-              <div class="resource-center-card__icon" aria-hidden="true">{center.icon}</div>
-            </div>
-            <div class="resource-center-card__body">
-              <h2>{center.title}</h2>
-              <p>{center.description}</p>
-              <a class="btn resource-center-card__button" href={center.href}>Explore {center.title}</a>
-            </div>
-          </article>
+      <span class="eyebrow">Resources</span>
+      <h1>MBPR Puppy Resource Center</h1>
+      <p class="lede resource-hub-hero__lede">Bringing home a new puppy is exciting — and sometimes a little overwhelming. We&rsquo;ve put our favorite advice, trusted resources, and tried-and-true products in one place to help you and your puppy get off to the best start.</p>
+
+      <nav class="resource-hub-nav" aria-label="Resource Center categories">
+        {resourceSections.map((section) => (
+          <a href={`#${section.id}`}>{section.eyebrow}</a>
         ))}
-      </div>
+      </nav>
     </div>
   </section>
 
-  <section class="section resource-popular">
-    <div class="container">
-      <div class="resource-section-heading">
-        <div>
-          <span class="eyebrow">Quick Answers</span>
-          <h2>Popular Guides</h2>
+  <section class="resource-hub-sections">
+    {resourceSections.map((section, index) => (
+      <section id={section.id} class:list={["resource-hub-section", index % 2 === 1 && "resource-hub-section--tint"]}>
+        <div class="container resource-hub-section__grid">
+          <div class="resource-hub-section__intro">
+            <span class="eyebrow">{section.eyebrow}</span>
+            <h2>{section.title}</h2>
+            <p>{section.description}</p>
+            <a class="btn btn-navy" href={section.href}>Explore {section.eyebrow}</a>
+          </div>
+
+          <div class="resource-featured-list" aria-label={`Featured ${section.eyebrow} guides`}>
+            {section.featured.map((item, itemIndex) => (
+              <a class="resource-featured-item" href={section.href}>
+                <span class="resource-featured-item__number">{String(itemIndex + 1).padStart(2, "0")}</span>
+                <span class="resource-featured-item__title">{item}</span>
+                <span class="resource-featured-item__arrow" aria-hidden="true">→</span>
+              </a>
+            ))}
+          </div>
         </div>
-        <p>Start with the questions MBPR families ask most often.</p>
-      </div>
-      <div class="resource-guide-grid">
-        {popularGuides.map((guide, index) => (
-          <a class="resource-guide-card" href={guide.href}>
-            <div class:list={["resource-guide-card__visual", `resource-guide-card__visual--${(index % 5) + 1}`]} aria-hidden="true">
-              <span>{index + 1}</span>
-            </div>
-            <div class="resource-guide-card__body">
-              <small>{guide.center}</small>
-              <h3>{guide.title}</h3>
-              <span class="resource-guide-card__arrow" aria-hidden="true">→</span>
-            </div>
-          </a>
-        ))}
-      </div>
-      <p class="resource-coming-note">The Resource Center framework is live now. Jackie + Chet can fill in and refine each guide one piece at a time without changing the overall navigation.</p>
-    </div>
+      </section>
+    ))}
   </section>
 
   <section class="section sand-deep" id="other-ways-to-give">
@@ -135,25 +109,21 @@ const popularGuides = [
       <h2 style="margin-bottom:26px;">Same Goal: Homes For Pups In Need</h2>
       <div class="grid grid-4">
         <div class="resource-tile">
-          <div class="icon-badge" aria-hidden="true">⌖</div>
           <h4>County Animal Shelter</h4>
           <p>See available pets at San Diego County Animal Shelters.</p>
           <a class="link-quiet" href="https://www.sddac.com/content/sdc/das/adopt.html" target="_blank" rel="noopener">View Pets &rarr;</a>
         </div>
         <div class="resource-tile">
-          <div class="icon-badge" aria-hidden="true">⌖</div>
           <h4>San Diego Humane Society</h4>
           <p>See available pets at The San Diego Humane Society.</p>
           <a class="link-quiet" href="https://www.sdhumane.org/adopt/available-pets/" target="_blank" rel="noopener">View Pets &rarr;</a>
         </div>
         <div class="resource-tile">
-          <div class="icon-badge" aria-hidden="true">♡</div>
           <h4>Woof Project Rescue</h4>
           <p>A fellow San Diego-area rescue partner.</p>
           <a class="link-quiet" href="https://www.woofproject.org/availabledogs" target="_blank" rel="noopener">View Dogs &rarr;</a>
         </div>
         <div class="resource-tile">
-          <div class="icon-badge" aria-hidden="true">♡</div>
           <h4>Pit-Opotamus Puppy Rescue</h4>
           <p>A fellow San Diego-area rescue partner.</p>
           <a class="link-quiet" href="https://www.facebook.com/p/Pit-Opotamus-Puppy-Rescue-100086318779566/" target="_blank" rel="noopener">Visit Page &rarr;</a>
