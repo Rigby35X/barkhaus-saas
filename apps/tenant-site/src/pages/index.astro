@@ -47,24 +47,24 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
   <div class="container">
     <span class="eyebrow">Three Ways To Help</span>
     <h2 style="margin-bottom:34px;">Say Yes With Us</h2>
-    <div class="action-blocks">
-      <div class="action-block">
+    <div class="action-blocks help-action-blocks">
+      <div class="action-block help-action-card help-action-card--white">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M4 11.5L12 4l8 7.5"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg></div>
         <h3>Adopt</h3>
         <p>Bring home a rescue pup or a mama who&rsquo;s ready for her forever family.</p>
-        <a class="link-quiet" href="/adopt">Start an Application &rarr;</a>
+        <a class="btn btn-navy btn-sm help-action-card__button" href="/adopt">Start an Application</a>
       </div>
-      <div class="action-block gold">
+      <div class="action-block help-action-card help-action-card--light">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><path d="M12 20s-7.5-4.6-9.5-9C1 7.5 3 4 6.5 4c2 0 3.4 1.2 4 2 .6-.8 2-2 4-2C18 4 20 7.5 18.5 11c-2 4.4-6.5 9-6.5 9z"/></svg></div>
         <h3>Foster</h3>
         <p>Open your home short-term so we can say yes when a shelter calls.</p>
-        <a class="link-quiet" href="/foster">Learn About Fostering &rarr;</a>
+        <a class="btn btn-outline btn-sm help-action-card__button" href="/foster">Learn About Fostering</a>
       </div>
-      <div class="action-block seafoam">
+      <div class="action-block help-action-card help-action-card--dark">
         <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.2"/><path d="M4 13h16"/><path d="M12 9v11"/><path d="M12 9C10.5 9 8.5 8 8.5 6.2 8.5 5 9.4 4 10.6 4c1.6 0 1.9 2.5 1.4 5zM12 9c1.5 0 3.5-1 3.5-2.8 0-1.2-.9-2.2-2.1-2.2-1.6 0-1.9 2.5-1.4 5z"/></svg></div>
         <h3>Donate</h3>
         <p>Cover vet bills, food, and care for pups waiting on their people.</p>
-        <a class="link-quiet" href="/donate">Give Today &rarr;</a>
+        <a class="btn btn-gold btn-sm help-action-card__button" href="/donate">Give Today</a>
       </div>
     </div>
   </div>
@@ -79,11 +79,8 @@ import FeaturedAnimals from "../components/mbpr/FeaturedAnimals.astro";
       </div>
       <a class="btn btn-outline on-dark btn-sm" href="https://www.instagram.com/missionbaypuppyrescue" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/></svg> @missionbaypuppyrescue</a>
     </div>
-    <div class="grid grid-4" style="gap:16px;">
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_19d56075-bd12-49f5-adce-cb64dec34d37.jpg?v=1787949564" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_e22e4075-10f2-4c1d-aec1-10136024c87a.jpg?v=1787949952" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_9136a313-bf49-4d2c-8cb1-6ee6c6a1b6d5.jpg?v=1787949454" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
-      <div style="border-radius:14px; overflow:hidden; aspect-ratio:1/1;"><img src="https://missionbaypuppyrescue.org/cdn/shop/files/fGT316vhT0-rU8gCrayexQ_ca97845a-384a-45e2-8b4e-7a92302f8802.jpg?v=1787949827" alt="" style="width:100%;height:100%;object-fit:cover;"></div>
+    <div class="mbpr-instagram-feed" aria-label="Mission Bay Puppy Rescue Instagram feed">
+      <script src="https://static.elfsight.com/apps/instashow/release/d53d46de683ab6044fe527fb28ffa7969e6ced98/app/instashow.js"></script>
     </div>
   </div>
 </section>
