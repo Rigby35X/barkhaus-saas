@@ -1315,3 +1315,170 @@ p:last-child{ margin-bottom:0; }
   .animal-gallery__rail-arrow{ display:none; }
   .animal-gallery__thumb{ flex-basis:96px; }
 }
+
+
+/* ==========================================================================
+   2026-09-26 ANIMAL UI POLISH
+   ========================================================================== */
+
+/* Tighter filter-to-card spacing on Available Pups */
+.animal-catalog-section{ padding-top:42px; }
+.animal-catalog{ gap:0; }
+.animal-filter-bar{ margin-bottom:14px; }
+.animal-catalog__summary{ display:none !important; }
+
+/* Equal-size cards with uncropped dog photos */
+.animal-grid,
+.featured-animal-grid{
+  align-items:stretch;
+}
+.animal-grid > *,
+.featured-animal-grid > *{
+  min-width:0;
+}
+.animal-card{
+  height:100%;
+}
+.animal-card__link{
+  display:flex;
+  flex-direction:column;
+  height:100%;
+}
+.animal-card__media{
+  aspect-ratio:4/3;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef7fd;
+}
+.animal-card__media img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center center;
+  background:#eef7fd;
+}
+.animal-card:hover .animal-card__media img{
+  transform:none;
+}
+.animal-card__body{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+}
+.animal-card__breed{
+  min-height:2.4em;
+}
+.animal-card__button{
+  margin-top:auto;
+  padding-top:12px;
+}
+
+/* Homepage availability pill */
+.animal-card--status-pill .animal-card__availability{
+  display:inline-flex;
+  align-self:flex-start;
+  width:max-content;
+  margin:7px 0 10px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  font:600 .72rem/1 var(--font-display);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:1;
+}
+
+/* More substantial facts panel on detail pages */
+.animal-facts{
+  overflow:hidden;
+  border:1px solid rgba(11,59,92,.14);
+  border-radius:18px;
+  background:linear-gradient(180deg,#f8fbfd 0%,#eef7fd 100%);
+  box-shadow:0 8px 24px rgba(7,42,66,.06);
+}
+.animal-fact{
+  padding:18px 20px;
+}
+.animal-fact:nth-child(even){
+  padding-left:20px;
+}
+.animal-fact:nth-child(n+3){
+  border-top:1px solid rgba(11,59,92,.10);
+}
+.animal-fact dt{
+  margin-bottom:6px;
+  color:rgba(11,59,92,.56);
+}
+.animal-fact dd{
+  font-size:1rem;
+  line-height:1.35;
+}
+
+/* Gallery: arrows on the large image; full photo set in one horizontal rail */
+.animal-gallery__primary{
+  position:relative;
+}
+.animal-gallery__main-arrow{
+  position:absolute;
+  top:50%;
+  z-index:4;
+  width:46px;
+  height:46px;
+  transform:translateY(-50%);
+  border:1px solid rgba(11,59,92,.12);
+  border-radius:50%;
+  background:rgba(255,255,255,.94);
+  color:var(--bay-navy);
+  box-shadow:0 8px 24px rgba(7,42,66,.18);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.2rem;
+  cursor:pointer;
+  transition:transform .16s ease, background .16s ease;
+}
+.animal-gallery__main-arrow:hover{
+  background:#fff;
+  transform:translateY(-50%) scale(1.05);
+}
+.animal-gallery__main-arrow--prev{ left:16px; }
+.animal-gallery__main-arrow--next{ right:16px; }
+
+.animal-gallery__rail{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scroll-snap-type:x proximity;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  padding:2px;
+}
+.animal-gallery__rail::-webkit-scrollbar{ display:none; }
+.animal-gallery__thumb{
+  flex:0 0 112px;
+  aspect-ratio:1;
+  scroll-snap-align:start;
+}
+.animal-gallery__rail-wrap,
+.animal-gallery__rail-arrow{
+  display:none !important;
+}
+
+@media (max-width:620px){
+  .animal-catalog-section{ padding-top:30px; }
+  .animal-card__media{ aspect-ratio:4/3; }
+  .animal-gallery__main-arrow{
+    width:40px;
+    height:40px;
+  }
+  .animal-gallery__main-arrow--prev{ left:10px; }
+  .animal-gallery__main-arrow--next{ right:10px; }
+  .animal-gallery__thumb{ flex-basis:92px; }
+  .animal-fact,
+  .animal-fact:nth-child(even){
+    padding:15px 16px;
+  }
+}
