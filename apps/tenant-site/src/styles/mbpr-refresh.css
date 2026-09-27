@@ -1918,3 +1918,29 @@ p:last-child{ margin-bottom:0; }
     border-radius:18px;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-26 ABOUT PAGE TEAM + SUPPORT MISSION
+   ========================================================================== */
+
+.support-mission-card{
+  padding:30px;
+  border-radius:22px;
+  background:#fff;
+  border:1px solid rgba(11,59,92,.12);
+  box-shadow:0 10px 28px rgba(7,42,66,.08);
+}
+.support-mission-card h3{
+  margin-bottom:12px;
+}
+.support-mission-card p{
+  margin-bottom:18px;
+  line-height:1.6;
+}
+
+@media (max-width:620px){
+  .support-mission-card{
+    padding:22px;
+  }
+}
