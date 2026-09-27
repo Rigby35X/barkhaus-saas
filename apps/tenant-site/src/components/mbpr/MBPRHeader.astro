@@ -1,15 +1,14 @@
 ---
 const { currentPath = "/" } = Astro.props;
 const nav = [
-  { href: "/", label: "Home", children: [
-    { href: "/about", label: "About" },
-  ]},
+  { href: "/", label: "Home" },
   { href: "/available-pups", label: "Available Pups" },
   { href: "/adopt", label: "Adopt" },
   { href: "/donate", label: "Donate" },
   { href: "/foster", label: "Foster" },
   { href: "/resources", label: "Resources", children: [
-    { href: "/faq", label: "FAQ" },
+    { href: "/faq", label: "FAQs" },
+    { href: "/about", label: "About MBPR" },
     { href: "/contact", label: "Contact" },
   ]},
 ];
