@@ -1793,3 +1793,33 @@ p:last-child{ margin-bottom:0; }
     width:100%;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-26 HOMEPAGE CAROUSEL + INSTAGRAM EDGE CONTROLS
+   ========================================================================== */
+
+/* Full-width card CTAs feel more intentional in the horizontal pup carousel */
+.featured-animal-scroller__item .animal-card__button{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+  align-self:stretch;
+}
+
+/* Give the Elfsight carousel edge controls room so they are not clipped */
+.mbpr-instagram-feed{
+  overflow:visible;
+  padding-inline:22px;
+  margin-inline:-22px;
+  width:calc(100% + 44px);
+}
+
+@media (max-width:620px){
+  .mbpr-instagram-feed{
+    padding-inline:14px;
+    margin-inline:-14px;
+    width:calc(100% + 28px);
+  }
+}
