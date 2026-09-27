@@ -1,10 +1,10 @@
 ---
-const { animal } = Astro.props;
+const { animal, statusPill = false } = Astro.props;
 const image = animal.primary_photo || animal.image_url || animal.photos?.[0] || "";
 const href = animal.animal_key ? `/available-pups/${animal.animal_key}` : "/adopt";
 const meta = [animal.gender, animal.size].filter(Boolean);
 ---
-<article class="animal-card">
+<article class:list={["animal-card", statusPill && "animal-card--status-pill"]}>
   <a class="animal-card__link" href={href} aria-label={`Meet ${animal.name}`}>
     <div class="animal-card__media">
       {image
@@ -15,8 +15,8 @@ const meta = [animal.gender, animal.size].filter(Boolean);
     <div class="animal-card__body">
       <div class="animal-card__heading">
         <h3>{animal.name}</h3>
-        <span class="animal-card__arrow" aria-hidden="true">→</span>
       </div>
+
       <p class="animal-card__availability">{animal.status || "Available Now"}</p>
 
       {meta.length > 0 && <p class="animal-card__meta">{meta.join(" · ")}</p>}
