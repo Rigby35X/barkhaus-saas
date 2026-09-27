@@ -7,7 +7,8 @@ const nav = [
   { href: "/donate", label: "Donate" },
   { href: "/foster", label: "Foster" },
   { href: "/relinquishment", label: "Relinquishment" },
-  { href: "/resources", label: "Resources", children: [
+  { label: "Resources", children: [
+    { href: "/resources", label: "Resource Center" },
     { href: "/faq", label: "FAQs" },
     { href: "/about", label: "About MBPR" },
     { href: "/contact", label: "Contact" },
@@ -24,11 +25,18 @@ const isCurrent = (href) => href === "/" ? currentPath === "/" : currentPath ===
     <nav class="main-nav" id="main-nav" aria-label="Primary">
       <ul>
         {nav.map((item) => (
-          <li class:list={[isCurrent(item.href) && "current", item.children && "nav-dropdown"]}>
-            <a class="top-link" href={item.href}>
-              {item.label}
-              {item.children && <span class="nav-dropdown__chevron" aria-hidden="true">⌄</span>}
-            </a>
+          <li class:list={[(item.href && isCurrent(item.href)) && "current", item.children && "nav-dropdown"]}>
+            {item.href ? (
+              <a class="top-link" href={item.href}>
+                {item.label}
+                {item.children && <span class="nav-dropdown__chevron" aria-hidden="true">⌄</span>}
+              </a>
+            ) : (
+              <button class="top-link nav-dropdown__trigger" type="button" aria-haspopup="true">
+                {item.label}
+                <span class="nav-dropdown__chevron" aria-hidden="true">⌄</span>
+              </button>
+            )}
             {item.children && (
               <ul class="nav-dropdown__menu">
                 {item.children.map((child) => (
