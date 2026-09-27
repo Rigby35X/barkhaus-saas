@@ -1,5 +1,5 @@
 ---
-const { animal, statusPill = false } = Astro.props;
+const { animal, statusPill = true } = Astro.props;
 const image = animal.primary_photo || animal.image_url || animal.photos?.[0] || "";
 const href = animal.animal_key ? `/available-pups/${animal.animal_key}` : "/adopt";
 const meta = [animal.gender, animal.size].filter(Boolean);
