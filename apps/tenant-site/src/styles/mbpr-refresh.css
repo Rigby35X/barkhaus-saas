@@ -1482,3 +1482,84 @@ p:last-child{ margin-bottom:0; }
     padding:15px 16px;
   }
 }
+
+
+/* ==========================================================================
+   2026-09-26 CARD PILL / TYPOGRAPHY / HOMEPAGE SCROLLER
+   ========================================================================== */
+
+/* Availability pill on every animal card */
+.animal-card__availability{
+  display:inline-flex;
+  align-self:flex-start;
+  width:max-content;
+  margin:7px 0 10px;
+  padding:7px 12px;
+  border-radius:999px;
+  background:#eaf5fd;
+  color:var(--bay-navy);
+  font:600 .72rem/1 var(--font-display);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  opacity:1;
+}
+
+/* Oswald for dog metadata across cards */
+.animal-card__meta,
+.animal-card__breed{
+  font-family:var(--font-display);
+  letter-spacing:.02em;
+}
+
+/* More breathing room + centered Meet Dog CTA */
+.animal-card__button{
+  margin:24px auto 0;
+  align-self:center;
+  justify-content:center;
+  padding-top:0;
+}
+
+/* Horizontal homepage pup scroller showing all available dogs */
+.featured-animal-scroller{
+  display:flex;
+  gap:24px;
+  overflow-x:auto;
+  overscroll-behavior-inline:contain;
+  scroll-snap-type:x proximity;
+  scrollbar-width:thin;
+  padding:2px 2px 14px;
+  -webkit-overflow-scrolling:touch;
+}
+.featured-animal-scroller__item{
+  flex:0 0 min(310px,82vw);
+  scroll-snap-align:start;
+  display:flex;
+}
+.featured-animal-scroller__item .animal-card{
+  width:100%;
+}
+
+/* Oswald for the entire detail facts block */
+.animal-fact dt,
+.animal-fact dd{
+  font-family:var(--font-display);
+}
+.animal-fact dd{
+  letter-spacing:.01em;
+}
+
+/* Keep card body text proportions consistent */
+.animal-card__meta,
+.animal-card__breed{
+  font-size:.9rem;
+  line-height:1.35;
+}
+
+@media (max-width:620px){
+  .featured-animal-scroller{
+    gap:16px;
+  }
+  .featured-animal-scroller__item{
+    flex-basis:82vw;
+  }
+}
