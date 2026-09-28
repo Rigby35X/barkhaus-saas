@@ -1,180 +1,42 @@
 ---
-export interface Props {
-  currentPage?: string;
-}
+export interface Props { currentPage?: string }
 const { currentPage = '' } = Astro.props;
-
-const productLinks = [
-  { href: '/features', label: 'All Features' },
-  { href: '/pricing', label: 'Pricing' },
-];
-
-const featureLinks = [
-  { href: '/features/animals', label: 'Animal Management' },
+const links = [
+  { href: '/features', label: 'Platform' },
+  { href: '/features/animals', label: 'Animal records' },
+  { href: '/features/public-website', label: 'Rescue websites' },
   { href: '/features/applications', label: 'Applications' },
-  { href: '/features/public-website', label: 'Website Builder' },
-  { href: '/features/social-media', label: 'Social Media AI' },
-  { href: '/features/inbox', label: 'Unified Inbox' },
-  { href: '/features/branding', label: 'Branding' },
-  { href: '/features/analytics', label: 'Analytics' },
-  { href: '/features/events', label: 'Events' },
-  { href: '/features/donations', label: 'Donations' },
-  { href: '/features/csv-import', label: 'CSV Import' },
-  { href: '/features/security', label: 'Security' },
-  { href: '/features/integrations', label: 'Integrations' },
+  { href: '/about', label: 'Our story' },
 ];
-
-const companyLinks = [
-  { href: '/about', label: 'About' },
-  { href: '/my-dog-cinco', label: 'My Dog Cinco' },
-  { href: '/partners', label: 'Partners' },
-  { href: '/careers', label: 'Careers' },
-  { href: '/waitlist', label: 'Join Waitlist' },
-];
-
-const flatLinks = [
-  { href: '/blog', label: 'Blog' },
-  { href: '/contact', label: 'Contact' },
-];
-
-const isActive = (href: string) => currentPage === href || currentPage.startsWith(href + '/');
 ---
-
-<nav id="navbar" class="scheme-8 fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-shadow duration-300" data-navbar>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between items-center h-16">
-
-      <!-- Logo -->
-      <a href="/" class="flex items-center shrink-0">
-        <img src="/logo-dark.png" alt="Barkhaus" class="h-9 w-auto" />
-      </a>
-
-      <!-- Desktop nav -->
-      <div class="hidden lg:flex items-center gap-1">
-
-        <!-- Product megamenu -->
-        <div class="relative group">
-          <button class={`px-3 py-2 text-sm font-medium rounded-button transition-colors flex items-center gap-1 ${isActive('/features') ? 'text-white' : 'text-white/80 hover:text-white'}`}>
-            Product
-            <svg class="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </button>
-          <div class="invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 absolute left-1/2 -translate-x-1/2 top-full pt-3 w-[640px]">
-            <div class="scheme-7 rounded-card border scheme-border shadow-2xl p-6 grid grid-cols-3 gap-6">
-              <div>
-                <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Explore</p>
-                <ul class="space-y-1">
-                  {productLinks.map(({ href, label }) => (
-                    <li><a href={href} class="block px-2 py-1.5 rounded-button text-sm font-semibold hover:bg-cararra-3 transition-colors">{label}</a></li>
-                  ))}
-                </ul>
-              </div>
-              <div class="col-span-2">
-                <p class="text-xs font-semibold uppercase tracking-wider text-warm-brown mb-3">Features</p>
-                <ul class="grid grid-cols-2 gap-x-4 gap-y-1">
-                  {featureLinks.map(({ href, label }) => (
-                    <li><a href={href} class="block px-2 py-1.5 rounded-button text-sm hover:bg-cararra-3 transition-colors">{label}</a></li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Company megamenu -->
-        <div class="relative group">
-          <button class={`px-3 py-2 text-sm font-medium rounded-button transition-colors flex items-center gap-1 ${companyLinks.some(l => isActive(l.href)) ? 'text-white' : 'text-white/80 hover:text-white'}`}>
-            Company
-            <svg class="w-3.5 h-3.5 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-          </button>
-          <div class="invisible opacity-0 translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-150 absolute left-1/2 -translate-x-1/2 top-full pt-3 w-56">
-            <div class="scheme-7 rounded-card border scheme-border shadow-2xl p-3">
-              <ul class="space-y-1">
-                {companyLinks.map(({ href, label }) => (
-                  <li><a href={href} class="block px-3 py-2 rounded-button text-sm font-medium hover:bg-cararra-3 transition-colors">{label}</a></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {flatLinks.map(({ href, label }) => (
-          <a href={href} class={`px-3 py-2 text-sm font-medium rounded-button transition-colors ${isActive(href) ? 'text-white' : 'text-white/80 hover:text-white'}`}>
-            {label}
-          </a>
-        ))}
-      </div>
-
-      <!-- Right actions -->
-      <div class="hidden lg:flex items-center gap-3">
-        <a href="/login" class="px-4 py-2 text-sm font-semibold text-white border border-white/30 rounded-button hover:border-white hover:bg-white/5 transition">
-          Log In
-        </a>
-        <a href="/signup" class="px-4 py-2 text-sm font-semibold bg-warm-brown text-white rounded-button hover:opacity-90 transition">
-          Get Started
-        </a>
-      </div>
-
-      <!-- Mobile hamburger -->
-      <button
-        id="mobile-menu-btn"
-        class="lg:hidden p-2 rounded-button text-white hover:bg-white/10 transition"
-        aria-label="Open menu"
-        aria-expanded="false"
-      >
-        <svg id="icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-        <svg id="icon-close" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
+<header class="bh-nav" id="site-nav">
+  <div class="bh-container bh-nav-inner">
+    <a class="bh-logo" href="/" aria-label="BarkHaus home"><img src="/logo-dark.png" alt="" width="42" height="42" /><span>BarkHaus</span></a>
+    <nav class="bh-nav-links" aria-label="Main navigation">
+      {links.map(link => <a href={link.href} aria-current={currentPage === link.href ? 'page' : undefined}>{link.label}</a>)}
+    </nav>
+    <div class="bh-nav-actions"><a class="bh-nav-login" href="/login">Log in</a><a class="bh-nav-cta" href="/contact">Talk to us <span aria-hidden="true">↗</span></a></div>
+    <button class="bh-menu-button" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-navigation"><span></span><span></span><span></span></button>
   </div>
-
-  <!-- Mobile slide-in drawer -->
-  <div id="mobile-menu" class="hidden lg:hidden scheme-8 border-t border-white/10 max-h-[calc(100vh-4rem)] overflow-y-auto">
-    <div class="px-4 py-4 space-y-1">
-      <p class="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-white/50">Product</p>
-      {productLinks.concat(featureLinks).map(({ href, label }) => (
-        <a href={href} class="block px-3 py-2 rounded-button text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white">{label}</a>
-      ))}
-      <p class="px-3 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-white/50">Company</p>
-      {companyLinks.map(({ href, label }) => (
-        <a href={href} class="block px-3 py-2 rounded-button text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white">{label}</a>
-      ))}
-      <div class="pt-2 border-t border-white/10 mt-2">
-        {flatLinks.map(({ href, label }) => (
-          <a href={href} class="block px-3 py-2 rounded-button text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white">{label}</a>
-        ))}
-      </div>
-      <a href="/login" class="block mt-2 px-3 py-2 rounded-button text-sm font-semibold text-white border border-white/30 text-center">Log In</a>
-      <a href="/signup" class="block mt-2 px-3 py-2 rounded-button text-sm font-semibold bg-warm-brown text-white text-center">Get Started</a>
-    </div>
-  </div>
-</nav>
-
+  <nav class="bh-mobile-nav" id="mobile-navigation" aria-label="Mobile navigation" hidden>
+    {links.map(link => <a href={link.href}>{link.label}</a>)}
+    <a href="/contact">Contact</a><a href="/login">Log in</a>
+  </nav>
+</header>
 <script>
-  const navbar = document.querySelector('[data-navbar]') as HTMLElement;
-  const updateNavbar = () => {
-    if (window.scrollY > 40) {
-      navbar.classList.add('shadow-lg');
-    } else {
-      navbar.classList.remove('shadow-lg');
-    }
-  };
-  window.addEventListener('scroll', updateNavbar, { passive: true });
-  updateNavbar();
-
-  const btn = document.getElementById('mobile-menu-btn')!;
-  const menu = document.getElementById('mobile-menu')!;
-  const iconOpen = document.getElementById('icon-open')!;
-  const iconClose = document.getElementById('icon-close')!;
-
-  btn.addEventListener('click', () => {
-    const isOpen = !menu.classList.contains('hidden');
-    menu.classList.toggle('hidden', isOpen);
-    iconOpen.classList.toggle('hidden', !isOpen);
-    iconClose.classList.toggle('hidden', isOpen);
-    btn.setAttribute('aria-expanded', String(!isOpen));
+  const nav = document.getElementById('site-nav')!;
+  const button = nav.querySelector<HTMLButtonElement>('.bh-menu-button')!;
+  const mobile = document.getElementById('mobile-navigation')!;
+  const close = () => { mobile.hidden = true; button.setAttribute('aria-expanded', 'false'); button.setAttribute('aria-label', 'Open menu'); };
+  button.addEventListener('click', () => {
+    const open = button.getAttribute('aria-expanded') !== 'true';
+    mobile.hidden = !open; button.setAttribute('aria-expanded', String(open)); button.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   });
+  window.addEventListener('keydown', event => { if (event.key === 'Escape') close(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 1000) close(); });
 </script>
+<style>
+  .bh-nav{position:fixed;top:0;left:0;right:0;z-index:60;background:#28211e;color:#fff;border-bottom:1px solid #51433a}
+  .bh-nav-inner{min-height:72px;display:flex;align-items:center;gap:28px}.bh-logo{flex-shrink:0;display:flex;align-items:center;gap:8px;color:white;text-decoration:none;font-family:'Noto Serif',Georgia,serif;font-size:1.22rem;letter-spacing:-.03em}.bh-logo img{width:40px;height:40px;object-fit:contain}.bh-nav-links{display:flex;gap:24px;margin-left:auto;align-items:center}.bh-nav-links a,.bh-nav-login{font-size:.76rem;color:#f7f1ec;text-decoration:none;white-space:nowrap}.bh-nav-links a:hover,.bh-nav-login:hover,.bh-nav-links a[aria-current=page]{color:#dbb69d}.bh-nav-actions{display:flex;align-items:center;gap:20px}.bh-nav-cta{background:#a66b52;color:#fff;padding:12px 18px;text-decoration:none;border-radius:3px;font-size:.76rem;font-weight:600;white-space:nowrap}.bh-nav-cta span{margin-left:13px}.bh-nav-cta:hover{background:#87513d}.bh-menu-button{display:none;border:0;background:transparent;color:white;padding:12px;margin-left:auto;cursor:pointer}.bh-menu-button span{display:block;width:22px;height:2px;background:currentColor;margin:5px 0}.bh-mobile-nav{background:#28211e;padding:12px 24px 28px;border-top:1px solid #51433a;max-height:calc(100vh - 72px);overflow-y:auto}.bh-mobile-nav[hidden]{display:none}.bh-mobile-nav a{display:block;color:white;text-decoration:none;padding:13px 2px;border-bottom:1px solid #51433a;font-size:.9rem}
+  @media(max-width:1000px){.bh-nav-links,.bh-nav-actions{display:none}.bh-menu-button{display:block}}
+</style>
