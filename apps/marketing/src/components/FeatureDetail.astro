@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Navbar from './Navbar.astro';
+import Footer from './Footer.astro';
+export interface Props { eyebrow: string; title: string; description: string; points: { title: string; body: string }[]; note?: string; image: string; alt: string }
+const { eyebrow, title, description, points, note, image, alt } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <Navbar currentPage="/features" />
+  <main>
+    <section class="bh-page"><div class="bh-container"><p class="bh-overline">{eyebrow.toUpperCase()}</p><h1>{title}</h1><p class="bh-lead">{description}</p><div class="bh-actions"><a class="bh-button bh-button-primary" href="/contact">Talk to us ↗</a><a class="bh-button bh-button-secondary" href="/features">Explore the platform →</a></div></div></section>
+    <section class="bh-feature bh-feature-light"><div class="bh-container bh-feature-grid"><div class="bh-feature-visual"><img src={image} alt={alt} loading="lazy" width="960" height="720" /></div><div class="bh-feature-copy"><p class="bh-overline">A MORE CONNECTED WORKFLOW</p><h2>Designed around the work your team does.</h2><p>BarkHaus brings the information and the next step closer together, so the story stays useful from one part of rescue to the next.</p></div></div></section>
+    <section class="bh-content"><div class="bh-container" style="max-width:900px"><p class="bh-overline">WHAT THIS CAN SUPPORT</p><h2>A clearer path through the day</h2>{points.map(point => <div class="bh-capability"><h3>{point.title}</h3><p>{point.body}</p></div>)}{note && <p class="bh-note">{note}</p>}</div></section>
+    <section class="bh-cta"><div class="bh-container bh-cta-inner"><div><p class="bh-overline">WORK WITH US</p><h2>Show us how your rescue works.</h2><p>We're developing BarkHaus with feedback from the people doing the work.</p></div><a class="bh-button bh-button-light" href="/contact">Start a conversation ↗</a></div></section>
+  </main><Footer />
+</BaseLayout>
