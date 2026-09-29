@@ -5,6 +5,60 @@ import Footer from '../components/Footer.astro';
 ---
 <BaseLayout title="Talk to BarkHaus" description="Get in touch about BarkHaus early access, rescue workflows, and partnerships.">
   <Navbar currentPage="/contact" />
-  <main><section class="bh-page"><div class="bh-container"><p class="bh-overline">GET IN TOUCH</p><h1>Tell us about your rescue.</h1><p class="bh-lead">What takes too much time today? Which tools do you wish worked together? We'd love to hear your story and talk about whether BarkHaus can help.</p><a class="bh-button bh-button-primary" href="mailto:hello@barkhaus.io?subject=BarkHaus%20early%20access">Email hello@barkhaus.io ↗</a><p class="bh-hero-note">Your email app will open so you can send your message directly.</p></div></section>
+  <main><section class="bh-page"><div class="bh-container bh-request-grid">
+    <div><p class="bh-overline">LET'S GET YOU STARTED</p><h1>More time for rescue starts here.</h1><p class="bh-lead">Tell us a little about your organization and what you need. We’ll follow up to talk through BarkHaus, your website, and the tools that could make your day easier.</p><p class="bh-request-aside">Already have a question?<br /><a href="mailto:hello@barkhaus.io">hello@barkhaus.io</a></p></div>
+    <form id="request-form" class="bh-request-form" action="/api/request-access" method="post">
+      <h2>Tell us about your rescue</h2><p class="bh-form-intro">Request early access or start a conversation. Fields marked * are required.</p>
+      <div class="bh-form-row"><label>Your name *<input name="name" autocomplete="name" required maxlength="100" /></label><label>Email address *<input name="email" type="email" autocomplete="email" required maxlength="254" /></label></div>
+      <label>Organization name *<input name="organization" autocomplete="organization" required maxlength="160" /></label>
+      <label>Website <span>(optional)</span><input name="website" type="url" autocomplete="url" placeholder="https://yourrescue.org" maxlength="500" /></label>
+      <label>What would you like help with?<select name="interest"><option value="Early access">BarkHaus early access</option><option value="Website and operations">Website and rescue operations</option><option value="Marketing tools">Marketing tools</option><option value="Partnership">A partnership</option></select></label>
+      <label>Anything we should know? <span>(optional)</span><textarea name="message" rows="4" maxlength="3000" placeholder="Tell us about the tools you use today or what takes the most time."></textarea></label>
+      <div class="bh-form-trap" aria-hidden="true"><label>Leave this field empty<input name="company_url" tabindex="-1" autocomplete="off" /></label></div>
+      <p class="bh-form-privacy">We’ll use these details to respond to your request.</p>
+      <button class="bh-button bh-button-primary" type="submit">Send my request <span aria-hidden="true">↗</span></button>
+      <p id="request-status" class="bh-form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      <noscript><p>Please enable JavaScript to submit this form, or email <a href="mailto:hello@barkhaus.io">hello@barkhaus.io</a>.</p></noscript>
+    </form>
+  </div></section>
   <section class="bh-content"><div class="bh-container" style="max-width:850px"><p class="bh-overline">GOOD THINGS TO INCLUDE</p><h2>Help us understand your day to day.</h2><div class="bh-capability"><h3>Your organization</h3><p>What kind of rescue or shelter do you run, and how many people help manage the work?</p></div><div class="bh-capability"><h3>Your current workflow</h3><p>How do you manage animal records, applications, your public site, and outreach today?</p></div><div class="bh-capability"><h3>Your biggest handoff</h3><p>Where does information get copied, lost, or delayed?</p></div></div></section></main><Footer />
 </BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#request-form');
+  const status = document.querySelector<HTMLParagraphElement>('#request-status');
+  const button = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+  let requestId = crypto.randomUUID();
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!status || !button || !form.reportValidity() || button.disabled) return;
+    button.disabled = true;
+    button.textContent = 'Sending…';
+    form.setAttribute('aria-busy', 'true');
+    status.hidden = true;
+    status.classList.remove('bh-form-error');
+    try {
+      const payload = Object.fromEntries(new FormData(form).entries());
+      const response = await fetch('/api/request-access', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, requestId }), signal: AbortSignal.timeout(20000),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'We couldn’t send your request. Please try again or email hello@barkhaus.io.');
+      status.textContent = 'Thanks! Your request has been sent. We’ll follow up by email to talk about your rescue.';
+      form.reset();
+      requestId = crypto.randomUUID();
+    } catch (error) {
+      status.textContent = error instanceof Error && error.name !== 'TimeoutError' && error.name !== 'TypeError'
+        ? error.message : 'We couldn’t confirm your request was sent. Please try again or email hello@barkhaus.io.';
+      status.classList.add('bh-form-error');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Send my request ↗';
+      form.removeAttribute('aria-busy');
+      status.hidden = false;
+      status.focus();
+    }
+  });
+  form?.addEventListener('input', () => { requestId = crypto.randomUUID(); });
+</script>
