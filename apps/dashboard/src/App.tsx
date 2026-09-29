@@ -1,14 +1,9 @@
-import { useState, useEffect, lazy, Suspense, type FormEvent } from 'react';
-import {
-  validateLogin,
-  saveSession,
-  logout,
-  restoreSession,
-  loginUnified,
-  initSession,
-  TOKEN_KEY,
-} from './lib/auth';
-import { ORGANIZATIONS, getOrganization, type OrgConfig } from './lib/api';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { logout, preferredOrganization, rememberOrganization } from './lib/auth';
+import { selectOrganization, canManageOrganization } from './lib/access';
+import { useOrganizationSession } from './hooks/useOrganizationSession';
+import { clearCache } from './lib/apiCache';
+import LoginScreen from './components/LoginScreen';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import OnboardingWizard from './components/OnboardingWizard';
@@ -29,344 +24,105 @@ const DonationsTab = lazy(() => import('./tabs/DonationsTab'));
 const IntegrationsTab = lazy(() => import('./tabs/IntegrationsTab'));
 const PoliciesTab = lazy(() => import('./tabs/PoliciesTab'));
 
-interface Session {
-  orgId: number;
-  orgConfig: OrgConfig;
-}
-
 function TabSpinner() {
-  return (
-    <div className="flex items-center justify-center py-24">
-      <div className="w-8 h-8 border-4 border-silver-gray border-t-warm-brown rounded-full animate-spin" />
-    </div>
-  );
+  return <div role="status" className="text-center text-stone py-24">Loading your workspace…</div>;
 }
 
-function LoginScreen({ onLogin }: { onLogin: (s: Session) => void }) {
-  // Primary: email + password
-  const [email, setEmail] = useState('');
-  const [emailPassword, setEmailPassword] = useState('');
-
-  // Legacy toggle
-  const [showLegacy, setShowLegacy] = useState(false);
-  const [orgIdInput, setOrgIdInput] = useState('9');
-  const [accessCode, setAccessCode] = useState('mbpr2024');
-
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleEmailSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const result = await loginUnified(email, emailPassword);
-      if (result.type === 'jwt') {
-        localStorage.setItem(TOKEN_KEY, result.token);
-        const jwtSession = await initSession();
-        const orgId = jwtSession?.orgId ?? 8;
-        const orgConfig = ORGANIZATIONS[orgId] ?? ORGANIZATIONS[8] ?? Object.values(ORGANIZATIONS)[0];
-        saveSession(orgId, orgConfig.accessCode);
-        onLogin({ orgId, orgConfig });
-      } else {
-        saveSession(result.orgId, result.orgConfig.accessCode);
-        onLogin({ orgId: result.orgId, orgConfig: result.orgConfig });
-      }
-    } catch {
-      setError('Invalid email or password.');
-    }
-    setLoading(false);
-  };
-
-  const handleLegacySubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    const orgId = parseInt(orgIdInput, 10);
-    const config = validateLogin(orgId, accessCode);
-    if (config) {
-      saveSession(orgId, accessCode);
-      onLogin({ orgId, orgConfig: config });
-    } else {
-      setError('Invalid organization ID or access code.');
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="min-h-screen bg-cloud flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif font-bold text-deep-taupe">Admin Dashboard</h1>
-          <p className="text-stone mt-2">Animal Rescue Management</p>
-        </div>
-
-        {!showLegacy ? (
-          <>
-            <form onSubmit={handleEmailSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="jane@happypaws.org"
-                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Password</label>
-                <input
-                  type="password"
-                  value={emailPassword}
-                  onChange={(e) => setEmailPassword(e.target.value)}
-                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-                  required
-                />
-              </div>
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
-              >
-                {loading ? 'Signing in…' : 'Sign In'}
-              </button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => { setShowLegacy(true); setError(''); }}
-                className="text-xs text-stone hover:text-warm-brown underline"
-              >
-                Use Org ID instead
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <form onSubmit={handleLegacySubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Organization ID</label>
-                <input
-                  type="number"
-                  value={orgIdInput}
-                  onChange={(e) => setOrgIdInput(e.target.value)}
-                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-stone uppercase tracking-wider mb-1">Access Code</label>
-                <input
-                  type="password"
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  className="w-full border border-silver-gray rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-warm-brown"
-                  required
-                />
-              </div>
-              {error && <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{error}</p>}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
-              >
-                {loading ? 'Signing in…' : 'Sign In'}
-              </button>
-            </form>
-
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => { setShowLegacy(false); setError(''); }}
-                className="text-xs text-stone hover:text-warm-brown underline"
-              >
-                Use email instead
-              </button>
-            </div>
-
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+const MANAGEMENT_TABS: TabKey[] = ['settings', 'integrations', 'policies'];
 
 function App() {
-  const [session, setSession] = useState<Session | null>(null);
+  const account = useOrganizationSession();
+  const [preferredId, setPreferredId] = useState<number | null>(preferredOrganization);
+  const session = selectOrganization(account.access, preferredId);
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [animalsSearch, setAnimalsSearch] = useState({ query: '', nonce: 0 });
   const [settingsInitialSection, setSettingsInitialSection] = useState('');
+  const [logoutError, setLogoutError] = useState('');
 
+  const orgId = session?.orgId;
+  const role = session?.role;
+  useEffect(() => {
+    setActiveTab('overview');
+    setAnimalsSearch({ query: '', nonce: 0 });
+    setSettingsInitialSection('');
+    setShowWizard(Boolean(orgId && role && canManageOrganization(role) && !isWizardComplete(orgId)));
+    setShowOnboarding(Boolean(orgId && role !== 'viewer' && isWizardComplete(orgId) && !isOnboardingComplete()));
+  }, [orgId, role, account.user?.id]);
+
+  const navigate = (tab: TabKey) => {
+    if (!session || (MANAGEMENT_TABS.includes(tab) && !canManageOrganization(session.role))) return;
+    setActiveTab(tab);
+  };
   const handleNavigateToPayments = () => {
     setSettingsInitialSection('payments');
-    setActiveTab('settings');
+    navigate('settings');
   };
-
-  // Shows the 5-step setup wizard on first login; falls back to the guided tour
-  // once the wizard is already complete for this org.
-  const maybeStartOnboarding = (orgId: number) => {
-    if (!isWizardComplete(orgId)) {
-      setShowWizard(true);
-    } else if (!isOnboardingComplete()) {
-      setShowOnboarding(true);
-    }
-  };
-
-  // Merge live Supabase organizations row over the static ORGANIZATIONS defaults —
-  // covers login, session restore, and org switch, since all of them change orgId.
-  useEffect(() => {
-    if (!session) return;
-    const orgId = session.orgId;
-    let cancelled = false;
-    getOrganization(orgId).then((data) => {
-      if (cancelled || !data) return;
-      setSession((prev) => {
-        if (!prev || prev.orgId !== orgId) return prev;
-        return {
-          ...prev,
-          orgConfig: {
-            ...prev.orgConfig,
-            name: (data.org as string) ?? prev.orgConfig.name,
-            logo: (data.logo_dark_url as string) ?? prev.orgConfig.logo,
-            colors: {
-              primary: (data.primary_color as string) ?? prev.orgConfig.colors.primary,
-              secondary: (data.secondary_color as string) ?? prev.orgConfig.colors.secondary,
-            },
-            contact: {
-              email: (data.contact_email as string) ?? prev.orgConfig.contact.email,
-              phone: (data.phone as string) ?? prev.orgConfig.contact.phone,
-              address: (data.address as string) ?? prev.orgConfig.contact.address,
-            },
-            social: {
-              facebook: (data.facebook_url as string) ?? prev.orgConfig.social.facebook,
-              instagram: (data.instagram_url as string) ?? prev.orgConfig.social.instagram,
-              twitter: (data.twitter_url as string) ?? prev.orgConfig.social.twitter,
-            },
-            subdomain: (data.subdomain as string) ?? prev.orgConfig.subdomain,
-          },
-        };
-      });
-    }).catch(() => {
-      // Live org fetch is a best-effort enhancement — keep the static defaults on failure.
-    });
-    return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.orgId]);
-
-  useEffect(() => {
-    // Check URL for ?token= parameter (from marketing signup/login redirect)
-    const params = new URLSearchParams(window.location.search);
-    const urlToken = params.get('token');
-    if (urlToken) {
-      localStorage.setItem(TOKEN_KEY, urlToken);
-      // Clean the URL
-      const cleanUrl = window.location.pathname + window.location.hash;
-      history.replaceState(null, '', cleanUrl);
-    }
-
-    // Try JWT session first
-    initSession().then((jwtSession) => {
-      if (jwtSession) {
-        // Use org from JWT if available, otherwise default to admin (8)
-        const orgId = jwtSession.orgId ?? 8;
-        const orgConfig = ORGANIZATIONS[orgId] ?? ORGANIZATIONS[8] ?? Object.values(ORGANIZATIONS)[0];
-        setSession({ orgId, orgConfig });
-        maybeStartOnboarding(orgId);
-        return;
-      }
-
-      // Fall back to legacy session
-      const restored = restoreSession();
-      if (restored) {
-        setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
-        maybeStartOnboarding(restored.session.orgId);
-      }
-    }).catch(() => {
-      // If initSession throws, fall back to legacy
-      const restored = restoreSession();
-      if (restored) {
-        setSession({ orgId: restored.session.orgId, orgConfig: restored.org });
-        maybeStartOnboarding(restored.session.orgId);
-      }
-    });
-  }, []);
-
-  const handleLogin = (s: Session) => {
-    setSession(s);
-    maybeStartOnboarding(s.orgId);
-  };
-
   const handleWizardComplete = () => {
     if (session) markWizardComplete(session.orgId);
     setShowWizard(false);
     if (!isOnboardingComplete()) setShowOnboarding(true);
   };
-
-  const handleLogout = () => {
-    logout();
-    setSession(null);
-    setShowOnboarding(false);
+  const handleLogout = async () => {
+    setLogoutError('');
+    try { await logout(); } catch { setLogoutError('Sign out failed. Please retry.'); }
   };
-
   const handleRestartTour = () => {
     resetOnboarding();
     setActiveTab('overview');
     setShowOnboarding(true);
   };
-
   const handleRestartWizard = () => {
-    if (!session) return;
+    if (!session || !canManageOrganization(session.role)) return;
     resetWizard(session.orgId);
     setActiveTab('overview');
     setShowOnboarding(false);
     setShowWizard(true);
   };
-
-  const handleSearch = (query: string) => {
-    setAnimalsSearch((prev) => ({ query, nonce: prev.nonce + 1 }));
+  const handleOrgSwitch = (nextId: number) => {
+    // A remembered preference never grants access: it must match a current membership.
+    if (!account.access.some((org) => org.orgId === nextId)) return;
+    clearCache();
+    rememberOrganization(nextId);
+    setPreferredId(nextId);
   };
 
-  const handleOrgSwitch = (newOrgId: number) => {
-    const newConfig = ORGANIZATIONS[newOrgId];
-    if (newConfig && session) {
-      saveSession(newOrgId, newConfig.accessCode);
-      setSession({ orgId: newOrgId, orgConfig: newConfig });
-      setActiveTab('overview');
-    }
-  };
-
-  if (!session) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
+  if (account.loading) return <TabSpinner />;
+  if (!account.user && !account.error) return <LoginScreen />;
+  if (account.error || !session) return (
+    <div className="min-h-screen bg-cloud flex items-center justify-center p-6">
+      <div className="max-w-md bg-white rounded-2xl border border-silver-gray p-8 space-y-4">
+        <h1 className="font-serif text-2xl text-deep-taupe">{account.error ? 'Unable to load your workspace' : 'Organization access needed'}</h1>
+        <p role={account.error ? 'alert' : 'status'} className="text-sm text-stone">{account.error || 'Your account is signed in, but has no active organization membership. Ask your administrator to add you.'}</p>
+        <button onClick={account.retry} className="bg-warm-brown text-white px-4 py-2 rounded-lg">Retry</button>
+        <button onClick={() => void handleLogout()} className="text-warm-brown ml-4">Sign out</button>
+        {logoutError && <p role="alert" className="text-sm text-red-600">{logoutError}</p>}
+      </div>
+    </div>
+  );
 
   const tabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <DashboardOverview orgId={session.orgId} onTabChange={setActiveTab} />;
+        return <DashboardOverview orgId={session.orgId} onTabChange={navigate} />;
       case 'animals':
         return (
           <AnimalsTab
             orgId={session.orgId}
+            canEdit={session.role !== 'viewer'}
             initialSearch={animalsSearch.query}
             searchNonce={animalsSearch.nonce}
           />
         );
       case 'applications':
-        return <ApplicationsTab orgId={session.orgId} />;
+        return <ApplicationsTab orgId={session.orgId} canEdit={session.role !== 'viewer'} />;
       case 'website-content':
-        return <WebsiteContentTab orgId={session.orgId} />;
+        return <WebsiteContentTab orgId={session.orgId} canEdit={canManageOrganization(session.role)} />;
       case 'settings':
         return <SettingsTab orgId={session.orgId} orgConfig={session.orgConfig} initialSection={settingsInitialSection} />;
       case 'communications':
-        return <CommunicationsTab orgId={session.orgId} />;
+        return <CommunicationsTab orgId={session.orgId} canEdit={session.role !== 'viewer'} />;
       case 'policies':
         return <PoliciesTab orgId={session.orgId} />;
       case 'social-media':
@@ -378,45 +134,33 @@ function App() {
       case 'integrations':
         return <IntegrationsTab orgId={session.orgId} />;
       default:
-        return <DashboardOverview orgId={session.orgId} onTabChange={setActiveTab} />;
+        return <DashboardOverview orgId={session.orgId} onTabChange={navigate} />;
     }
   };
 
   return (
     <>
       <Layout
+        key={`${account.user?.id}:${session.orgId}:${session.role}`}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={navigate}
         orgId={session.orgId}
         orgConfig={session.orgConfig}
-        onLogout={handleLogout}
-        onOrgSwitch={session.orgConfig.isAdmin ? handleOrgSwitch : undefined}
+        organizationAccess={account.access}
+        role={session.role}
+        onLogout={() => void handleLogout()}
+        onOrgSwitch={handleOrgSwitch}
         onRestartTour={handleRestartTour}
-        onRestartWizard={handleRestartWizard}
-        onSearch={handleSearch}
+        onRestartWizard={canManageOrganization(session.role) ? handleRestartWizard : undefined}
+        onSearch={(query) => setAnimalsSearch((prev) => ({ query, nonce: prev.nonce + 1 }))}
       >
-        <Suspense fallback={<TabSpinner />}>
-          {tabContent()}
-        </Suspense>
+        {logoutError && <p role="alert" className="text-sm text-red-600 mb-4">{logoutError}</p>}
+        {session.role === 'viewer' && <p className="text-sm text-stone mb-4">You have view-only access to this organization.</p>}
+        <Suspense fallback={<TabSpinner />}>{tabContent()}</Suspense>
       </Layout>
-
-      {showWizard && (
-        <OnboardingWizard
-          orgId={session.orgId}
-          orgConfig={session.orgConfig}
-          onComplete={handleWizardComplete}
-          onNavigateTab={setActiveTab}
-        />
-      )}
-
-      {showOnboarding && !showWizard && (
-        <Onboarding
-          onComplete={() => setShowOnboarding(false)}
-          onNavigateTab={setActiveTab}
-        />
-      )}
+      {showWizard && canManageOrganization(session.role) && <OnboardingWizard orgId={session.orgId} orgConfig={session.orgConfig} onComplete={handleWizardComplete} onNavigateTab={navigate} />}
+      {showOnboarding && !showWizard && <Onboarding onComplete={() => setShowOnboarding(false)} onNavigateTab={navigate} />}
     </>
   );
 }
-
 export default App;

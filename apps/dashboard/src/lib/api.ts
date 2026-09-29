@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { getCached, setCached } from './apiCache';
+import { getCached, setCached, clearCache } from './apiCache';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -58,12 +58,10 @@ export interface Animal {
 
 export interface OrgConfig {
   name: string;
-  accessCode: string;
   logo: string;
   colors: { primary: string; secondary: string };
   contact: { email: string; phone: string; address: string };
   social: { facebook: string; instagram: string; twitter: string };
-  isAdmin?: boolean;
   siteUrl?: string;
   subdomain?: string;
 }
@@ -98,15 +96,21 @@ export interface Application {
 
 // ─── Auth helpers ────────────────────────────────────────────────────────────
 
-/** Returns Authorization Bearer header if JWT token is present */
-export function getAuthHeaders(): Record<string, string> {
-  try {
-    const token = localStorage.getItem('barkhausAuthToken');
-    if (token) return { Authorization: `Bearer ${token}` };
-  } catch {
-    // localStorage may not be available in SSR
+/** Server endpoints must independently verify this token and organization membership. */
+export async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data, error } = await supabase.auth.getSession();
+  if (error || !data.session) throw new Error('Please sign in again.');
+  return { Authorization: `Bearer ${data.session.access_token}` };
+}
+
+/** Resolve an admin API from the authorized organization's configuration, never a default tenant. */
+export async function getAdminApiUrl(orgId: number, route: string): Promise<string> {
+  const organization = await getOrganization(orgId);
+  const subdomain = organization?.subdomain;
+  if (typeof subdomain !== 'string' || !/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/.test(subdomain)) {
+    throw new Error('This organization has no configured admin API.');
   }
-  return {};
+  return `https://${subdomain}.preview.barkhaus.io/api/admin/${route}`;
 }
 
 // ─── Org configs ─────────────────────────────────────────────────────────────
@@ -114,7 +118,6 @@ export function getAuthHeaders(): Record<string, string> {
 export const ORGANIZATIONS: Record<number, OrgConfig> = {
   3: {
     name: 'Happy Paws Dog Rescue',
-    accessCode: 'demo123',
     logo: '/assets/svgs/happy-paws.svg',
     colors: { primary: '#059669', secondary: '#6b7280' },
     contact: { email: 'info@happypaws.org', phone: '(555) 123-4567', address: '123 Rescue Lane, Pet City' },
@@ -122,7 +125,6 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   4: {
     name: 'Furry Friends Sanctuary',
-    accessCode: 'furry456',
     logo: '/assets/svgs/furry-friends.svg',
     colors: { primary: '#7c3aed', secondary: '#a855f7' },
     contact: { email: 'hello@furryfriends.org', phone: '(555) 234-5678', address: '456 Animal Ave, Sanctuary City' },
@@ -130,7 +132,6 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   5: {
     name: 'Paws & Hearts Rescue',
-    accessCode: 'hearts789',
     logo: '/assets/svgs/paws-hearts.svg',
     colors: { primary: '#dc2626', secondary: '#ef4444' },
     contact: { email: 'contact@pawshearts.org', phone: '(555) 345-6789', address: '789 Heart Street, Love City' },
@@ -138,7 +139,6 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   6: {
     name: 'Second Chance Animal Rescue',
-    accessCode: 'second123',
     logo: '/assets/svgs/second-chance.svg',
     colors: { primary: '#0891b2', secondary: '#06b6d4' },
     contact: { email: 'info@secondchance.org', phone: '(555) 456-7890', address: '321 Hope Boulevard, Chance City' },
@@ -146,7 +146,6 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   7: {
     name: 'Loving Tails Foundation',
-    accessCode: 'tails456',
     logo: '/assets/svgs/loving-tails.svg',
     colors: { primary: '#ea580c', secondary: '#fb923c' },
     contact: { email: 'support@lovingtails.org', phone: '(555) 567-8901', address: '654 Tail Way, Foundation City' },
@@ -154,16 +153,13 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   8: {
     name: 'Barkhaus Admin',
-    accessCode: 'barkhaus2024',
     logo: '/assets/svgs/barkhaus.svg',
     colors: { primary: '#1f2937', secondary: '#374151' },
     contact: { email: 'admin@barkhaus.com', phone: '(555) 678-9012', address: '987 Admin Plaza, Control City' },
     social: { facebook: '', instagram: '', twitter: '' },
-    isAdmin: true,
   },
   9: {
     name: 'Mission Bay Puppy Rescue',
-    accessCode: 'mbpr2024',
     logo: '/assets/images/MBPR-Dark.png',
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpr.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
@@ -173,7 +169,6 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   10: {
     name: 'MB Pups',
-    accessCode: 'mbpups2024',
     logo: '/assets/images/MBPR-Dark.png',
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpups.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
@@ -209,8 +204,10 @@ export async function fetchAnimals(orgId: number): Promise<Animal[]> {
   return getAnimals(orgId);
 }
 
-export async function getAnimalById(id: number): Promise<Animal> {
-  const { data, error } = await supabase.from('animals').select('*').eq('id', id).single();
+export async function getAnimalById(id: number, orgId?: number): Promise<Animal> {
+  let query = supabase.from('animals').select('*').eq('id', id);
+  if (orgId !== undefined) query = query.eq('org_id', orgId);
+  const { data, error } = await query.single();
   if (error) throw error;
   return data;
 }
@@ -218,10 +215,11 @@ export async function getAnimalById(id: number): Promise<Animal> {
 export async function createAnimal(data: Partial<Animal>): Promise<Animal> {
   const { data: result, error } = await supabase.from('animals').insert(data).select().single();
   if (error) throw error;
+  clearCache('animals_org_');
   return result;
 }
 
-export async function updateAnimal(id: number, data: Partial<Animal>): Promise<Animal> {
+export async function updateAnimal(id: number, data: Partial<Animal>, orgId?: number): Promise<Animal> {
   // Strip read-only / non-updatable columns that cause Supabase 400s
   const updatePayload = { ...data } as Record<string, unknown>;
   delete updatePayload['id'];
@@ -229,29 +227,26 @@ export async function updateAnimal(id: number, data: Partial<Animal>): Promise<A
   delete updatePayload['org_id'];
   delete updatePayload['Code']; // PAWS field — not a Supabase column
 
-  console.log('Animal update payload:', JSON.stringify(updatePayload));
-  const { data: result, error } = await supabase
-    .from('animals')
-    .update(updatePayload)
-    .eq('id', id)
-    .select()
-    .single();
-  console.log('Animal update error:', JSON.stringify(error));
+  let query = supabase.from('animals').update(updatePayload).eq('id', id);
+  if (orgId !== undefined) query = query.eq('org_id', orgId);
+  const { data: result, error } = await query.select().single();
   if (error) throw error;
+  clearCache('animals_org_');
   return result;
 }
 
 export async function deleteAnimal(id: number, orgId?: number): Promise<void> {
   let query = supabase.from('animals').delete().eq('id', id);
-  if (orgId) query = query.eq('org_id', orgId);
+  if (orgId !== undefined) query = query.eq('org_id', orgId);
   const { error } = await query;
   if (error) throw error;
+  clearCache('animals_org_');
 }
 
 export async function sendAnimalEmail(animalId: number, templateName: string): Promise<{ confirmation_message?: string }> {
   const res = await fetch(`/api/animals/${animalId}/send_email`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...await getAuthHeaders() },
     body: JSON.stringify({ template_name: templateName }),
   });
   if (!res.ok) throw new Error('Email send failed');
@@ -371,13 +366,13 @@ export async function getApplications(orgId: number): Promise<Application[]> {
   return data ?? [];
 }
 
-export async function updateApplication(id: number, updates: Partial<Application>): Promise<Application> {
-  const { data, error } = await supabase
-    .from('applications')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+export async function updateApplication(id: number, updates: Partial<Application>, orgId?: number): Promise<Application> {
+  const payload = { ...updates };
+  delete payload.id;
+  delete payload.org_id;
+  let query = supabase.from('applications').update(payload).eq('id', id);
+  if (orgId !== undefined) query = query.eq('org_id', orgId);
+  const { data, error } = await query.select().single();
   if (error) throw error;
   return data;
 }
@@ -392,13 +387,13 @@ export async function getFormSubmissions(orgId: number): Promise<Application[]> 
   return data ?? [];
 }
 
-export async function updateFormSubmission(id: number, updates: Partial<Application>): Promise<Application> {
-  const { data, error } = await supabase
-    .from('form_submissions')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
+export async function updateFormSubmission(id: number, updates: Partial<Application>, orgId?: number): Promise<Application> {
+  const payload = { ...updates };
+  delete payload.id;
+  delete payload.org_id;
+  let query = supabase.from('form_submissions').update(payload).eq('id', id);
+  if (orgId !== undefined) query = query.eq('org_id', orgId);
+  const { data, error } = await query.select().single();
   if (error) throw error;
   return data;
 }
