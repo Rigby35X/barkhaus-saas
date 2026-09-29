@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getAnimals, type Animal } from '../lib/api';
+import { getAnimals, getApplications, type Animal, type Application } from '../lib/api';
 import type { TabKey } from '../components/Sidebar';
 import StatusBadge from '../components/StatusBadge';
 
@@ -13,6 +13,9 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [applicationsError, setApplicationsError] = useState(false);
 
   const loadAnimals = async () => {
     setLoading(true);
@@ -27,9 +30,27 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
     }
   };
 
+  const loadApplications = async () => {
+    setApplicationsLoading(true);
+    setApplicationsError(false);
+    try {
+      setApplications(await getApplications(orgId));
+    } catch {
+      setApplications([]);
+      setApplicationsError(true);
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (orgId) void loadAnimals();
-    else setLoading(false);
+    if (orgId) {
+      void loadAnimals();
+      void loadApplications();
+    } else {
+      setLoading(false);
+      setApplicationsLoading(false);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orgId]);
 
@@ -55,9 +76,53 @@ export default function DashboardOverview({ orgId, onTabChange }: DashboardOverv
 
   // Sort by id descending (highest id = most recent), take first 6
   const recentAnimals = [...animals].sort((a, b) => b.id - a.id).slice(0, 6);
+  const newApplications = applications.filter((app) => !app.status || app.status.toLowerCase() === 'new');
+  const recentApplications = applications.slice(0, 5);
+
+  const formatDate = (date?: string) => {
+    if (!date) return 'Date unavailable';
+    const parsed = new Date(date);
+    return Number.isNaN(parsed.getTime()) ? 'Date unavailable' : parsed.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  };
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-warm-brown">Rescue workspace</p>
+          <h1 className="text-3xl font-serif font-semibold text-deep-taupe mt-1">Your dashboard</h1>
+          <p className="text-sm text-stone mt-2">Keep animal records and incoming applications moving.</p>
+        </div>
+        <button onClick={() => onTabChange('animals')} className="px-5 py-2.5 rounded-xl bg-warm-brown text-white text-sm font-semibold hover:opacity-90 transition">Manage animals</button>
+      </div>
+      <section aria-label="Application queue" className="bg-white rounded-2xl shadow-sm border border-silver-gray overflow-hidden">
+        <div className="px-6 py-5 border-b border-silver-gray flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-serif font-semibold text-deep-taupe">Applications to review</h2>
+            <p className="text-sm text-stone mt-1">New submissions for this organization</p>
+          </div>
+          <button onClick={() => onTabChange('applications')} className="text-sm font-semibold text-warm-brown hover:underline">View applications →</button>
+        </div>
+        <div className="p-6">
+          {applicationsLoading ? <p role="status" className="text-sm text-stone">Loading applications…</p> : applicationsError ? (
+            <div className="flex items-center justify-between gap-4"><p role="alert" className="text-sm text-stone">Applications could not be loaded.</p><button onClick={() => void loadApplications()} className="text-sm font-semibold text-warm-brown underline">Retry</button></div>
+          ) : (
+            <>
+              <p className="text-sm text-stone mb-4"><strong className="text-2xl text-deep-taupe mr-2">{newApplications.length}</strong> new {newApplications.length === 1 ? 'application' : 'applications'} · {applications.length} total</p>
+              {recentApplications.length === 0 ? <p className="text-sm text-stone py-3">No applications have arrived yet.</p> : (
+                <div className="divide-y divide-silver-gray">
+                  {recentApplications.map((app) => (
+                    <div key={app.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                      <div><span className="font-semibold text-deep-taupe">{[app.first_name, app.last_name].filter(Boolean).join(' ') || 'Applicant'}</span><span className="text-stone ml-2 capitalize">{app.form_type || 'Application'}</span></div>
+                      <div className="flex items-center gap-3"><span className="text-stone">{formatDate(app.created_at)}</span><span className="px-2 py-1 rounded-full bg-cloud text-deep-taupe capitalize">{(app.status || 'new').replace(/_/g, ' ')}</span></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-tour="stat-cards">
         {stats.map((s) => (
