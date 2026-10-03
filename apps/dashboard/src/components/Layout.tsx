@@ -3,6 +3,7 @@ import Sidebar, { type TabKey } from './Sidebar';
 import Header from './Header';
 import type { OrgConfig } from '../lib/api';
 import { ORGANIZATIONS } from '../lib/api';
+import type { OrganizationAccess, OrganizationRole } from '../lib/access';
 import { ToastProvider } from './Toast';
 
 interface LayoutProps {
@@ -13,6 +14,8 @@ interface LayoutProps {
   orgConfig?: OrgConfig;
   onLogout?: () => void;
   onOrgSwitch?: (orgId: number) => void;
+  organizationAccess?: OrganizationAccess[];
+  role?: OrganizationRole;
   onRestartTour?: () => void;
   onRestartWizard?: () => void;
   onSearch?: (query: string) => void;
@@ -26,6 +29,8 @@ export default function Layout({
   orgConfig,
   onLogout,
   onOrgSwitch,
+  organizationAccess,
+  role,
   onRestartTour,
   onRestartWizard,
   onSearch,
@@ -34,7 +39,6 @@ export default function Layout({
 
   const config = orgConfig ?? ORGANIZATIONS[orgId] ?? {
     name: 'Dashboard',
-    accessCode: '',
     logo: '',
     colors: { primary: '#804e3f', secondary: '#6b7280' },
     contact: { email: '', phone: '', address: '' },
@@ -83,6 +87,8 @@ export default function Layout({
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
             onOrgSwitch={onOrgSwitch}
+            organizationAccess={organizationAccess}
+            role={role}
             onRestartTour={onRestartTour}
             onRestartWizard={onRestartWizard}
             onLogout={handleLogout}

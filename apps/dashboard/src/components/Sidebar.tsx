@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { OrgConfig } from '../lib/api';
-import { ORGANIZATIONS } from '../lib/api';
+import { canManageOrganization, type OrganizationAccess, type OrganizationRole } from '../lib/access';
 
 export type TabKey =
   | 'overview'
@@ -158,6 +158,8 @@ interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onOrgSwitch?: (orgId: number) => void;
+  organizationAccess?: OrganizationAccess[];
+  role?: OrganizationRole;
   onRestartTour?: () => void;
   onRestartWizard?: () => void;
   onLogout?: () => void;
@@ -173,6 +175,8 @@ export default function Sidebar({
   isOpen,
   onClose,
   onOrgSwitch,
+  organizationAccess = [],
+  role = 'viewer',
   onRestartTour,
   onRestartWizard,
   onLogout,
@@ -191,7 +195,7 @@ export default function Sidebar({
     setSwitcherOpen(false);
   };
 
-  const isAdmin = orgConfig.isAdmin === true;
+  const canManage = canManageOrganization(role);
   const orgName = orgConfig.name ?? 'Org';
   const orgInitial = orgName.charAt(0).toUpperCase();
   const contactEmail: string = orgConfig.contact?.email ?? '';
@@ -227,15 +231,15 @@ export default function Sidebar({
           </div>
         </div>
 
-        {/* Org switcher (admin only) */}
-        {isAdmin && onOrgSwitch && (
+        {/* Only organizations granted by active memberships appear here. */}
+        {organizationAccess.length > 1 && onOrgSwitch && (
           <div className="px-3 py-2 border-b border-gray-100">
             <div className="relative">
               <button
                 onClick={() => setSwitcherOpen((o) => !o)}
                 className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-gray-700"
               >
-                <span>{isAdmin && orgId === 8 ? 'Barkhaus Admin' : (ORGANIZATIONS[orgId]?.name ?? `Org ${orgId}`)}</span>
+                <span>{orgConfig.name}</span>
                 <svg
                   className={`w-3.5 h-3.5 transition-transform ${switcherOpen ? 'rotate-180' : ''}`}
                   fill="none"
@@ -248,8 +252,9 @@ export default function Sidebar({
               {switcherOpen && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
                   <div className="py-1">
-                    {Object.entries(ORGANIZATIONS).map(([id, org]) => {
-                      const numId = parseInt(id);
+                    {organizationAccess.map((org) => {
+                      const numId = org.orgId;
+                      const id = org.orgId;
                       return (
                         <button
                           key={id}
@@ -259,8 +264,8 @@ export default function Sidebar({
                           }`}
                         >
                           <span className="font-mono text-gray-400 mr-2">#{id}</span>
-                          {org.name}
-                          {org.isAdmin && <span className="ml-1 text-gray-400">(Admin)</span>}
+                          {org.orgConfig.name}
+                          <span className="ml-1 text-gray-400 capitalize">({org.role})</span>
                         </button>
                       );
                     })}
@@ -278,7 +283,7 @@ export default function Sidebar({
               <p className="text-xs font-semibold uppercase text-gray-400 px-3 mt-4 mb-1 tracking-wider">
                 {group.label}
               </p>
-              {group.items.map((item) => {
+              {group.items.filter((item) => canManage || !['settings', 'integrations', 'policies'].includes(item.key)).map((item) => {
                 const isActive = activeTab === item.key;
                 return (
                   <button

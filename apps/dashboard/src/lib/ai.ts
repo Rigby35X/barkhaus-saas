@@ -10,7 +10,7 @@
 // Vercel project, NOT the dashboard project, and NOT VITE_-prefixed):
 //   ANTHROPIC_API_KEY
 
-import { ORGANIZATIONS } from './api';
+import { getAdminApiUrl, getAuthHeaders } from './api';
 
 export interface DraftReplyContext {
   applicantName: string;
@@ -21,14 +21,12 @@ export interface DraftReplyContext {
 }
 
 export async function draftReply(orgId: number, context: DraftReplyContext): Promise<string> {
-  const subdomain = ORGANIZATIONS[orgId]?.subdomain ?? 'mbpr';
-  const endpoint = `https://${subdomain}.preview.barkhaus.io/api/admin/draft-reply`;
+  const endpoint = await getAdminApiUrl(orgId, 'draft-reply');
 
-  console.log(`[draftReply] POST ${endpoint}`, context);
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(context),
+    headers: { 'Content-Type': 'application/json', ...await getAuthHeaders() },
+    body: JSON.stringify({ ...context, orgId }),
   });
 
   if (!res.ok) {
