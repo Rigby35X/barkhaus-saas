@@ -31,3 +31,17 @@ Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for connected data. The pub
 5. **Marketing and integrations:** Generate reusable copy from the animal record; treat scheduling and third-party distribution as explicit actions with visible state and error handling.
 
 The immediate dashboard overview change is a small, reviewable read-only step. It does not change the MBPR public site or Cognito integration.
+# Workspace URLs
+
+The dashboard uses React Router under one app origin. Each tab has a URL such as
+`/mbpr/animals` or `/mbpr/applications`. The organization segment uses the
+database organization's `subdomain` field; keep these slugs unique and stable.
+Organizations without a valid slug use `/org-{id}/overview`.
+
+Routes resolve only against verified active memberships. Unknown organizations,
+ambiguous slugs, and invalid pages fail closed. Direct links retain their path
+through sign-in, and browser Back/Forward and refresh retain the current page.
+Root, `/login`, and legacy `/dashboard` entry paths redirect signed-in users to
+their remembered authorized organization or first available membership.
+Switching organizations opens that organization's overview. Management routes
+remain limited to owners/admins. Vercel's existing SPA rewrite serves deep links.

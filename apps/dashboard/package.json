@@ -9,7 +9,7 @@
     "build:legacy": "rm -rf dist && mkdir dist && cp -r public/* dist/",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:security": "node tests/access.test.mjs && node tests/rls.test.mjs && node tests/server-auth.test.mjs"
+    "test:security": "node tests/access.test.mjs && node tests/rls.test.mjs && node tests/server-auth.test.mjs && node tests/routes.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.0",

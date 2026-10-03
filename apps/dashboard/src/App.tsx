@@ -1,4 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { resolveWorkspaceRoute, workspacePath } from './lib/routes';
 import { logout, preferredOrganization, rememberOrganization } from './lib/auth';
 import { selectOrganization, canManageOrganization } from './lib/access';
 import { useOrganizationSession } from './hooks/useOrganizationSession';
@@ -32,9 +34,12 @@ const MANAGEMENT_TABS: TabKey[] = ['settings', 'integrations', 'policies'];
 
 function App() {
   const account = useOrganizationSession();
+  const location = useLocation();
+  const navigateUrl = useNavigate();
   const [preferredId, setPreferredId] = useState<number | null>(preferredOrganization);
-  const session = selectOrganization(account.access, preferredId);
-  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const route = resolveWorkspaceRoute(location.pathname, account.access);
+  const session = route.kind === 'workspace' ? route.organization : route.kind === 'entry' ? selectOrganization(account.access, preferredId) : null;
+  const activeTab = route.kind === 'workspace' ? route.tab : 'overview';
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [animalsSearch, setAnimalsSearch] = useState({ query: '', nonce: 0 });
@@ -44,7 +49,6 @@ function App() {
   const orgId = session?.orgId;
   const role = session?.role;
   useEffect(() => {
-    setActiveTab('overview');
     setAnimalsSearch({ query: '', nonce: 0 });
     setSettingsInitialSection('');
     setShowWizard(Boolean(orgId && role && canManageOrganization(role) && !isWizardComplete(orgId)));
@@ -53,7 +57,7 @@ function App() {
 
   const navigate = (tab: TabKey) => {
     if (!session || (MANAGEMENT_TABS.includes(tab) && !canManageOrganization(session.role))) return;
-    setActiveTab(tab);
+    navigateUrl(workspacePath(session, tab));
   };
   const handleNavigateToPayments = () => {
     setSettingsInitialSection('payments');
@@ -70,26 +74,37 @@ function App() {
   };
   const handleRestartTour = () => {
     resetOnboarding();
-    setActiveTab('overview');
+    navigate('overview');
     setShowOnboarding(true);
   };
   const handleRestartWizard = () => {
     if (!session || !canManageOrganization(session.role)) return;
     resetWizard(session.orgId);
-    setActiveTab('overview');
+    navigate('overview');
     setShowOnboarding(false);
     setShowWizard(true);
   };
   const handleOrgSwitch = (nextId: number) => {
     // A remembered preference never grants access: it must match a current membership.
-    if (!account.access.some((org) => org.orgId === nextId)) return;
+    const next = account.access.find((org) => org.orgId === nextId);
+    if (!next) return;
     clearCache();
     rememberOrganization(nextId);
     setPreferredId(nextId);
+    navigateUrl(workspacePath(next, 'overview'));
   };
 
   if (account.loading) return <TabSpinner />;
   if (!account.user && !account.error) return <LoginScreen />;
+  if (!account.error && account.access.length > 0 && (route.kind === 'missing' || route.kind === 'denied')) return (
+    <div className="min-h-screen bg-cloud flex items-center justify-center p-6">
+      <div className="max-w-md bg-white rounded-2xl border border-silver-gray p-8 space-y-4">
+        <h1 className="font-serif text-2xl text-deep-taupe">{route.kind === 'missing' ? 'Page not found' : 'Workspace unavailable'}</h1>
+        <p className="text-sm text-stone">{route.kind === 'missing' ? 'This dashboard page does not exist.' : 'This workspace does not exist or you do not have access.'}</p>
+        <button onClick={() => navigateUrl('/')} className="bg-warm-brown text-white px-4 py-2 rounded-lg">Open my workspace</button>
+      </div>
+    </div>
+  );
   if (account.error || !session) return (
     <div className="min-h-screen bg-cloud flex items-center justify-center p-6">
       <div className="max-w-md bg-white rounded-2xl border border-silver-gray p-8 space-y-4">
@@ -101,6 +116,13 @@ function App() {
       </div>
     </div>
   );
+
+  if (route.kind === 'entry' || location.pathname !== workspacePath(session, activeTab)) {
+    return <Navigate to={workspacePath(session, activeTab)} replace />;
+  }
+  if (MANAGEMENT_TABS.includes(activeTab) && !canManageOrganization(session.role)) {
+    return <Navigate to={workspacePath(session, 'overview')} replace />;
+  }
 
   const tabContent = () => {
     switch (activeTab) {
