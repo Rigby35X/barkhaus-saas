@@ -1,230 +1,186 @@
 ---
 import MBPRLayout from "../layouts/MBPRLayout.astro";
+
+const categories = [
+  {
+    id: "adopting",
+    title: "Adopting",
+    items: [
+      {
+        q: "How do I adopt a puppy?",
+        a: [
+          "Submit an adoption application when you are genuinely ready to adopt. We review applications and contact applicants who may be a good match.",
+          "Applying does not guarantee approval or reserve a particular puppy."
+        ]
+      },
+      {
+        q: "Can I meet the puppies before I apply?",
+        a: [
+          "No. MBPR operates from our private home, so we do not schedule visits until an application has been submitted and approved.",
+          "If the puppies happen to be outside playing, you are always welcome to watch them from the sidewalk!"
+        ]
+      },
+      {
+        q: "How old do I have to be to adopt?",
+        a: ["Adopters must be at least 22 years old, and the person who will actually own and care for the dog must complete the application."]
+      },
+      {
+        q: "How much are your adoption fees?",
+        a: [
+          "Puppies are generally $800, with some known purebred puppies up to $1,200. Mama dogs are generally $700.",
+          "Adoption fees help cover vaccines, microchips, parasite treatment, spay/neuter, food, supplies, transportation, medications, veterinary care, and the many puppies who arrive needing extensive or emergency treatment.",
+          "Your adoption fee helps us say YES to the next puppy or mama who needs us."
+        ]
+      },
+      {
+        q: "Can I adopt if I work full-time?",
+        a: ["Possibly. Very young puppies need frequent potty breaks, meals, supervision, and companionship and should not routinely be left alone for more than about four hours."]
+      },
+      {
+        q: "Can I adopt if I live outside California?",
+        a: ["Yes! We have MBPR pups all over the country, but we do not ship puppies. You must come to us and personally transport your puppy home."]
+      },
+      {
+        q: "What if the adoption doesn't work out?",
+        a: ["Contact us. An MBPR dog should never be sold, given away, surrendered to another rescue, or taken to a shelter without contacting us first."]
+      }
+    ]
+  },
+  {
+    id: "breed-size",
+    title: "Breed & Size",
+    items: [
+      {
+        q: "What breed is my puppy, and how big will they get?",
+        a: [
+          "Usually, it's our best educated guess.",
+          "Many rescue puppies are wonderful Super Mutts, and without known parents or DNA testing, we cannot guarantee breed or adult size.",
+          "We've made some very good guesses over the years—and we've definitely been wrong too!",
+          "Please choose your puppy for the dog they are, rather than a guaranteed breed or size."
+        ]
+      }
+    ]
+  },
+  {
+    id: "fostering-volunteering",
+    title: "Fostering & Volunteering",
+    items: [
+      {
+        q: "Can I foster for MBPR?",
+        a: [
+          "Our foster needs change, but fosters must live in the 92109 area and, for young puppies, generally need to work from home, be retired, or be home most of the day.",
+          "We provide basic supplies and support."
+        ]
+      },
+      {
+        q: "Can I volunteer at the rescue?",
+        a: [
+          "Because MBPR operates from our private home, we do not have volunteers working on the property.",
+          "We occasionally need volunteer drivers to help transport puppies and mamas from shelters or to appointments."
+        ]
+      }
+    ]
+  },
+  {
+    id: "found-surrendered",
+    title: "Found & Surrendered Dogs",
+    items: [
+      {
+        q: "I found a dog. Can you take it?",
+        a: ["Please contact your local Humane Society or animal shelter first. A family may be searching for that dog, and shelters can scan for a microchip and document found animals."]
+      },
+      {
+        q: "Can I surrender a puppy or dog to MBPR?",
+        a: [
+          "Possibly. Complete our Relinquishment Application first.",
+          "We primarily rescue young puppies, pregnant mamas, and mamas with puppies. Submitting an application does not guarantee we have space, so please give us complete and honest medical and behavioral information."
+        ]
+      }
+    ]
+  },
+  {
+    id: "donations-fundraising",
+    title: "Donations & Fundraising",
+    items: [
+      {
+        q: "Do you accept donations?",
+        a: [
+          "Absolutely! Mission Bay Puppy Rescue is a 501(c)(3) nonprofit.",
+          "We accept monetary donations, and corporate matching gifts are encouraged—check with your employer to see whether they will match your donation.",
+          "For supplies, please check our current Wish List or contact us first so we receive items we can actually use."
+        ]
+      },
+      {
+        q: "Can I host a fundraiser?",
+        a: [
+          "Yes! Birthday fundraisers, school or workplace drives, restaurant give-backs, neighborhood events, online campaigns, and donation collections are all wonderful ways to help.",
+          "Contact us before using the MBPR name or logo for an event."
+        ]
+      },
+      {
+        q: "Will you bring puppies to our fundraiser, sorority, business, or event?",
+        a: [
+          "Generally, no.",
+          "Puppy events require staff, transportation, supplies, and careful consideration of vaccination status, stress, and disease exposure.",
+          "We will only consider private puppy events with a minimum guaranteed $2,000 donation paid in advance, and participation still depends on whether we have appropriate puppies available.",
+          "The puppies' health and safety always come first."
+        ]
+      }
+    ]
+  }
+];
 ---
-<MBPRLayout title="FAQ | Mission Bay Puppy Rescue" description="Answers to the most common questions about adopting, fostering, donating, and volunteering with Mission Bay Puppy Rescue.">
-<section class="page-intro">
-  <div class="container">
-    <span class="eyebrow">Real Questions, Real Answers</span>
-    <h1>Frequently Asked Questions</h1>
-    <p class="lede">Built from the questions we actually get asked &mdash; find your answer here before you reach out.</p>
-  </div>
-</section>
-
-<section class="section tight">
-  <div class="container" style="max-width:900px;">
-
-    <h3 class="faq-cat-title" id="adoption">Adoption</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>How do I apply? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Who should apply? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How old do I have to be? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I apply if I am a student? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I apply if I work away from home all day? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I apply now if I&rsquo;m not ready for several months? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I visit or meet puppies before applying? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Why is the adoption fee $800? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>What does the adoption fee include? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Do you adopt outside San Diego? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I adopt littermates together? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How does VIP work? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
+<MBPRLayout title="FAQ | Mission Bay Puppy Rescue" description="Answers to common questions about adopting, fostering, volunteering, surrendering, donating, and fundraising with Mission Bay Puppy Rescue.">
+  <section class="page-intro faq-page-intro">
+    <div class="container">
+      <span class="eyebrow">Questions, answered</span>
+      <h1>Frequently Asked Questions</h1>
+      <p class="lede">Everything we want adopters, fosters, supporters, and community partners to know before reaching out.</p>
     </div>
+  </section>
 
-    <h3 class="faq-cat-title" id="puppies">Our Puppies</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>What breed is this puppy? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How big will this puppy get? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>When will this puppy be available? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>What do Nursery / Coming Soon / Available Now mean? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Are puppies vaccinated? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>When can my puppy safely go outside? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Are puppies spayed or neutered before adoption? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
+  <section class="section tight">
+    <div class="container faq-page">
+      <nav class="faq-jump" aria-label="FAQ categories">
+        {categories.map((category) => <a href={`#${category.id}`}>{category.title}</a>)}
+        <a href="#about-mbpr">About MBPR</a>
+      </nav>
+
+      <div class="faq-sections">
+        {categories.map((category) => (
+          <section class="faq-section" id={category.id}>
+            <span class="eyebrow">{category.title}</span>
+            <h2>{category.title}</h2>
+            <div class="faq-list">
+              {category.items.map((item) => (
+                <details class="faq-item">
+                  <summary>
+                    {item.q}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                  </summary>
+                  <div class="faq-a">
+                    {item.a.map((paragraph) => <p>{paragraph}</p>)}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+        ))}
+
+        <section class="faq-section faq-about" id="about-mbpr">
+          <span class="eyebrow">About MBPR</span>
+          <h2>About Mission Bay Puppy Rescue</h2>
+          <div class="faq-about__card">
+            <p>Mission Bay Puppy Rescue specializes in pregnant mamas, nursing moms, orphaned litters, and young puppies.</p>
+            <p>Most of our dogs are cared for right here in our Mission Bay home, with help from a small group of trusted fosters.</p>
+            <p>Since 2020, we have helped more than 3,500 puppies and mamas.</p>
+            <div class="faq-about__actions">
+              <a class="btn btn-gold" href="/adopt">Apply to Adopt</a>
+              <a class="btn btn-outline" href="/contact">Contact Us</a>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
-
-    <h3 class="faq-cat-title" id="fostering">Fostering</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>Who can foster? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How long do fosters keep puppies? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Does MBPR provide supplies? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I foster if I have my own dogs? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>What does quarantine mean? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I adopt my foster puppy? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-    <h3 class="faq-cat-title" id="surrender">Surrendering &amp; Found Dogs</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>I found a stray &mdash; can you take it? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>I need to surrender my dog. What do I do? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Do you accept adult dogs? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Do you accept owner surrenders from outside San Diego? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-    <h3 class="faq-cat-title" id="events">Events &amp; Puppy Appearances</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>Can MBPR bring puppies to our event or puppy yoga? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>What does it take to safely bring puppies off-site? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Is a guaranteed donation required? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-    <h3 class="faq-cat-title" id="partnerships">Product &amp; Corporate Partnerships</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>Will MBPR promote our product? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Do you accept free products in exchange for posts? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How do we inquire about a corporate partnership? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-    <h3 class="faq-cat-title" id="volunteers">Volunteers</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>Can I volunteer at MBPR? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can my child or teen volunteer or earn service hours? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>What volunteer opportunities are available? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-    <h3 class="faq-cat-title" id="donations">Donations</h3>
-    <div class="faq-list">
-      <details class="faq-item">
-          <summary>How can I donate? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Does my employer match gifts? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I donate supplies? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I include MBPR in my will or trust? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-        <details class="faq-item">
-          <summary>How do special fundraising campaigns work? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="chev" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-          <div class="faq-a">[DRAFT ANSWER &mdash; pending final wording]<span class="draft-flag">Content Needed</span></div>
-        </details>
-    </div>
-
-  </div>
-</section>
-
-<section class="section sand-deep" style="text-align:center;">
-  <div class="container">
-    <span class="eyebrow" style="justify-content:center;">Still Stuck?</span>
-    <h2>We&rsquo;re Happy To Help</h2>
-    <a class="btn btn-gold" href="/contact">Contact Us</a>
-  </div>
-</section>
+  </section>
 </MBPRLayout>

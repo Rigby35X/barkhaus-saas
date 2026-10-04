@@ -1,0 +1,24 @@
+---
+import MBPRLayout from "../../layouts/MBPRLayout.astro";
+import ResourceCenterCategory from "../../components/mbpr/ResourceCenterCategory.astro";
+const topics = [
+  { title: "I Found A Dog", description: "What to do when you find a stray or lost dog.", icon: "⌖" },
+  { title: "Lost Dog Resources", description: "Steps and resources for locating a missing pet.", icon: "⌖" },
+  { title: "Owner Relinquishment", description: "Start with MBPR's relinquishment information and form.", icon: "♡" },
+  { title: "Local Shelters", description: "San Diego-area shelter resources.", icon: "⌂" },
+  { title: "San Diego Humane Society", description: "Information and services from SDHS.", icon: "◎" },
+  { title: "County Animal Services", description: "County shelter and animal-services resources.", icon: "◎" },
+  { title: "Low-Cost Veterinary Care", description: "Programs that may help with routine care costs.", icon: "$" },
+  { title: "Low-Cost Spay / Neuter", description: "Local lower-cost spay and neuter options.", icon: "$" },
+  { title: "Pet Food / Financial Assistance", description: "Community support options for pet families.", icon: "♡" },
+  { title: "Other Trusted Rescue Resources", description: "Additional rescue and community partners.", icon: "★" },
+];
+---
+<MBPRLayout title="Rescue & Community Resources | Mission Bay Puppy Rescue" description="For people who need help beyond adopting one of our puppies.">
+  <ResourceCenterCategory
+    title="Rescue & Community Resources"
+    intro="For people who need help beyond adopting one of our puppies."
+    topics={topics}
+    note=""
+  />
+</MBPRLayout>
