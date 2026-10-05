@@ -1,129 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/Navbar.astro';
-import Hero from '../components/Hero.astro';
-import FeatureCard from '../components/FeatureCard.astro';
-import CTABanner from '../components/CTABanner.astro';
 import Footer from '../components/Footer.astro';
-
-const features = [
-  {
-    icon: '🐾',
-    eyebrow: 'Animals',
-    title: 'Animal Profiles & Tracking',
-    description: 'Create rich profiles with photos, medical history, breed info, and behavioral notes. Track every animal from intake through adoption.',
-    href: '/features/animals',
-  },
-  {
-    icon: '📋',
-    eyebrow: 'Applications',
-    title: 'Online Application Management',
-    description: 'Receive adoption, foster, and volunteer applications directly through your public site. Review and update status with one click.',
-    href: '/features/applications',
-  },
-  {
-    icon: '🌐',
-    eyebrow: 'Website',
-    title: 'Instant Public Website',
-    description: 'Your branded public site goes live the moment you create your account. Edit hero text, about sections, FAQs, and more — no code.',
-    href: '/features/public-website',
-  },
-  {
-    icon: '📣',
-    eyebrow: 'Social Media',
-    title: 'AI Social Post Generator',
-    description: 'Generate platform-optimized captions for Instagram, Facebook, and Twitter in seconds. Choose your tone and copy in one click.',
-    href: '/features/social-media',
-  },
-  {
-    icon: '💬',
-    eyebrow: 'Communications',
-    title: 'Unified Inbox',
-    description: 'All contact form submissions land in one inbox. Read, reply, and track conversations with your community from the dashboard.',
-    href: '/features/inbox',
-  },
-  {
-    icon: '🎨',
-    eyebrow: 'Branding',
-    title: 'Full Brand Customization',
-    description: 'Set your logo, primary colors, fonts, and domain. Your dashboard and public site reflect your brand — not ours.',
-    href: '/features/branding',
-  },
-  {
-    icon: '📊',
-    eyebrow: 'Overview',
-    title: 'Dashboard Analytics',
-    description: 'See real-time stats: total animals, pending applications, recent activity. Make data-driven decisions at a glance.',
-    href: '/features/analytics',
-  },
-  {
-    icon: '📅',
-    eyebrow: 'Events',
-    title: 'Events Management',
-    description: 'Create adoption events, fundraisers, and volunteer drives. Publish them to your public site and track RSVPs.',
-    href: '/features/events',
-  },
-  {
-    icon: '💰',
-    eyebrow: 'Donations',
-    title: 'Donation Tracking',
-    description: 'Log and track donations, generate receipts, and see your fundraising progress — all in one place.',
-    href: '/features/donations',
-  },
-  {
-    icon: '📁',
-    eyebrow: 'Import',
-    title: 'CSV Bulk Import',
-    description: 'Already have animal records? Import them via CSV in seconds. Map fields, preview the import, and confirm.',
-    href: '/features/csv-import',
-  },
-  {
-    icon: '🔒',
-    eyebrow: 'Security',
-    title: 'Secure Org Access',
-    description: 'Each organization gets isolated data and secure access codes. No shared databases, no data leaks.',
-    href: '/features/security',
-  },
-  {
-    icon: '🔌',
-    eyebrow: 'Integrations',
-    title: 'Integrations',
-    description: 'Stripe donations, Petfinder listings, and more are coming in future releases.',
-    href: '/features/integrations',
-  },
+const capabilities = [
+  { title: 'Animal records', description: 'Keep an animal’s photos, background, care details, and availability in one shared place. Start with the record and let the rest of the workflow follow.', href: '/features/animals' },
+  { title: 'Website builder', description: 'Shape a branded public site with your logo, colors, mission, available animals, and ways to help. Edit content from the dashboard rather than starting from scratch.', href: '/features/public-website' },
+  { title: 'Applications', description: 'Collect adoption, foster, and volunteer interest, then review submissions in an organized workspace.', href: '/features/applications' },
+  { title: 'Marketing tools', description: 'Draft adoption posts and rescue updates from the details you already have. Adapt the message for different channels, review it, and share through your own accounts.', href: '/features/social-media' },
+  { title: 'Conversations', description: 'Keep incoming questions and contact submissions visible to the people who need to respond.', href: '/features/inbox' },
+  { title: 'Your organization’s identity', description: 'Bring your rescue’s logo, colors, and story to the public experience.', href: '/features/branding' },
+  { title: 'Events and community', description: 'Make adoption events and ways to get involved part of the same public experience.', href: '/features/events' },
+  { title: 'Reporting and imports', description: 'See activity in one dashboard and bring existing animal information into the workspace.', href: '/features/analytics' },
 ];
 ---
-
-<BaseLayout title="Features" description="Everything a rescue org needs — animals, applications, website, marketing, and more.">
+<BaseLayout title="One platform for rescue operations and outreach" description="Explore animal records, a branded website builder, adoption applications, marketing tools, and more in BarkHaus.">
   <Navbar currentPage="/features" />
-
-  <Hero
-    headline="Every Tool Your Rescue Needs"
-    subheadline="From animal intake to adoption day — manage your entire operation from one beautiful, easy-to-use dashboard."
-    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
-    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
-  />
-
-  <section class="py-20 bg-cloud">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-14">
-        <h2 class="font-serif text-3xl sm:text-4xl font-bold text-deep-taupe mb-4">Built for Rescue Organizations</h2>
-        <p class="text-lg text-deep-taupe max-w-2xl mx-auto">Every feature was designed with real rescue workflows in mind. No bloat, no complexity — just the tools you need.</p>
-      </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((f) => (
-          <FeatureCard {...f} linkLabel="Learn More" />
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <CTABanner
-    headline="Ready to Simplify Your Rescue?"
-    subtext="Start your free 14-day trial today. No credit card required."
-    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
-    secondaryCta={{ label: 'See pricing', href: '/pricing' }}
-  />
-
-  <Footer />
+  <main>
+    <section class="bh-page"><div class="bh-container"><p class="bh-overline">THE PLATFORM</p><h1>More rescue work in one place. More time for the animals.</h1><p class="bh-lead">BarkHaus brings the tools behind an animal’s journey together: records, your website, applications, communications, and marketing. Replace the patchwork of 8+ tools with a connected workspace built for rescue.</p><a class="bh-button bh-button-primary" href="/contact">Explore early access <span aria-hidden="true">↗</span></a></div></section>
+    <section class="bh-content"><div class="bh-container"><p class="bh-overline">GET GOING, THEN KEEP GROWING</p><h2>A faster path from setup to serving your community</h2><div class="bh-capability"><h3>01 · Make it yours</h3><p>Set up your rescue identity, mission, website content, and the paths people need to adopt, foster, volunteer, or get in touch.</p></div><div class="bh-capability"><h3>02 · Bring in the animals</h3><p>Add photos, stories, care details, and availability to a shared animal record.</p></div><div class="bh-capability"><h3>03 · Put the story to work</h3><p>Show available animals online, review applications, and prepare outreach from the information you already manage.</p></div></div></section>
+    <section class="bh-content" style="background:#f0e8df"><div class="bh-container"><p class="bh-overline">EXPLORE THE WORKSPACE</p><h2>The tools that make it feel like one platform</h2>{capabilities.map(item => <div class="bh-capability"><h3>{item.title}</h3><div><p>{item.description}</p><a href={item.href}>Explore {item.title.toLowerCase()} ↗</a></div></div>)}<p class="bh-note">BarkHaus is in active development. Capabilities and setup vary during early access. Connected posting, Petfinder, Stripe, and other third-party integrations are planned rather than live connections.</p></div></section>
+    <section class="bh-cta"><div class="bh-container bh-cta-inner"><div><p class="bh-overline">HELP SHAPE WHAT COMES NEXT</p><h2>Tell us how your rescue works.</h2><p>We’d like to learn which handoffs cost your team the most time.</p></div><a class="bh-button bh-button-light" href="/contact">Start a conversation ↗</a></div></section>
+  </main><Footer />
 </BaseLayout>
