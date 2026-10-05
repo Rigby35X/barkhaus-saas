@@ -1,190 +1,208 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/Navbar.astro';
-import Hero from '../components/Hero.astro';
-import BenefitsSection from '../components/BenefitsSection.astro';
-import FeatureSection from '../components/FeatureSection.astro';
-import StatsSection from '../components/StatsSection.astro';
-import TestimonialSection from '../components/TestimonialSection.astro';
-import NewsletterSection from '../components/NewsletterSection.astro';
-import ContactSection from '../components/ContactSection.astro';
-import CTABanner from '../components/CTABanner.astro';
-import FeatureCard from '../components/FeatureCard.astro';
 import Footer from '../components/Footer.astro';
 
-const heroTabs = [
+const entryPaths = [
   {
-    id: 'animals',
-    eyebrow: 'Animal Management',
-    headline: 'Manage every animal from intake to adoption in one place',
-    description: 'Track profiles, medical history, and status changes in one dashboard — updates go live on your public site instantly.',
-    imageSrc: '/images/home-hero-header-section-0.jpg',
-    imageAlt: 'Animal management dashboard',
+    eyebrow: 'Keep Your Website',
+    title: 'Use BarkHaus behind the scenes',
+    body: 'Manage animals and applications in BarkHaus while keeping the website your community already knows.',
+    link: '/features/animals',
+    cta: 'Explore animal management',
   },
   {
-    id: 'marketing',
-    eyebrow: 'Marketing Tools',
-    headline: 'Auto-post available animals to social media and Petfinder',
-    description: 'Generate AI-written captions and share to Facebook and Instagram in one click, with automatic Petfinder sync.',
-    imageSrc: '/images/home-hero-header-section-1.jpg',
-    imageAlt: 'Social media auto-posting',
+    eyebrow: 'Keep Your Current Software',
+    title: 'Give your rescue a better website',
+    body: 'Connect supported animal data to a BarkHaus-powered site so available pets and profiles stay current automatically.',
+    link: '/features/public-website',
+    cta: 'Explore rescue websites',
   },
   {
-    id: 'adoption',
-    eyebrow: 'Adoption Tracking',
-    headline: 'Review applications and track every adoption seamlessly',
-    description: 'Receive adoption, foster, and volunteer applications online and move them through your pipeline with a full audit trail.',
-    imageSrc: '/images/home-hero-header-section-2.jpg',
-    imageAlt: 'Adoption application tracking',
-  },
-  {
-    id: 'website',
-    eyebrow: 'Website Builder',
-    headline: 'Launch a beautiful rescue website in minutes',
-    description: 'Edit content, upload photos, and change colors — no code and no developer needed to keep your site current.',
-    imageSrc: '/images/home-hero-header-section-3.jpg',
-    imageAlt: 'Rescue website builder',
+    eyebrow: 'Bring It All Together',
+    title: 'Move into BarkHaus when you are ready',
+    body: 'Import your animals and grow into one connected place for operations, applications, your website, and marketing.',
+    link: '/features/integrations',
+    cta: 'See migration options',
   },
 ];
 
-const coreFeatures = [
-  { icon: '🐾', title: 'Animal Management', description: 'Complete profiles, medical history, and photos for every animal.' },
-  { icon: '📋', title: 'Adoption Applications', description: 'Online applications with status tracking and admin notes.' },
-  { icon: '🌐', title: 'Website Builder', description: 'A branded public site that updates the moment you do.' },
-  { icon: '📣', title: 'Social Media AI', description: 'AI-generated captions ready to post in one click.' },
-  { icon: '🤝', title: 'Volunteer Tools', description: 'Recruit, schedule, and manage your volunteer network.' },
-  { icon: '💰', title: 'Donation Tracking', description: 'Log donations, issue receipts, and track fundraising progress.' },
+const platformAreas = [
+  {
+    number: '01',
+    title: 'Animals & Applications',
+    body: 'Keep animal records, photos, statuses, and applications connected from intake through adoption.',
+  },
+  {
+    number: '02',
+    title: 'Your Public Website',
+    body: 'Beautiful rescue-first pages that stay in sync with the information your team already manages.',
+  },
+  {
+    number: '03',
+    title: 'Marketing & Communication',
+    body: 'Turn the information already in BarkHaus into useful outreach, updates, and eventually AI-assisted content.',
+  },
+  {
+    number: '04',
+    title: 'Imports & Integrations',
+    body: 'Start with CSV or connect the tools you use today. BarkHaus is designed to reduce migration friction, not create it.',
+  },
+];
+
+const objections = [
+  ['Do we have to replace our current website?', 'No. BarkHaus is being designed so rescues can keep an existing website and use BarkHaus for the operational pieces they need.'],
+  ['Do we have to leave our current rescue software?', 'No. The goal is to support connected systems and gradual migration, so you can switch on your timeline.'],
+  ['What happens to our existing animal records?', 'BarkHaus is being designed around imports and normalized data. CSV is the universal fallback, with direct integrations planned for common rescue systems.'],
+  ['What if we want everything in one place?', 'That is the long-term BarkHaus experience: animals, applications, people, website, communications, marketing, and reporting working together.'],
 ];
 ---
 
-<BaseLayout title="Rescue Tech Simplified" description="The all-in-one platform for animal rescues — animal management, adoption tracking, marketing, and a beautiful website, all in one place.">
+<BaseLayout title="BarkHaus — Rescue software that meets you where you are" description="BarkHaus connects animal management, applications, websites, and rescue marketing — without forcing you to replace everything on day one.">
   <Navbar currentPage="/" />
 
-  <!-- Hero: animated tabs -->
-  <Hero tabs={heroTabs} />
-
-  <!-- Benefits -->
-  <BenefitsSection
-    scheme={8}
-    eyebrow="Why Rescues Choose Barkhaus"
-    heading="Everything your rescue needs, nothing it doesn't"
-    benefits={[
-      { icon: '🧩', title: 'Replace 8 tools with 1 platform', description: 'Stop juggling separate tools for your website, applications, and social media.' },
-      { icon: '⚡', title: 'Go live in under an hour', description: 'Set up your org, add your animals, and publish your site the same day.' },
-      { icon: '🐕', title: 'Built for rescues, not developers', description: 'No code, no IT team — just the tools rescues actually need.' },
-    ]}
-  />
-
-  <!-- Feature: Animal Management -->
-  <FeatureSection
-    scheme={1}
-    eyebrow="Animal Management"
-    heading="Every animal. Every detail. In one place."
-    body="Add animals, track health records, manage photos, and update status from intake to adopted — all synced live to your public site."
-    imageSrc="/images/home-feature-section-0.jpg"
-    imageAlt="Animal management"
-    ctaLabel="Explore animal management"
-    ctaHref="/features/animals"
-  />
-
-  <!-- Feature: Marketing Tools -->
-  <FeatureSection
-    scheme={8}
-    eyebrow="Marketing Tools"
-    heading="Post to social media in seconds"
-    body="AI-generated posts, one-click sharing to Facebook and Instagram, and auto-sync to Petfinder — no more manual copywriting."
-    imageSrc="/images/home-feature-section-1.jpg"
-    imageAlt="Social media marketing tools"
-    reverse
-    ctaLabel="See social media AI"
-    ctaHref="/features/social-media"
-  />
-
-  <!-- Feature: Website Builder -->
-  <FeatureSection
-    scheme={1}
-    eyebrow="Website Builder"
-    heading="Your rescue website, ready in minutes"
-    body="Edit content, upload photos, and change colors — no code, no developer needed to keep your public site current."
-    imageSrc="/images/home-feature-section-2.jpg"
-    imageAlt="Website builder"
-    ctaLabel="See website builder"
-    ctaHref="/features/public-website"
-  />
-
-  <!-- Features list -->
-  <section class="scheme-8 py-20">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-14">
-        <h2 class="font-serif text-3xl sm:text-4xl font-medium">Everything you need to run your rescue</h2>
+  <section class="scheme-7 pt-32 pb-20 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1.08fr_.92fr] gap-14 items-center">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-warm-brown mb-4">Built for animal rescues</p>
+        <h1 class="font-serif text-5xl sm:text-6xl lg:text-[4.65rem] leading-[1.03] font-medium text-deep-taupe mb-6">
+          One place to run your rescue. Start with the part you need.
+        </h1>
+        <p class="text-lg sm:text-xl text-deep-taupe/80 leading-relaxed max-w-2xl mb-8">
+          BarkHaus brings animals, applications, your website, and eventually your rescue marketing together — without asking you to throw away the tools that already work.
+        </p>
+        <div class="flex flex-wrap gap-4 mb-7">
+          <a href="#start-your-way" class="px-7 py-3.5 font-semibold bg-warm-brown text-white rounded-button hover:opacity-90 transition shadow-lg">See how BarkHaus fits</a>
+          <a href="/waitlist" class="px-7 py-3.5 font-semibold border border-dove text-deep-taupe rounded-button hover:bg-cararra-3 transition">Join early access</a>
+        </div>
+        <p class="text-sm text-deep-taupe/60">Keep your site. Keep your software. Or bring it all together when you&rsquo;re ready.</p>
       </div>
-      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {coreFeatures.map((f) => (
-          <FeatureCard {...f} />
+      <div class="relative">
+        <div class="absolute inset-0 bg-warm-brown/10 rounded-card rotate-2"></div>
+        <img src="/images/home-hero-header-section-0.jpg" alt="BarkHaus rescue management dashboard" class="relative rounded-card shadow-2xl w-full object-cover aspect-[4/3]" loading="eager" />
+      </div>
+    </div>
+  </section>
+
+  <section id="start-your-way" class="scheme-8 py-20 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-3xl mb-12">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50 mb-3">Start where you are</p>
+        <h2 class="font-serif text-4xl sm:text-5xl font-medium text-white mb-5">You should not have to rebuild everything to get better rescue software.</h2>
+        <p class="text-lg text-white/70 leading-relaxed">BarkHaus is designed as a platform you can adopt in pieces. Solve the problem hurting most today, then expand when it makes sense.</p>
+      </div>
+      <div class="grid lg:grid-cols-3 gap-5">
+        {entryPaths.map((item) => (
+          <article class="border border-white/15 rounded-card p-7 bg-white/[0.035] flex flex-col">
+            <p class="text-xs uppercase tracking-[0.16em] text-white/45 font-semibold mb-4">{item.eyebrow}</p>
+            <h3 class="font-serif text-2xl text-white font-medium mb-3">{item.title}</h3>
+            <p class="text-white/70 leading-relaxed mb-7 flex-1">{item.body}</p>
+            <a href={item.link} class="text-sm font-semibold text-white inline-flex items-center gap-2 hover:gap-3 transition-all">{item.cta} <span>→</span></a>
+          </article>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Benefits with stats -->
-  <StatsSection
-    scheme={1}
-    eyebrow="Real Results"
-    heading="Rescues using Barkhaus see results"
-    imageSrc="/images/home-benefits-section-1.png"
-    imageAlt="Rescue results"
-    stats={[
-      { value: '3x', label: 'Faster adoption processing' },
-      { value: '60%', label: 'Less admin time' },
-      { value: '2x', label: 'More website traffic' },
-    ]}
-  />
+  <section class="scheme-1 py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-14 items-center">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-warm-brown mb-3">One update, everywhere</p>
+        <h2 class="font-serif text-4xl sm:text-5xl font-medium mb-5">Stop maintaining the same animal in five different places.</h2>
+        <p class="text-lg opacity-75 leading-relaxed mb-8">The goal is simple: your team updates an animal once. BarkHaus keeps the connected experiences current — from the admin workflow to the public profile.</p>
+        <div class="space-y-3">
+          {['Animal record changes', 'Public website reflects the update', 'Applications stay tied to the right animal', 'Future marketing tools use the same source data'].map((item) => (
+            <div class="flex items-center gap-3 py-3 border-b scheme-border">
+              <span class="w-7 h-7 rounded-full bg-warm-brown text-white grid place-items-center text-xs">✓</span>
+              <span class="font-medium">{item}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="relative">
+        <div class="absolute inset-0 bg-warm-brown/10 rounded-card -rotate-2"></div>
+        <img src="/images/home-feature-section-0.jpg" alt="Animal information managed in one BarkHaus workflow" class="relative rounded-card shadow-xl w-full object-cover aspect-[4/3]" loading="lazy" />
+      </div>
+    </div>
+  </section>
 
-  <!-- CTA: See it in action -->
-  <CTABanner
-    headline="See Barkhaus in Action"
-    subtext="Get early access today — join the rescues already saving time and finding more homes."
-    primaryCta={{ label: 'Start Free', href: '/signup' }}
-  />
+  <section class="scheme-7 py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-3xl mb-12">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-warm-brown mb-3">The BarkHaus platform</p>
+        <h2 class="font-serif text-4xl sm:text-5xl font-medium mb-5">Built around the way rescues actually work.</h2>
+        <p class="text-lg opacity-70 leading-relaxed">The destination is one connected operating system for your rescue. The path there stays flexible.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-x-10 gap-y-4 border-t scheme-border">
+        {platformAreas.map((item) => (
+          <article class="grid grid-cols-[52px_1fr] gap-5 py-8 border-b scheme-border">
+            <span class="font-serif text-xl text-warm-brown">{item.number}</span>
+            <div>
+              <h3 class="font-serif text-2xl font-medium mb-2">{item.title}</h3>
+              <p class="opacity-70 leading-relaxed">{item.body}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div class="mt-10">
+        <a href="/features" class="inline-flex px-6 py-3 bg-deep-taupe text-white rounded-button font-semibold hover:opacity-90 transition">Explore the platform</a>
+      </div>
+    </div>
+  </section>
 
-  <!-- Testimonials -->
-  <TestimonialSection
-    scheme={2}
-    eyebrow="Real Stories"
-    heading="Rescue coordinators love Barkhaus"
-    testimonials={[
-      {
-        quote: 'Barkhaus cut our administrative work in half. Our applications and social posts finally live in one place.',
-        name: 'Sarah Martinez',
-        role: 'Executive Director, Paws Hope Rescue',
-        imageSrc: '/images/home-testimonial-section-0.jpg',
-      },
-      {
-        quote: "Our public site updates the moment we add an animal. No more asking a volunteer to edit the website by hand.",
-        name: 'Michael Chen',
-        role: 'Operations Manager, Urban Animal Shelter',
-        imageSrc: '/images/home-testimonial-section-1.jpg',
-      },
-      {
-        quote: 'We increased adoption rates by 40% since switching to Barkhaus. The social media tools are a game changer.',
-        name: 'Elena Rodriguez',
-        role: 'Founder, Rescue Friends Network',
-        imageSrc: '/images/home-testimonial-section-2.jpg',
-      },
-    ]}
-  />
+  <section id="migration" class="scheme-8 py-20 scroll-mt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[.85fr_1.15fr] gap-14 items-start">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50 mb-3">Switch without starting over</p>
+        <h2 class="font-serif text-4xl sm:text-5xl font-medium text-white mb-5">Your existing data should come with you.</h2>
+        <p class="text-lg text-white/70 leading-relaxed">Migration should feel like onboarding, not a months-long technology project. BarkHaus is being designed around imports first and deeper integrations over time.</p>
+      </div>
+      <div class="grid sm:grid-cols-3 gap-4">
+        {[
+          ['01', 'Connect', 'Keep a supported system in place and let BarkHaus consume the data you need.'],
+          ['02', 'Import', 'Bring animal records over with a guided CSV mapping and preview workflow.'],
+          ['03', 'Move gradually', 'Start with one BarkHaus module and migrate more of the operation when your team is comfortable.'],
+        ].map(([n,title,body]) => (
+          <article class="border border-white/15 rounded-card p-6">
+            <span class="text-xs text-white/40 font-semibold tracking-wider">{n}</span>
+            <h3 class="font-serif text-2xl text-white mt-8 mb-3">{title}</h3>
+            <p class="text-sm text-white/65 leading-relaxed">{body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
 
-  <!-- CTA: Start free account -->
-  <CTABanner
-    headline="Start your free account"
-    primaryCta={{ label: "Get Started — It's Free", href: '/signup' }}
-  />
+  <section class="scheme-6 py-20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <p class="text-xs font-semibold uppercase tracking-[0.18em] text-warm-brown mb-3">Questions rescues ask first</p>
+        <h2 class="font-serif text-4xl sm:text-5xl font-medium">Changing software does not have to mean changing everything.</h2>
+      </div>
+      <div class="divide-y scheme-border border-y scheme-border">
+        {objections.map(([question,answer], i) => (
+          <details class="group py-5" open={i === 0}>
+            <summary class="cursor-pointer list-none flex items-center justify-between gap-6 font-semibold text-lg">
+              <span>{question}</span><span class="text-warm-brown text-2xl group-open:rotate-45 transition-transform">+</span>
+            </summary>
+            <p class="mt-4 max-w-3xl opacity-70 leading-relaxed">{answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
 
-  <!-- Newsletter -->
-  <NewsletterSection />
-
-  <!-- Contact CTA -->
-  <ContactSection scheme={2} />
+  <section class="scheme-3 py-20">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <p class="text-xs font-semibold uppercase tracking-[0.18em] mb-3">Built with rescue reality in mind</p>
+      <h2 class="font-serif text-4xl sm:text-5xl font-medium mb-5">A better system should make the transition easier, too.</h2>
+      <p class="text-lg max-w-2xl mx-auto opacity-75 leading-relaxed mb-8">We are building BarkHaus with real rescue workflows, migration friction, and nontechnical teams in mind. If you want to help shape it, we would love to learn how your rescue works today.</p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/waitlist" class="px-7 py-3.5 bg-deep-taupe text-white rounded-button font-semibold hover:opacity-90 transition">Join early access</a>
+        <a href="/contact" class="px-7 py-3.5 border border-deep-taupe rounded-button font-semibold hover:bg-white/20 transition">Talk to us</a>
+      </div>
+    </div>
+  </section>
 
   <Footer />
 </BaseLayout>
