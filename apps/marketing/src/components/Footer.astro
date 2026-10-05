@@ -1,92 +1,66 @@
 ---
-const socials = [
-  { label: 'Instagram', href: '#', d: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.44.645-1.44 1.44s.644 1.44 1.44 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z' },
-  { label: 'Facebook', href: '#', d: 'M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.891h-2.33v6.987C18.343 21.128 22 16.991 22 12z' },
-  { label: 'Twitter', href: '#', d: 'M23.643 4.937c-.835.37-1.732.62-2.675.733.962-.576 1.7-1.49 2.048-2.578-.9.534-1.897.922-2.958 1.13-.85-.904-2.06-1.47-3.4-1.47-2.572 0-4.658 2.086-4.658 4.66 0 .364.042.718.12 1.06-3.873-.195-7.304-2.05-9.602-4.868-.4.69-.63 1.49-.63 2.342 0 1.616.823 3.043 2.072 3.878-.764-.025-1.482-.234-2.11-.583v.06c0 2.257 1.605 4.14 3.737 4.568-.392.106-.803.162-1.227.162-.3 0-.593-.028-.877-.082.593 1.85 2.313 3.198 4.352 3.234-1.595 1.25-3.604 1.995-5.786 1.995-.376 0-.747-.022-1.112-.065 2.062 1.323 4.51 2.093 7.14 2.093 8.57 0 13.255-7.098 13.255-13.254 0-.2-.005-.402-.014-.602.91-.658 1.7-1.477 2.323-2.41z' },
-  { label: 'LinkedIn', href: '#', d: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z' },
-];
-
 const productLinks = [
-  { href: '/features', label: 'Features' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/signup', label: 'Start Free Trial' },
-  { href: '/login', label: 'Log In' },
+  { href: '/features', label: 'Platform' },
+  { href: '/features/animals', label: 'Animal Management' },
+  { href: '/features/applications', label: 'Applications' },
+  { href: '/features/public-website', label: 'Rescue Websites' },
+  { href: '/features/integrations', label: 'Imports & Integrations' },
 ];
 
 const companyLinks = [
-  { href: '/about', label: 'About Us' },
-  { href: '/my-dog-cinco', label: 'My Dog Cinco' },
-  { href: '/partners', label: 'Partners' },
-  { href: '/careers', label: 'Careers' },
+  { href: '/about', label: 'About BarkHaus' },
+  { href: '/blog', label: 'Resources' },
+  { href: '/contact', label: 'Contact' },
+  { href: '/waitlist', label: 'Early Access' },
 ];
 
-const supportLinks = [
-  { href: '/blog', label: 'Blog' },
-  { href: '/waitlist', label: 'Join Waitlist' },
-  { href: '/contact', label: 'Contact Us' },
-  { href: 'mailto:support@barkhaus.io', label: 'support@barkhaus.io' },
+const startLinks = [
+  { href: '/#start-your-way', label: 'Keep My Website' },
+  { href: '/#start-your-way', label: 'Keep My Current Software' },
+  { href: '/#migration', label: 'Move to BarkHaus' },
+  { href: '/login', label: 'Log In' },
 ];
 ---
 <footer class="scheme-8">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
-
-      <!-- Brand -->
+    <div class="grid grid-cols-1 md:grid-cols-[1.3fr_1fr_1fr_1fr] gap-10 mb-12">
       <div>
         <a href="/" class="inline-block mb-4">
-          <img src="/logo-dark.png" alt="Barkhaus" class="h-9 w-auto" />
+          <img src="/logo-dark.png" alt="BarkHaus" class="h-9 w-auto" />
         </a>
-        <p class="text-sm text-white/70 leading-relaxed max-w-xs mb-5">
-          The all-in-one platform for animal rescues.
+        <p class="text-sm text-white/70 leading-relaxed max-w-sm mb-4">
+          Rescue software that meets you where you are — and grows with you when you&rsquo;re ready.
         </p>
-        <div class="flex gap-3">
-          {socials.map(({ label, href, d }) => (
-            <a href={href} aria-label={label} class="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:text-white hover:border-white/50 transition">
-              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d={d} /></svg>
-            </a>
-          ))}
-        </div>
+        <p class="text-xs text-white/45 leading-relaxed max-w-sm">
+          Animals, applications, websites, imports, and eventually the rest of your rescue operation in one connected platform.
+        </p>
       </div>
 
-      <!-- Product -->
       <div>
         <h4 class="font-semibold text-xs uppercase tracking-wider text-white/50 mb-4">Product</h4>
         <ul class="space-y-2">
-          {productLinks.map(({ href, label }) => (
-            <li><a href={href} class="text-sm text-white/80 hover:text-white transition-colors">{label}</a></li>
-          ))}
+          {productLinks.map((item) => <li><a href={item.href} class="text-sm text-white/80 hover:text-white transition-colors">{item.label}</a></li>)}
         </ul>
       </div>
 
-      <!-- Company -->
       <div>
-        <h4 class="font-semibold text-xs uppercase tracking-wider text-white/50 mb-4">Company</h4>
+        <h4 class="font-semibold text-xs uppercase tracking-wider text-white/50 mb-4">Start Your Way</h4>
         <ul class="space-y-2">
-          {companyLinks.map(({ href, label }) => (
-            <li><a href={href} class="text-sm text-white/80 hover:text-white transition-colors">{label}</a></li>
-          ))}
+          {startLinks.map((item) => <li><a href={item.href} class="text-sm text-white/80 hover:text-white transition-colors">{item.label}</a></li>)}
         </ul>
       </div>
 
-      <!-- Support -->
       <div>
-        <h4 class="font-semibold text-xs uppercase tracking-wider text-white/50 mb-4">Support</h4>
+        <h4 class="font-semibold text-xs uppercase tracking-wider text-white/50 mb-4">BarkHaus</h4>
         <ul class="space-y-2">
-          {supportLinks.map(({ href, label }) => (
-            <li><a href={href} class="text-sm text-white/80 hover:text-white transition-colors">{label}</a></li>
-          ))}
+          {companyLinks.map((item) => <li><a href={item.href} class="text-sm text-white/80 hover:text-white transition-colors">{item.label}</a></li>)}
         </ul>
       </div>
-
     </div>
 
-    <!-- Bottom bar -->
     <div class="border-t border-white/10 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-      <p class="text-xs text-white/50">&copy; {new Date().getFullYear()} Barkhaus, Inc. All rights reserved.</p>
-      <div class="flex gap-4 text-xs text-white/50">
-        <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-        <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
-      </div>
+      <p class="text-xs text-white/50">&copy; {new Date().getFullYear()} BarkHaus. All rights reserved.</p>
+      <p class="text-xs text-white/40">Built for rescues, not software teams.</p>
     </div>
   </div>
 </footer>
