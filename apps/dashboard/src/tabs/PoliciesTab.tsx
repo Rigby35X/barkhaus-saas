@@ -2,7 +2,7 @@
 // See apps/dashboard/src/lib/api.ts → ensurePoliciesTable() for the SQL.
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { ORGANIZATIONS } from '../lib/api';
+import { getAdminApiUrl, getAuthHeaders } from '../lib/api';
 
 interface PoliciesTabProps {
   orgId: number;
@@ -66,12 +66,11 @@ export default function PoliciesTab({ orgId }: PoliciesTabProps) {
     setGenerating(true);
     setSaveMsg('');
     try {
-      const subdomain = ORGANIZATIONS[orgId]?.subdomain ?? 'mbpr';
-      const endpoint = `https://${subdomain}.preview.barkhaus.io/api/admin/generate-policy`;
+      const endpoint = await getAdminApiUrl(orgId, 'generate-policy');
       console.log(`[generate-policy] POST ${endpoint}`, { orgId, policyType: activePolicy });
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...await getAuthHeaders() },
         body: JSON.stringify({ orgId, policyType: activePolicy }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

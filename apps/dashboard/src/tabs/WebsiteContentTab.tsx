@@ -7,6 +7,7 @@ const SECTION_FONT_SCALE_OPTIONS = ['', 'Small', 'Medium', 'Large', 'Extra Large
 
 interface WebsiteContentTabProps {
   orgId: number;
+  canEdit?: boolean;
 }
 
 interface FieldDef {
@@ -349,7 +350,7 @@ const PAGE_PREVIEW_URLS: Record<string, string> = {
   global: 'https://mbpr.preview.barkhaus.io/',
 };
 
-export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
+export default function WebsiteContentTab({ orgId, canEdit = false }: WebsiteContentTabProps) {
   const [sections, setSections] = useState<WebsiteSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [sectionLoading, setSectionLoading] = useState(false);
@@ -456,6 +457,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const handleSave = async () => {
+    if (!canEdit) return;
     setSaving(true);
     try {
       // Include typography overrides only when the panel is open (user explicitly set/cleared them)
@@ -505,6 +507,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const handleImageUpload = async (file: File, fieldKey: string) => {
+    if (!canEdit) return;
     setUploadingField(fieldKey);
     setUploadError('');
     try {
@@ -642,7 +645,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => void handleSave()}
-                    disabled={saving || !dirty}
+                    disabled={saving || !dirty || !canEdit}
                     className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-40 transition"
                   >
                     {saving ? 'Saving…' : 'Save Changes'}
@@ -699,7 +702,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                               />
                               <button
                                 type="button"
-                                disabled={!!uploadingField}
+                                disabled={!!uploadingField || !canEdit}
                                 onClick={() => { setPendingImageField(field.key); imageInputRef.current?.click(); }}
                                 className="flex items-center gap-1.5 px-3 py-2 text-xs border border-silver-gray rounded-xl hover:bg-cloud transition disabled:opacity-50 whitespace-nowrap"
                               >
