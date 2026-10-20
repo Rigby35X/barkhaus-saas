@@ -27,6 +27,8 @@ type AnimalApiListResponse = {
 };
 
 const API_BASE = (import.meta.env.PUBLIC_ANIMALS_API_BASE || "https://animals-proxy.vercel.app").replace(/\/$/, "");
+// A preview-only override is set in Vercel; never hardcode an ephemeral deployment URL.
+const EXPECTED_FORM_ID = String(import.meta.env.PUBLIC_ANIMALS_EXPECTED_FORM_ID || "").trim();
 
 
 function normalizePhotoUrl(value: any): string {
@@ -73,6 +75,9 @@ export async function getPublicAnimals(_locals?: any): Promise<PublicAnimal[]> {
     });
     if (!response.ok) throw new Error("Animal API HTTP " + response.status);
     const data = await response.json() as AnimalApiListResponse;
+    if (EXPECTED_FORM_ID && String(data?.form_id || "") !== EXPECTED_FORM_ID) {
+      throw new Error("Animal API returned an unexpected Cognito form");
+    }
     const animals = Array.isArray(data?.animals) ? data.animals.map(normalizeAnimal) : [];
     if (animals.length) return animals;
   } catch (error) {
@@ -83,6 +88,7 @@ export async function getPublicAnimals(_locals?: any): Promise<PublicAnimal[]> {
 
 export async function getPublicAnimal(animalKey: string): Promise<PublicAnimal | null> {
   if (!animalKey || !/^dog-\d+-\d+$/.test(animalKey)) return null;
+  if (EXPECTED_FORM_ID && !animalKey.startsWith("dog-" + EXPECTED_FORM_ID + "-")) return null;
 
   try {
     const response = await fetch(API_BASE + "/api/animals/" + encodeURIComponent(animalKey), {
