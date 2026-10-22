@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "cd ../.. && npm install --include=optional && cd apps/tenant-site && npm install --include=optional",
+  "installCommand": "cd ../.. && npm ci --include=optional --workspace=mission-bay-puppy-rescue --include-workspace-root=false",
   "buildCommand": "npm run build",
   "rewrites": [{ "source": "/(.*)", "destination": "/$1" }],
   "env": {
