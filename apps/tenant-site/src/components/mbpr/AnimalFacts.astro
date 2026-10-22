@@ -1,10 +1,10 @@
 ---
-const { animal, birthday = "" } = Astro.props;
+const { animal } = Astro.props;
 
 const facts = [
   animal.gender ? { label: "Sex", value: animal.gender } : null,
   animal.size ? { label: "Adult size", value: animal.size } : null,
-  birthday ? { label: "Birthday", value: birthday } : null,
+  animal.age ? { label: "Age", value: animal.age } : null,
   animal.breed ? { label: "Breed / mix", value: animal.breed } : null,
 ].filter(Boolean);
 ---
