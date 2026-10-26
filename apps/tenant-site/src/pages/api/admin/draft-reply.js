@@ -1,3 +1,5 @@
+import { requireOrganizationAccess } from '../../../lib/dashboard-auth'
+
 /**
  * API Endpoint for AI-Powered Application/Submission Reply Drafting
  * Accepts dashboard payload: { applicantName, formType, formData, orgName, status }
@@ -19,7 +21,7 @@ function getCorsHeaders(request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -31,6 +33,8 @@ export async function POST({ request }) {
   const corsHeaders = getCorsHeaders(request)
   try {
     const body = await request.json()
+    const access = await requireOrganizationAccess(request, body.orgId, ['owner', 'admin', 'staff'], corsHeaders)
+    if ('response' in access) return access.response
     const {
       applicantName = 'the applicant',
       formType = 'application',

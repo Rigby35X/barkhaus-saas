@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../components/Toast';
 import { draftReply } from '../lib/ai';
-import { ORGANIZATIONS } from '../lib/api';
+import { ORGANIZATIONS, getApplications, updateApplication } from '../lib/api';
 
 interface ApplicationsTabProps {
   orgId?: number;
+  canEdit?: boolean;
 }
 
 interface Application {
@@ -20,23 +21,6 @@ interface Application {
   created_at?: string;
   form_data?: Record<string, unknown>;
   [key: string]: unknown;
-}
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-async function fetchApplicationsFromSupabase(orgId: number): Promise<Application[]> {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/applications?org_id=eq.${orgId}&order=created_at.desc`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    }
-  );
-  if (!res.ok) throw new Error(`Supabase error ${res.status}`);
-  return res.json() as Promise<Application[]>;
 }
 
 function formatDate(dateStr?: string): string {
@@ -90,7 +74,7 @@ const REPLY_TEMPLATES: Record<string, (name: string) => string> = {
     `Hi ${name},\n\nThank you so much for your interest and for taking the time to apply. After careful review, we don't think this is quite the right fit at this time — but we truly appreciate your support of our mission.\n\nWarmly,`,
 };
 
-export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
+export default function ApplicationsTab({ orgId = 9, canEdit = false }: ApplicationsTabProps) {
   const { showToast } = useToast();
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +93,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
     setError('');
     try {
       console.log('[ApplicationsTab] Fetching applications for org_id:', orgId);
-      const data = await fetchApplicationsFromSupabase(orgId);
+      const data = await getApplications(orgId);
       console.log('[ApplicationsTab] Loaded applications:', data.length);
       setApps(data);
     } catch (err) {
@@ -144,23 +128,10 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
   };
 
   const handleSaveStatus = async () => {
-    if (!selectedApp) return;
+    if (!selectedApp || !canEdit) return;
     setSaving(true);
     try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/applications?id=eq.${selectedApp.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal',
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-      if (!res.ok) throw new Error(`Supabase PATCH error ${res.status}`);
+      await updateApplication(selectedApp.id, { status: newStatus }, orgId);
       setApps((prev) =>
         prev.map((a) => (a.id === selectedApp.id ? { ...a, status: newStatus } : a))
       );
@@ -175,7 +146,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
   };
 
   const handleDraftReply = async () => {
-    if (!selectedApp) return;
+    if (!selectedApp || !canEdit) return;
     setDrafting(true);
     try {
       const applicantName = `${selectedApp.first_name ?? ''} ${selectedApp.last_name ?? ''}`.trim() || 'the applicant';
@@ -196,7 +167,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
   };
 
   const applyTemplate = (label: string) => {
-    if (!selectedApp) return;
+    if (!selectedApp || !canEdit) return;
     const name = selectedApp.first_name || 'there';
     setReply(REPLY_TEMPLATES[label](name));
   };
@@ -411,7 +382,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
                   <button
                     type="button"
                     onClick={() => void handleDraftReply()}
-                    disabled={drafting}
+                    disabled={drafting || !canEdit}
                     className="flex items-center gap-1.5 text-xs font-semibold text-warm-brown hover:opacity-80 transition disabled:opacity-50"
                   >
                     {drafting && (
@@ -461,7 +432,7 @@ export default function ApplicationsTab({ orgId = 9 }: ApplicationsTabProps) {
                 </button>
                 <button
                   onClick={() => void handleSaveStatus()}
-                  disabled={saving}
+                  disabled={saving || !canEdit}
                   className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {saving ? 'Saving…' : 'Save Status'}

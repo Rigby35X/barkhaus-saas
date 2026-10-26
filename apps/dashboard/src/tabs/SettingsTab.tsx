@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { OrgConfig } from '../lib/api';
-import { updateOrganization } from '../lib/api';
+import { updateOrganization, getAuthHeaders } from '../lib/api';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../components/Toast';
 import { uploadImage } from '../lib/upload';
@@ -13,7 +13,6 @@ interface SettingsTabProps {
 
 const HEADING_FONT_OPTIONS = ['Noto Serif Display', 'Playfair Display', 'Lora', 'Merriweather', 'Georgia'];
 const BODY_FONT_OPTIONS = ['Poppins', 'DM Sans', 'Inter', 'Source Sans 3', 'Roboto'];
-const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
 const FONT_SCALE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large'];
 const EMAIL_PROVIDERS = ['None', 'SendGrid', 'Custom SMTP'];
 const DOMAIN_PROVIDERS = ['None', 'GoDaddy', 'Namecheap', 'Google Domains', 'Cloudflare', 'Other'];
@@ -385,7 +384,8 @@ export default function SettingsTab({ orgId, orgConfig, initialSection }: Settin
       const formData = new FormData();
       formData.append('file', csvFile);
       formData.append('org_id', String(orgId));
-      await fetch('/api/admin/animals/bulk-import', { method: 'POST', body: formData });
+      const response = await fetch('/api/admin/animals/bulk-import', { method: 'POST', headers: await getAuthHeaders(), body: formData });
+      if (!response.ok || !(response.headers.get('content-type') ?? '').includes('application/json')) throw new Error('Import endpoint unavailable');
       setCsvMsg(`Import complete — ${csvPreview.length}+ animals processed.`);
     } catch {
       setCsvMsg('Import failed. Check your CSV format and try again.');

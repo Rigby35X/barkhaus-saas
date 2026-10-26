@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { createClient } from '@supabase/supabase-js'
+import { requireOrganizationAccess } from '../../../lib/dashboard-auth'
 
 const ALLOWED_ORIGINS = [
   'https://app.barkhaus.io',
@@ -13,7 +13,7 @@ function getCorsHeaders(request: Request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -37,6 +37,8 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json() as { orgId?: number; policyType?: string }
     const { orgId, policyType } = body
+    const access = await requireOrganizationAccess(request, orgId, ['owner', 'admin'], corsHeaders)
+    if ('response' in access) return access.response
 
     if (!policyType || !(policyType in POLICY_PROMPTS)) {
       return new Response(JSON.stringify({ error: 'Invalid policy type.' }), {
@@ -59,10 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
     let orgAddress = ''
     if (orgId) {
       try {
-        const supabase = createClient(
-          import.meta.env.PUBLIC_SUPABASE_URL,
-          import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-        )
+        const supabase = access.client
         const { data } = await supabase
           .from('organizations')
           .select('org, contact_email, email, address')

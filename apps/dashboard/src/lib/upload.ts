@@ -1,5 +1,4 @@
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+import { supabase, isSupabaseConfigured } from './supabase';
 
 const BUCKET = 'animal-images';
 
@@ -50,7 +49,7 @@ export function compressImage(file: File, maxWidthPx = 1200, quality = 0.82): Pr
 
 /** Uploads a file directly to Supabase Storage and returns its public URL. */
 export async function uploadImage(file: File, folder: string, orgId: number): Promise<string> {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  if (!isSupabaseConfigured) {
     throw new Error('Image upload failed: Supabase Storage is not configured.');
   }
 
@@ -68,20 +67,10 @@ export async function uploadImage(file: File, folder: string, orgId: number): Pr
 
   const path = `${orgId}/${folder}/${Date.now()}-${safeName}`;
 
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
-    method: 'POST',
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': contentType,
-    },
-    body,
+  const { error } = await supabase.storage.from(BUCKET).upload(path, body, {
+    contentType,
+    upsert: false,
   });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Image upload failed (${res.status}): ${text || res.statusText}`);
-  }
-
-  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  if (error) throw new Error(`Image upload failed: ${error.message}`);
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 }

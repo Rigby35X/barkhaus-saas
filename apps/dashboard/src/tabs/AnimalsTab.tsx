@@ -14,13 +14,14 @@ import { useToast } from '../components/Toast';
 
 interface AnimalsTabProps {
   orgId: number;
+  canEdit?: boolean;
   initialSearch?: string;
   searchNonce?: number;
 }
 
 type ViewMode = 'grid' | 'list';
 
-export default function AnimalsTab({ orgId, initialSearch, searchNonce }: AnimalsTabProps) {
+export default function AnimalsTab({ orgId, initialSearch, searchNonce, canEdit = false }: AnimalsTabProps) {
   const { showToast } = useToast();
   const isMBPR = orgId === 9;
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -81,13 +82,14 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
   }, [animals]);
 
   const handleAdd = () => {
+    if (!canEdit) return;
     setEditingAnimal(null);
     setModalOpen(true);
   };
 
   const handleEdit = async (id: number) => {
     try {
-      const animal = await getAnimalById(id);
+      const animal = await getAnimalById(id, orgId);
       setEditingAnimal(animal);
       setModalOpen(true);
     } catch {
@@ -98,6 +100,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
   };
 
   const handleDelete = async (id: number) => {
+    if (!canEdit) return;
     if (!window.confirm('Delete this animal? This cannot be undone.')) return;
     try {
       await deleteAnimal(id, orgId);
@@ -109,9 +112,10 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
   };
 
   const handleSave = async (data: Partial<Animal>) => {
+    if (!canEdit) throw new Error("You have view-only access.");
     try {
       if (editingAnimal) {
-        const updated = await updateAnimal(editingAnimal.id, data);
+        const updated = await updateAnimal(editingAnimal.id, data, orgId);
         setAnimals((prev) => prev.map((a) => (a.id === editingAnimal.id ? updated : a)));
         showToast('Animal updated.', 'success');
       } else {
@@ -138,6 +142,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
               <p className="text-sm text-stone mt-1">Manage every companion in your rescue.</p>
             </div>
             <button
+              disabled={!canEdit}
               onClick={handleAdd}
               data-tour="add-animal-btn"
               className="flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold bg-warm-brown text-white shadow-sm hover:opacity-90 transition"
@@ -241,6 +246,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
           </p>
           {animals.length === 0 && (
             <button
+              disabled={!canEdit}
               onClick={handleAdd}
               className="px-4 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition"
             >
@@ -279,6 +285,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
                     Edit
                   </button>
                   <button
+                    disabled={!canEdit}
                     onClick={() => void handleDelete(animal.id)}
                     className="px-3 py-1.5 text-xs border border-silver-gray rounded-lg text-stone hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition"
                   >
@@ -336,6 +343,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
                     Edit
                   </button>
                   <button
+                    disabled={!canEdit}
                     onClick={() => void handleDelete(animal.id)}
                     className="px-3 py-1.5 text-xs border border-silver-gray rounded-lg text-stone hover:bg-red-50 hover:text-red-600 transition"
                   >
@@ -355,6 +363,7 @@ export default function AnimalsTab({ orgId, initialSearch, searchNonce }: Animal
         animal={editingAnimal}
         orgId={orgId}
         isMBPR={isMBPR}
+        canEdit={canEdit}
       />
     </div>
   );
