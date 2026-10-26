@@ -177,6 +177,6 @@ export class SqlConnectorStore implements DurableConnectorStore {
     });
   }
   async release(lease:Lease):Promise<void>{
-    this.scope(lease);await this.repository(lease).transaction(async tx=>{await tx.meta(`update public.platform_jobs set lease_owner=null,lease_until=null,status=case when status='running' then 'retry_wait' else status end where org_id=$1 and id=$2 and fence=$3::bigint and lease_owner=$4`,[lease.orgId,lease.jobId,lease.token,this.capability.workerId]);});
+    this.scope(lease);await this.repository(lease).transaction(async tx=>{await tx.meta(`update public.platform_jobs set lease_owner=null,lease_until=null,status=case when status='running' then 'retry_wait' else status end where org_id=$1 and id=$2 and fence=$3::bigint and lease_owner=$4 and connection_id=$5`,[lease.orgId,lease.jobId,lease.token,this.capability.workerId,lease.connectionId]);});
   }
 }

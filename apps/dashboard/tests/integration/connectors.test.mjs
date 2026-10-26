@@ -74,6 +74,16 @@ test('SQL connection fences reject stale claims and disconnect cancels a prepare
   const h=await harness(t);const job=await h.enqueue('fence');
   const claimed=await h.store.claim('worker-1',Date.now(),10000);assert.ok(claimed);
   await assert.rejects(h.store.assertLease({...claimed.lease,token:'0'},Date.now()));
+  const other=connection();other.id='other-source';other.mapping.id='other-map';
+  const {credentialRef,...definition}=other;
+  await h.db.query('insert into public.platform_connections(org_id,id,provider,definition) values($1,$2,$3,$4)',[other.orgId,other.id,other.provider,JSON.stringify(definition)]);
+  await h.db.query('insert into public.platform_mappings(org_id,id,revision,connection_id,definition) values($1,$2,$3,$4,$5)',[other.orgId,other.mapping.id,other.mapping.revision,other.id,JSON.stringify(other.mapping)]);
+  const otherScope={orgId:other.orgId,connectionId:other.id};
+  const otherStore=new SqlConnectorStore(h.database,{...otherScope,workerId:'worker-1'},h.safety,async()=>credentialRef);
+  await otherStore.enqueue(otherScope,'other-job');const otherClaim=await otherStore.claim('worker-1',Date.now(),10000);
+  await h.store.release({...claimed.lease,jobId:otherClaim.job.id});
+  await otherStore.assertLease(otherClaim.lease,Date.now()); // Even equal fences/worker IDs cannot cross connections.
+  await otherStore.release(otherClaim.lease);
   await h.store.disconnect(h.scope);await assert.rejects(h.store.assertLease(claimed.lease,Date.now()));
   assert.equal((await h.store.status(h.scope,job.id)).state,'failed');assert.equal((await h.db.query('select * from public.platform_animals')).rows.length,0);
 });
