@@ -1,5 +1,34 @@
 # Integration checklist and dependency decisions
 
+## Execution update and ownership handoff
+
+The user authorized coordinator ownership of the affected A/B/C/D files on
+`feature/platform-integration-v1-20261026`. This supersedes worker-exclusive file
+ownership **on this integration branch only**. Original worker branches remain
+unchanged. Checklist commit `9bb3cd7` was pushed to the coordinator branch first;
+all four exact worker heads below were fetched and copied to the integration
+branch without merging any GitHub PR. B/C/D code was initially copied with its
+runtime gates intact; physical integration proceeded after schema review and the
+first actual-SQL writer tests passed.
+
+Bounded delegation on this shared integration checkout: a schema reviewer repaired
+SQL/fixtures; separate assignments repaired C's batch port/SQL store and D's page
+port. The coordinator implemented B's SQL repository/transport and D's SQL store,
+reviewed cross-module changes, and owns the consolidated tests and result report.
+No delegate switched, pushed or modified a worker branch.
+
+Completed local gates: G0 ownership handoff, G1 reviewed SQL foundation, G2 concrete
+transaction-bound writer, G3-C batch persistence, and G3-D page persistence.
+Combined two-org SQL/authorization tests and all application builds pass. G4's
+interactive browser history/live HTTP checks, G5 staging and G6 PR merge approval
+remain outstanding. PR #7 stays unmerged; runtime HTTP stays 503-gated, provider
+and scheduler integrations remain disabled, and remote migrations remain unapplied.
+
+The initial review/findings below are preserved as history. Their missing-adapter
+and atomicity failures are resolved locally by this branch; deployment prerequisites
+are not. See [implementation and test evidence](platform-integration-results.md)
+for current commands, guarantees and remaining blockers.
+
 Coordinator review: 2026-10-26. Contract base:
 `813d605d5465e3b78264a8abd4a9ed790f74f14f`.
 This is a review and follow-up plan, not an approval to apply SQL, enable routes,

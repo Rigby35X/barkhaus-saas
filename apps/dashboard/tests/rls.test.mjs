@@ -98,3 +98,150 @@ test('membership RLS and private-data cutover enforce real Postgres access', asy
   });
   await db.close();
 });
+
+test('v1 additive schema, atomic constraints and private storage', async (t) => {
+ const db = new PGlite();
+ const sql = p => readFileSync(new URL('../../../supabase/' + p,import.meta.url),'utf8');
+ await db.exec(sql('audits/platform_v1_fixture.sql'));
+ await db.exec(stage1);
+ await db.exec(sql('migrations/202610260001_platform_v1.sql'));
+ await db.exec(sql('migrations/202610260003_transactional_ingestion.sql'));
+ await db.exec(`insert into public.organization_memberships(user_id,org_id,role) values('${userA}',1001,'owner'),('${userB}',1001,'staff'),('${viewer}',1001,'viewer');`);
+ const as = async (who, query) => {
+  await db.exec(`set role ${who ? 'authenticated' : 'anon'}; select set_config('request.jwt.claim.sub','${who ?? ''}',false)`);
+  try {return await db.query(query);} finally {await db.exec('reset role');}
+ };
+ const create = (id,org=1001) => `insert into public.platform_animals(org_id,id,source_kind,fields) values(${org},'${id}','native','{"name":"Same name","species":"dog"}')`;
+ await t.test('new data unpublished; tenant, viewer and anonymous denial',async()=>{
+  await as(userB,create('a'));
+  assert.equal((await as(userA,"select publication from public.platform_animals")).rows[0].publication,'unpublished');
+  await assert.rejects(as(userB,create('cross',1002)),/row-level security/);
+  await assert.rejects(as(viewer,create('view')),/row-level security/);
+  await assert.rejects(as(null,'select * from public.platform_animals'),/permission denied/);
+  await assert.rejects(as(userA,'select * from barkhaus_private.connection_credentials'),/permission denied/);
+  await db.exec(create('other',1002));
+  assert.equal((await as(userA,'select * from public.platform_animals')).rows.length,1);
+ });
+ await t.test('publication owner/admin only, revision and immutable keys',async()=>{
+  await assert.rejects(as(userB,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'"),/Publication/);
+  await as(userA,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'");
+  await assert.rejects(as(userA,"update public.platform_animals set public_profile_key='b',revision=3 where id='a'"),/Immutable public key/);
+  await assert.rejects(as(userA,"update public.platform_animals set notes='lost' where id='a'"),/Revision conflict/);
+ });
+ await t.test('competing compare-and-swap updates preserve loser input',async()=>{
+  const attempted=['first','second'];
+  const results=await Promise.all(attempted.map(notes=>db.query(`update public.platform_animals set notes='${notes}',revision=revision+1 where org_id=1001 and id='a' and revision=2 returning notes`)));
+  assert.deepEqual(results.map(r=>r.rows.length).sort(),[0,1]);
+  assert.equal(attempted.length,2); // Caller retains rejected form payload for review.
+ });
+ await t.test('same scoped identity unique; equal external IDs across orgs allowed; bad references rejected',async()=>{
+  await db.exec(`insert into public.platform_connections(org_id,id,provider) values(1001,'c','cognito'),(1002,'c','cognito');`);
+  const connected=(id,org)=>`insert into public.platform_animals(org_id,id,source_kind,connection_id,external_record_id,fields,field_owners) values(${org},'${id}','connector','c','equal','{"name":"Source","species":"cat"}','{"name":{"kind":"connector","connectionId":"c"}}')`;
+  await db.exec(connected('s',1001)); await db.exec(connected('s',1002));
+  await assert.rejects(db.exec(connected('dup',1001)),/unique/);
+  await assert.rejects(as(userB,"update public.platform_animals set fields=fields || '{\"name\":\"bad\"}',revision=2 where id='s'"),/Source-owned/);
+  await as(userB,"update public.platform_animals set notes='local',revision=2 where id='s'");
+  await assert.rejects(db.exec(`insert into public.platform_mappings values(1001,'m',1,'absent','{}')`),/foreign key/);
+  await db.exec(`insert into public.platform_mappings values(1001,'m',1,'c','{}')`);
+  await db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id,status,lease_owner,lease_until,fence) values(1001,'worker-job','connector','m',1,'c','running','fixture-worker',clock_timestamp()+interval '5 minutes',1)`);
+  await assert.rejects(db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id) values(1002,'j','connector','m',1,'c')`),/mapping connection mismatch/i);
+  await assert.rejects(as(userA,"update public.platform_animals set org_id=1002,revision=4 where id='a'"),/ownership|Immutable/);
+ });
+ await t.test('trusted connection worker cannot cross org or change local fields, publication or approvals',async()=>{
+  const worker=async(query)=>{
+   await db.exec("set role barkhaus_connector_worker; select set_config('barkhaus.worker_org','1001',false),set_config('barkhaus.worker_connection','c',false),set_config('barkhaus.worker_job','worker-job',false),set_config('barkhaus.worker_fence','1',false)");
+   try {return await db.query(query);} finally {await db.exec('reset role');}
+  };
+  assert.equal((await worker('select * from public.platform_animals')).rows.length,1);
+  await assert.rejects(worker("update public.platform_animals set notes='overwrite',revision=3 where id='s'"),/local metadata/);
+  await assert.rejects(worker("update public.platform_animals set publication='published',public_profile_key='source',revision=3 where id='s'"),/Immutable public key|local metadata/);
+  await assert.rejects(worker("update public.platform_animals set approvals='[{\"id\":\"photo\",\"url\":\"https://example.test/a\"}]',revision=3 where id='s'"),/local metadata/);
+  await worker("update public.platform_animals set fields=fields || '{\"name\":\"New source name\"}',revision=3 where id='s'");
+  assert.equal((await db.query("select notes from public.platform_animals where org_id=1001 and id='s'")).rows[0].notes,'local');
+  await assert.rejects(worker("update public.platform_animals set fields=fields || '{\"biography\":\"not owned\"}',revision=4 where id='s'"),/not owned/);
+  assert.equal((await db.query("select pg_has_role('authenticated','barkhaus_connector_worker','MEMBER') as allowed")).rows[0].allowed,false);
+  await db.exec("update public.platform_connections set active=false,generation=generation+1 where org_id=1001 and id='c'");
+  assert.equal((await worker('select * from public.platform_animals')).rows.length,0);
+ });
+ await t.test('import key namespace uniqueness and pinned same-org mapping/job inputs',async()=>{
+  await db.exec("insert into public.platform_import_namespaces values(1001,'csv'),(1002,'csv')");
+  await db.exec("insert into public.platform_mappings values(1001,'csv',1,null,'{}')");
+  await db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,file_sha256) values(1001,'csvjob','csv','csv',1,'${'a'.repeat(64)}')`);
+  await assert.rejects(db.exec(`update public.platform_jobs set file_sha256='${'b'.repeat(64)}' where id='csvjob'`),/Immutable job inputs/);
+  const imported=(id,org)=>`insert into public.platform_animals(org_id,id,source_kind,import_mapping_id,import_key,fields) values(${org},'${id}','native','csv','same-key','{"name":"Repeat","species":"dog"}')`;
+  await db.exec(imported('i',1001)); await db.exec(imported('i',1002));
+  await assert.rejects(db.exec(imported('duplicate',1001)),/unique/);
+  await assert.rejects(db.exec("insert into public.platform_row_outcomes values(1002,'csvjob','1','i','"+'a'.repeat(64)+"','{}')"),/foreign key/);
+  await db.exec("insert into public.platform_row_outcomes values(1001,'csvjob','1','i','"+'a'.repeat(64)+"','{}')");
+  await assert.rejects(db.exec("insert into public.platform_row_outcomes values(1001,'csvjob','1','i','"+'a'.repeat(64)+"','{}')"),/unique/);
+ });
+ await t.test('org readers cannot see other org mappings, jobs, connections or document metadata',async()=>{
+  await db.exec("insert into public.platform_connections(org_id,id,provider) values(1002,'foreign','cognito')");
+  await db.exec("insert into public.platform_mappings values(1002,'foreign',1,'foreign','{}')");
+  await db.exec("insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id) values(1002,'foreign','connector','foreign',1,'foreign')");
+  await db.exec("insert into public.platform_documents values(1002,'doc','s','1002/medical/doc.pdf','medical')");
+  for(const table of ['platform_connections','platform_mappings','platform_jobs','platform_documents','platform_row_outcomes','platform_write_receipts','platform_source_commits']) {
+   assert.equal((await as(userA,`select * from public.${table} where org_id=1002`)).rows.length,0);
+  }
+  await assert.rejects(as(userA,`insert into public.platform_connections(org_id,id,provider) values(1002,'intruder','cognito')`),/permission denied/);
+ });
+ await t.test('admin publication allowed; JSON null required fields rejected',async()=>{
+  await db.exec(`update public.organization_memberships set role='admin' where user_id='${userA}' and org_id=1001`);
+  await as(userA,create('admin'));
+  await as(userA,"update public.platform_animals set publication='published',public_profile_key='admin',revision=2 where id='admin'");
+  await assert.rejects(as(userA,`insert into public.platform_animals(org_id,id,source_kind,fields) values(1001,'null','native','{"name":null,"species":"dog"}')`),/check constraint/);
+  await db.exec(`update public.organization_memberships set role='owner' where user_id='${userA}' and org_id=1001`);
+ });
+ await t.test('private documents tenant scoped despite permissive legacy policy',async()=>{
+  await as(userB,"insert into storage.objects(bucket_id,name) values('animal-private-documents','1001/medical/a.pdf')");
+  await assert.rejects(as(userB,"insert into storage.objects(bucket_id,name) values('animal-private-documents','1002/medical/a.pdf')"),/row-level security/);
+  await assert.rejects(as(viewer,"insert into storage.objects(bucket_id,name) values('animal-private-documents','1001/medical/v.pdf')"),/row-level security/);
+  assert.equal((await as(viewer,"select * from storage.objects where bucket_id='animal-private-documents'")).rows.length,1);
+  assert.equal((await as(null,"select * from storage.objects where bucket_id='animal-private-documents'")).rows.length,0);
+  await db.exec(`update public.organization_memberships set is_active=false where user_id='${viewer}'`);
+  assert.equal((await as(viewer,"select * from storage.objects where bucket_id='animal-private-documents'")).rows.length,0);
+ });
+ await t.test('idempotent receipts bind org, actor, operation and digest and cannot mutate',async()=>{
+  const call=(digest,op='edit')=>`select barkhaus_private.record_write_receipt(1001,'verified-user','key','${op}','${digest}','{"revision":4}') as result`;
+  const digest='a'.repeat(64);
+  assert.deepEqual((await db.query(call(digest))).rows,(await db.query(call(digest))).rows);
+  await assert.rejects(db.query(call('b'.repeat(64))),/Idempotency payload conflict/);
+  await assert.rejects(db.query(call(digest,'publish')),/Idempotency payload conflict/);
+  await assert.rejects(as(userA,call(digest)),/permission denied/);
+  await assert.rejects(db.exec("update public.platform_write_receipts set result='{}'"),/Immutable/);
+ });
+ await t.test('failed animal transaction rolls back receipt and outcome',async()=>{
+  await db.exec('begin');
+  try {
+   await db.query(`select barkhaus_private.record_write_receipt(1001,'actor','rollback','edit','${'f'.repeat(64)}','{}')`);
+   await db.query("update public.platform_animals set revision=revision+1,notes='should rollback' where org_id=1001 and id='a'");
+   await db.query("insert into public.platform_row_outcomes values(1001,'missing-job','1','a','"+'f'.repeat(64)+"','{}')");
+   assert.fail('invalid job should fail');
+  } catch(e) {assert.match(e.message,/foreign key/);} finally {await db.exec('rollback');}
+  assert.equal((await db.query("select * from public.platform_write_receipts where idempotency_key='rollback'")).rows.length,0);
+  assert.notEqual((await db.query("select notes from public.platform_animals where org_id=1001 and id='a'")).rows[0].notes,'should rollback');
+ });
+ await db.exec(sql('migrations/202610260002_identity_invitation.sql'));
+ await t.test('trusted provisioning only; invitations email bound, expired and reused rejected',async()=>{
+  await assert.rejects(as(userB,`select barkhaus_private.provision_initial_owner(1002,'${userB}')`),/permission denied/);
+  await db.exec(`select barkhaus_private.provision_initial_owner(1002,'${userB}')`);
+  await assert.rejects(db.exec(`select barkhaus_private.provision_initial_owner(1002,'${userA}')`),/already provisioned/);
+  const token='c'.repeat(64), expired='d'.repeat(64);
+  await db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','viewer@example.test','viewer','${token}',now()+interval '1 day')`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`update auth.users set email_confirmed_at=null where id='${viewer}'`);
+  await assert.rejects(as(viewer,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`update auth.users set email_confirmed_at=now() where id='${viewer}'`);
+  assert.equal((await as(viewer,`select public.accept_organization_invitation('${token}') as org`)).rows[0].org,1002);
+  await assert.rejects(as(viewer,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`insert into barkhaus_private.organization_invitations values('${expired}',1002,'owner@example.test','staff',now()-interval '1 day',null,'${userB}')`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${expired}')`),/invalid or expired/);
+  await assert.rejects(as(userB,`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','admin','${'e'.repeat(64)}',now()+interval '1 day')`),/permission denied/);
+  await assert.rejects(db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','owner','${'e'.repeat(64)}',now()+interval '1 day')`),/check constraint/);
+  await db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','staff','${'e'.repeat(64)}',now()+interval '1 day')`);
+  await db.exec(`update public.organization_memberships set is_active=false where user_id='${userB}' and org_id=1002`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${'e'.repeat(64)}')`),/issuer revoked/);
+
+ });
+ await db.close();
+});
