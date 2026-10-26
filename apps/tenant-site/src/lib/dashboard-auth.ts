@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-export type AccessResult = { client: SupabaseClient } | { response: Response };
+export type AccessResult = { client: SupabaseClient; principal: { kind: 'member'; userId: string; orgId: number; role: string } } | { response: Response };
 
 /** Verify identity and active membership before any paid/admin server operation. */
 export async function requireOrganizationAccess(
@@ -29,7 +29,7 @@ export async function requireOrganizationAccess(
       .select('role').eq('user_id', data.user.id).eq('org_id', orgId).eq('is_active', true).maybeSingle();
     if (membershipError) return denied(503, 'Organization access could not be verified.');
     if (!membership || !roles.includes(membership.role)) return denied(403, 'You do not have access to this operation.');
-    return { client };
+    return { client, principal: { kind: 'member', userId: data.user.id, orgId, role: membership.role } };
   } catch {
     return denied(503, 'Organization access could not be verified.');
   }

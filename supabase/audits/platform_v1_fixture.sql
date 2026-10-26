@@ -4,7 +4,7 @@ create schema auth; create schema storage;
 create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz default now());
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
 create table public.organizations(id bigint primary key, org text);
-create table storage.buckets(id text primary key, public boolean not null default false);
+create table storage.buckets(id text primary key, name text not null, public boolean not null default false);
 create table storage.objects(id bigint generated always as identity, bucket_id text, name text);
 alter table storage.objects enable row level security;
 grant usage on schema public,auth,storage to authenticated,anon,service_role;

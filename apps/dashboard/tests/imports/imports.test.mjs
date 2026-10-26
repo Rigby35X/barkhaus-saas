@@ -80,16 +80,35 @@ test('reviewed matching requires explicit resolutions, ID and revision; conflict
   }
   assert.equal(store.animals.get(1).fields.name, 'job-2'); assert.equal(store.animals.size, 1);
 });
-test('partial batch failure resumes without duplicate committed rows or replaying completed writes', async () => {
+test('second-row failure rolls back the complete batch before retry', async () => {
   const { service, store } = await fixture(); await service.start(actor, input(), csv); store.failBeforeRow = 3;
-  const partial = await service.runBatch(actor, 1001, 'job-1'); assert.equal(partial.state, 'partial'); assert.equal(partial.processedRows, 1);
+  const partial = await service.runBatch(actor, 1001, 'job-1'); assert.equal(partial.state, 'partial'); assert.equal(partial.processedRows, 0);
+  assert.equal(store.animals.size, 0); assert.equal(store.identities.size, 0); assert.equal(store.ledger.size, 0);
   const resumed = await service.runBatch(actor, 1001, 'job-1'); assert.equal(resumed.state, 'completed'); assert.equal(resumed.processedRows, 2);
-  assert.equal(store.animals.size, 2); assert.equal(store.calls, 2); await service.runBatch(actor, 1001, 'job-1'); assert.equal(store.calls, 2);
+  assert.equal(store.animals.size, 2); assert.equal(store.calls, 3); await service.runBatch(actor, 1001, 'job-1'); assert.equal(store.calls, 3);
 });
-test('lost response after atomic commit is safe across resume', async () => {
+test('lost batch commit acknowledgement reuses authoritative completed progress on replay', async () => {
   const { service, store } = await fixture(); await service.start(actor, input('job-1', { mode: 'create_only' }), csv); store.loseResponseAt = 2;
-  const partial = await service.runBatch(actor, 1001, 'job-1'); assert.equal(partial.processedRows, 1);
-  await service.runBatch(actor, 1001, 'job-1'); assert.equal(store.calls, 2); assert.equal(store.animals.size, 2);
+  const completed = await service.runBatch(actor, 1001, 'job-1'); assert.equal(completed.processedRows, 2); assert.equal(completed.state, 'completed');
+  assert.equal(store.jobs.get('[1001,"job-1"]').job.state, 'completed');
+  await service.runBatch(actor, 1001, 'job-1'); assert.equal(store.calls, 2); assert.equal(store.animals.size, 2); assert.equal(store.ledger.size, 2);
+});
+test('checkpoint failure rolls back animal writes, identity bindings, receipts and row outcomes', async () => {
+  const { service, store } = await fixture(); await service.start(actor, input(), csv); store.failProgress = true;
+  const partial = await service.runBatch(actor, 1001, 'job-1');
+  assert.equal(partial.state, 'partial'); assert.equal(partial.processedRows, 0); assert.deepEqual(partial.outcomes, []);
+  assert.equal(store.animals.size, 0); assert.equal(store.identities.size, 0); assert.equal(store.ledger.size, 0);
+  const complete = await service.runBatch(actor, 1001, 'job-1');
+  assert.equal(complete.state, 'completed'); assert.equal(complete.processedRows, 2); assert.equal(store.animals.size, 2);
+});
+test('a failed later batch retains previously committed batches and retries only pending rows', async () => {
+  const { service, store } = await fixture();
+  const source = 'Key,Name,Species,Status\n' + Array.from({ length: 51 }, (_, i) => `${i},A,dog,Available`).join('\n');
+  await service.start(actor, input(), source);
+  const first = await service.runBatch(actor, 1001, 'job-1'); assert.equal(first.processedRows, 50);
+  store.failBeforeRow = 52;
+  const failed = await service.runBatch(actor, 1001, 'job-1'); assert.equal(failed.processedRows, 50); assert.equal(store.animals.size, 50);
+  const complete = await service.runBatch(actor, 1001, 'job-1'); assert.equal(complete.processedRows, 51); assert.equal(store.animals.size, 51); assert.equal(store.calls, 51);
 });
 test('byte, row, column and batch bounds are enforced before animal writes', async () => {
   const { service, store } = await fixture();

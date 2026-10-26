@@ -6,8 +6,8 @@ import { pendingCommand, readAnimal, readDocument, writeAnimal } from './client'
 export const emptyAnimalFields: AnimalFields = {
   name: '', species: '', breed: null, age: { kind: 'unknown' }, sex: 'unknown', size: 'unknown', biography: null, photos: [], lifecycle: 'intake', availability: 'unavailable',
 };
-interface Props { orgId: number; animal: AnimalRecord | null; canEdit: boolean; onSaved(animal: AnimalRecord): void; onClose(): void }
-export default function AnimalEditor({ orgId, animal, canEdit, onSaved, onClose }: Props) {
+interface Props { orgId: number; animal: AnimalRecord | null; canEdit: boolean; canPublish?: boolean; onSaved(animal: AnimalRecord): void; onClose(): void }
+export default function AnimalEditor({ orgId, animal, canEdit, canPublish = false, onSaved, onClose }: Props) {
   const [record, setRecord] = useState(animal);
   const [draft, setDraft] = useState<AnimalFields>(structuredClone(animal?.fields ?? emptyAnimalFields));
   const [notes, setNotes] = useState(animal?.privateData.internalNotes ?? '');
@@ -21,7 +21,7 @@ export default function AnimalEditor({ orgId, animal, canEdit, onSaved, onClose 
   const editable = (field: keyof AnimalFields) => canEdit && (!record || record.ownership[field].kind === 'barkhaus');
   const change = (field: keyof AnimalFields, value: unknown) => setDraft(p => ({ ...p, [field]: value }));
   const run = async (kind: 'save' | 'publish' | 'archive' | 'unpublish') => {
-    if (!canEdit) return;
+    if (!canEdit || kind !== 'save' && !canPublish) return;
     setBusy(true); setError('');
     try {
       let command: AnimalWrite;
@@ -78,11 +78,11 @@ export default function AnimalEditor({ orgId, animal, canEdit, onSaved, onClose 
         </div>
         <button type="button" disabled={!canEdit} onClick={() => void run('save')}>Save {record ? 'changes' : 'unpublished animal'}</button>
         {record && <div className="border p-3 space-y-2"><h3>Publication (owner/admin required)</h3>
-          <label>Public profile key<input className={input} disabled={!canEdit || !!record.publication.publicProfileKey} value={key} onChange={e => setKey(e.target.value)} /></label>
-          {record.fields.photos.map(p => <label className="block" key={p.id}><input type="checkbox" disabled={!canEdit} checked={approved.some(a => a.id === p.id && a.url === p.url)} onChange={e => setApproved(v => e.target.checked ? [...v, { id: p.id, url: p.url }] : v.filter(a => a.id !== p.id))} /> Approve {p.alt || p.id}</label>)}
-          <button type="button" disabled={!canEdit} onClick={() => void run('publish')}>Approve and publish saved profile</button>{' '}
-          <button type="button" disabled={!canEdit} onClick={() => void run('unpublish')}>Unpublish</button>{' '}
-          <button type="button" disabled={!canEdit} onClick={() => void run('archive')}>Archive</button>
+          <label>Public profile key<input className={input} disabled={!canPublish || !!record.publication.publicProfileKey} value={key} onChange={e => setKey(e.target.value)} /></label>
+          {record.fields.photos.map(p => <label className="block" key={p.id}><input type="checkbox" disabled={!canPublish} checked={approved.some(a => a.id === p.id && a.url === p.url)} onChange={e => setApproved(v => e.target.checked ? [...v, { id: p.id, url: p.url }] : v.filter(a => a.id !== p.id))} /> Approve {p.alt || p.id}</label>)}
+          <button type="button" disabled={!canPublish} onClick={() => void run('publish')}>Approve and publish saved profile</button>{' '}
+          <button type="button" disabled={!canPublish} onClick={() => void run('unpublish')}>Unpublish</button>{' '}
+          <button type="button" disabled={!canPublish} onClick={() => void run('archive')}>Archive</button>
         </div>}
         {record && [...record.privateData.documentIds, ...record.privateData.medicalRecordIds].map(id => <button type="button" key={id} onClick={async () => { try { const access = await readDocument(orgId, record.id, id); window.open(access.url, '_blank', 'noopener,noreferrer'); } catch (e) { setError(String(e)); } }}>Open private document {id} (60 seconds)</button>)}
       </fieldset>

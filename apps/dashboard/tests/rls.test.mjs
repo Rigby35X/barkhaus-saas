@@ -105,6 +105,7 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
  await db.exec(sql('audits/platform_v1_fixture.sql'));
  await db.exec(stage1);
  await db.exec(sql('migrations/202610260001_platform_v1.sql'));
+ await db.exec(sql('migrations/202610260003_transactional_ingestion.sql'));
  await db.exec(`insert into public.organization_memberships(user_id,org_id,role) values('${userA}',1001,'owner'),('${userB}',1001,'staff'),('${viewer}',1001,'viewer');`);
  const as = async (who, query) => {
   await db.exec(`set role ${who ? 'authenticated' : 'anon'}; select set_config('request.jwt.claim.sub','${who ?? ''}',false)`);
@@ -142,12 +143,13 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   await as(userB,"update public.platform_animals set notes='local',revision=2 where id='s'");
   await assert.rejects(db.exec(`insert into public.platform_mappings values(1001,'m',1,'absent','{}')`),/foreign key/);
   await db.exec(`insert into public.platform_mappings values(1001,'m',1,'c','{}')`);
+  await db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id,status,lease_owner,lease_until,fence) values(1001,'worker-job','connector','m',1,'c','running','fixture-worker',clock_timestamp()+interval '5 minutes',1)`);
   await assert.rejects(db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id) values(1002,'j','connector','m',1,'c')`),/mapping connection mismatch/i);
   await assert.rejects(as(userA,"update public.platform_animals set org_id=1002,revision=4 where id='a'"),/ownership|Immutable/);
  });
  await t.test('trusted connection worker cannot cross org or change local fields, publication or approvals',async()=>{
   const worker=async(query)=>{
-   await db.exec("set role barkhaus_connector_worker; select set_config('barkhaus.worker_org','1001',false),set_config('barkhaus.worker_connection','c',false)");
+   await db.exec("set role barkhaus_connector_worker; select set_config('barkhaus.worker_org','1001',false),set_config('barkhaus.worker_connection','c',false),set_config('barkhaus.worker_job','worker-job',false),set_config('barkhaus.worker_fence','1',false)");
    try {return await db.query(query);} finally {await db.exec('reset role');}
   };
   assert.equal((await worker('select * from public.platform_animals')).rows.length,1);
@@ -158,7 +160,7 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   assert.equal((await db.query("select notes from public.platform_animals where org_id=1001 and id='s'")).rows[0].notes,'local');
   await assert.rejects(worker("update public.platform_animals set fields=fields || '{\"biography\":\"not owned\"}',revision=4 where id='s'"),/not owned/);
   assert.equal((await db.query("select pg_has_role('authenticated','barkhaus_connector_worker','MEMBER') as allowed")).rows[0].allowed,false);
-  await db.exec("update public.platform_connections set active=false where org_id=1001 and id='c'");
+  await db.exec("update public.platform_connections set active=false,generation=generation+1 where org_id=1001 and id='c'");
   assert.equal((await worker('select * from public.platform_animals')).rows.length,0);
  });
  await t.test('import key namespace uniqueness and pinned same-org mapping/job inputs',async()=>{

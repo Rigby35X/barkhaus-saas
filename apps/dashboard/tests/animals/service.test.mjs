@@ -95,7 +95,8 @@ test('photo replacements/order use CAS, vetted org assets, and never inherit app
   assert.equal(a.fields.photos[0].id,'b'); assert.equal(a.publication.approvedPhotos.length,1);
   assert.equal((await s.execute(owner,edit(prior,'stale-completion',{ fields: { photos: [] } }))).code,'conflict');
   a = await ok(s.execute(owner,edit(a,'replace',{ fields: { photos: [{ id:'a',url:'https://images.example/1001/b.jpg',alt:'' }] } })));
-  assert.deepEqual(a.publication.approvedPhotos,[]);
+  assert.deepEqual(a.publication.approvedPhotos,[{id:'a',url:f.photos[0].url}]);
+  assert.deepEqual((await s.publicProfile(1001,'poppy')).photos,[]);
 });
 
 test('connector replay, stale revisions, source ownership and local publication/notes/approvals survive sync', async () => {

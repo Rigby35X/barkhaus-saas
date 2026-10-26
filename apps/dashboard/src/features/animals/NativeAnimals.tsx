@@ -3,8 +3,8 @@ import type { AnimalRecord } from '../../../../../shared/contracts/v1/animal.ts'
 import { listAnimals } from './client';
 import AnimalEditor from './AnimalEditor';
 
-export interface NativeAnimalsProps { orgId: number; canEdit?: boolean; initialSearch?: string; searchNonce?: number }
-export default function NativeAnimals({ orgId, canEdit = false, initialSearch = '', searchNonce }: NativeAnimalsProps) {
+export interface NativeAnimalsProps { orgId: number; canEdit?: boolean; canPublish?: boolean; initialSearch?: string; searchNonce?: number }
+export default function NativeAnimals({ orgId, canEdit = false, canPublish = false, initialSearch = '', searchNonce }: NativeAnimalsProps) {
   const [animals, setAnimals] = useState<AnimalRecord[]>([]);
   const [editing, setEditing] = useState<AnimalRecord | null | undefined>(undefined);
   const [search, setSearch] = useState(initialSearch);
@@ -28,6 +28,6 @@ export default function NativeAnimals({ orgId, canEdit = false, initialSearch = 
     <ul className="space-y-2">{animals.filter(a => a.fields.name.toLowerCase().includes(search.toLowerCase())).map(a => <li className="bg-white border rounded p-4" key={JSON.stringify(a.id)}>
       <button className="underline" onClick={() => setEditing(a)}>{a.fields.name}</button> · {a.fields.species} · {a.fields.lifecycle} · {a.fields.availability} · {a.publication.state}
     </li>)}</ul>
-    {editing !== undefined && <AnimalEditor key={`${orgId}:${JSON.stringify(editing?.id)}`} orgId={orgId} animal={editing} canEdit={canEdit} onClose={() => setEditing(undefined)} onSaved={saved => setAnimals(rows => rows.some(r => r.id === saved.id) ? rows.map(r => r.id === saved.id ? saved : r) : [...rows, saved])} />}
+    {editing !== undefined && <AnimalEditor key={`${orgId}:${JSON.stringify(editing?.id)}`} orgId={orgId} animal={editing} canEdit={canEdit} canPublish={canPublish} onClose={() => setEditing(undefined)} onSaved={saved => setAnimals(rows => rows.some(r => r.id === saved.id) ? rows.map(r => r.id === saved.id ? saved : r) : [...rows, saved])} />}
   </section>;
 }

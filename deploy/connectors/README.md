@@ -45,22 +45,28 @@ A browser never executes the worker. Existing MBPR/proxy/Shopify paths are untou
   cancellation flag and lease expiry inside the transaction. An old worker's
   release cannot clear a newer lease. An expired worker's response cannot write.
 - `snapshot` captures scoped animal revisions before provider fetch. `saveInbox`
-  atomically persists normalized page + response digest + snapshot before any row
-  write. A retry reads this immutable inbox instead of re-fetching changed input.
-  Encrypt private payloads at rest; enforce retention/access policies. No raw
+  atomically persists normalized page + response digest + identity/revision-only
+  snapshot before any row write. A retry reads this immutable inbox instead of re-fetching changed input.
+  Snapshot metadata excludes private notes/documents. Encrypt normalized private
+  payloads at rest; enforce retention/access policies. No raw
   provider response or request secrets enter the ledger or logs.
-- `transaction` atomically executes B's writer, source-head digest/revision,
-  row outcome, seen-ID and counts. Roll back all on failure. Replays are bound to
-  identity/job/cursor/revision/payload digest. Completed rows skip; cursor advances
-  only after ALL row outcomes exist. Lock job/connection fences while writing.
-  Atomicity remains a deployment blocker until A/B provide this transaction seam.
+- `commitPage` runs ONE bounded page transaction containing B's bound writer,
+  animal identities/revisions/receipts, source-head digest/revision, every row
+  outcome, seen-ID/count updates and `tx.checkpoint()`. There is no standalone
+  committing checkpoint or per-row animal commit. Roll back the WHOLE page on
+  second-row/outcome/checkpoint failure. Replays are bound to
+  identity/job/cursor/revision/payload digest and a durable unit receipt; a lost
+  commit acknowledgement must not rewind the committed cursor or rerun writes.
+  Lock job/connection fences while writing. A/B's concrete shared SQL adapter is
+  required; an independently committing HTTP writer cannot implement this seam.
 - Cognito revisions MUST be trusted monotonically increasing UTC modification
   timestamps including milliseconds. Adapter rejects opaque tokens; no lexical
   ordering. Reject changed payload at equal revision, ignore older timestamps,
   and CAS against pre-fetch animal revisions. Confirm Cognito ordering guarantees
   in staging before enabling. If provider offers only opaque revisions, add an
   approved ordering/committed digest-history strategy before integration.
-- `checkpoint` verifies cursor history (reject loops), total pages/rows/bytes and
+- The transaction-bound `checkpoint` verifies cursor history (reject loops),
+  total pages/rows/bytes and
   bounded traversal deadline; recommended reviewed limits: 100 records/page,
   1000 pages, 100000 records, 10 MiB/inbox, 30-minute traversal. Persist seen IDs
   across pages. Only a full valid terminal snapshot may mark unseen records
@@ -113,5 +119,7 @@ repository reads, queue/supervisor/scheduler, secret resolver/rotation, egress
 policy and verified Cognito API semantics are all required. Run two-org real DB
 and HTTP acceptance in isolated staging, including crash-between-write-and-outcome,
 lease expiry, cancellation and provider pagination, before deployment approval.
-Local tests prove orchestration with doubles only; they prove no deployed worker,
+Local tests now cover whole-page checkpoint rollback, second-row rollback, lost
+commit acknowledgement replay and revision-only snapshots, with doubles only;
+they prove no deployed worker,
 DB authorization, external API compatibility or production readiness.

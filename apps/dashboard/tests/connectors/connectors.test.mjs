@@ -34,10 +34,10 @@ test('replay same job/source page is idempotent and new animals unpublished',asy
   assert.equal(h.store.writes,1);assert.equal(Object.keys(h.store.animals).length,1);assert.equal(toPublicAnimal(h.store.animals['7']),null);
   assert.notEqual(h.store.animals['7'].id,'dog-38-7');
 });
-test('mid-page failure retains inbox and cursor; retry skips durable rows',async()=>{
+test('second-row failure rolls back the entire page and retry reuses its immutable inbox',async()=>{
   const h=harness(async()=>page([raw('7'),raw('8')],'cursor-2',false));h.store.failId='8';
-  await h.enqueue();await h.run();assert.equal(h.store.jobs[0].cursor,null);assert.equal(h.store.writes,1);assert.equal(h.store.reviews,0);
-  h.advance();await h.run();assert.equal(h.calls(),1);assert.equal(h.store.writes,2);assert.equal(h.store.jobs[0].cursor,'cursor-2');
+  await h.enqueue();await h.run();assert.equal(h.store.jobs[0].cursor,null);assert.equal(h.store.writes,0);assert.equal(h.store.reviews,0);assert.equal(h.store.outcomes.length,0);assert.deepEqual(h.store.jobs[0].box.completed,[]);
+  h.advance();await h.run();assert.equal(h.calls(),1);assert.equal(h.store.writes,2);assert.equal(h.store.jobs[0].cursor,'cursor-2');assert.equal(h.store.outcomes.length,2);
 });
 test('outcome failure rolls back writer and retry creates once',async()=>{
   const h=harness();h.store.failOutcome=true;await h.enqueue();await h.run();assert.equal(h.store.writes,0);
@@ -121,4 +121,50 @@ test('saved birthday mapping preserves explicit estimate and rejects impossible/
   const c=connection();c.mapping.fields.push({sourceColumn:'Birthday',target:{kind:'core',field:'age'},transform:'birthday'});
   assert.equal(normalizeCognito(c,{...raw(),Birthday:{date:'2025-01-01',estimated:true}},'2026-10-26').fields.age.estimated,true);
   for(const date of ['2026-02-30','2027-01-01'])assert.throws(()=>normalizeCognito(c,{...raw(),Birthday:{date,estimated:false}},'2026-10-26'));
+});
+
+
+test('checkpoint failure rolls back all page animals, outcomes, source heads and counts',async()=>{
+  const h=harness(async()=>page([raw('7'),raw('8')],'next-page',false));
+  h.store.failCheckpoint=true;await h.enqueue();await h.run();
+  assert.equal(h.store.writes,0);assert.deepEqual(h.store.animals,{});assert.deepEqual(h.store.heads,{});
+  assert.equal(h.store.outcomes.length,0);assert.equal(h.store.jobs[0].cursor,null);
+  assert.deepEqual(h.store.jobs[0].box.completed,[]);assert.equal(h.store.jobs[0].counts.created,0);
+  h.advance();await h.run();assert.equal(h.calls(),1);assert.equal(h.store.writes,2);
+  assert.equal(h.store.outcomes.length,2);assert.equal(h.store.jobs[0].cursor,'next-page');
+});
+test('lost commit acknowledgement preserves the committed cursor and never repeats page writes',async()=>{
+  const h=harness(async input=>input.cursor===null?page([raw('7')],'next-page',false):page([raw('8')]));
+  h.store.loseCommitAck=true;await h.enqueue();await h.run();
+  assert.equal(h.store.writes,1);assert.equal(h.store.jobs[0].cursor,'next-page');
+  assert.equal(h.store.jobs[0].state,'queued');assert.equal(h.store.jobs[0].box,null);
+  assert.equal(h.store.outcomes.length,1);
+  await h.run();assert.equal(h.store.writes,2);assert.equal(h.store.outcomes.length,2);
+  assert.equal(h.store.jobs[0].state,'completed');assert.equal(h.calls(),2);
+});
+test('committed unit receipt resolves direct replay after acknowledgement loss without invoking callback',async()=>{
+  const store=new FixtureStore();await store.enqueue(scope,'request');
+  const {lease}=await store.claim('worker-1',1000,1000);
+  await store.saveInbox(lease,{kind:'success',records:[],nextCursor:null,completeSnapshot:true},{});
+  store.loseCommitAck=true;let callbacks=0;
+  await assert.rejects(()=>store.commitPage(lease,async tx=>{callbacks++;await tx.checkpoint();return 'committed';}),/acknowledgement lost/);
+  assert.equal(store.jobs[0].state,'completed');
+  const result=await store.commitPage(lease,async()=>{callbacks++;throw Error('must not rerun');});
+  assert.equal(result,'committed');assert.equal(callbacks,1);assert.equal(store.committedLeases.size,1);
+});
+test('empty complete page missing-review changes roll back with checkpoint failure',async()=>{
+  let response=page([raw()]);const h=harness(async()=>response);await h.enqueue();await h.run();
+  response=page([]);h.store.failCheckpoint=true;await h.enqueue();await h.run();
+  assert.equal(h.store.reviews,0);assert.equal(h.store.animals['7'].syncState,'current');
+  assert.notEqual(h.store.jobs.at(-1).box,null);
+  h.advance();await h.run();assert.equal(h.store.reviews,1);
+  assert.equal(h.store.jobs.at(-1).state,'completed');
+});
+test('pre-fetch snapshots retain revision metadata only, excluding private animal values',async()=>{
+  const h=harness();await h.enqueue();await h.run();
+  h.store.animals['7'].privateData.internalNotes='DO-NOT-PERSIST-IN-INBOX';
+  await h.enqueue();const {lease}=await h.store.claim('worker-1',1000,1000);
+  const snapshot=await h.store.snapshot(lease);
+  assert.deepEqual(snapshot,{'7':{revision:1}});
+  assert.doesNotMatch(JSON.stringify(snapshot),/DO-NOT|privateData|photos|customFields/);
 });

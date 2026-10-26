@@ -168,7 +168,7 @@ create policy animal_insert on public.platform_animals for insert to authenticat
 create policy animal_update on public.platform_animals for update to authenticated using(barkhaus_private.organization_role(org_id) in ('owner','admin','staff')) with check(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'));
 revoke all on barkhaus_private.connection_credentials from public,anon,authenticated,service_role;
 -- Private bucket must never be made public; preflight must confirm separately.
-insert into storage.buckets(id,public) values('animal-private-documents',false);
+insert into storage.buckets(id,name,public) values('animal-private-documents','animal-private-documents',false);
 create function barkhaus_private.document_access(object_name text,write_access boolean) returns boolean language sql stable security definer set search_path='' as $$
  select exists(select 1 from public.organization_memberships m where m.user_id=auth.uid() and m.is_active and m.org_id::text=split_part(object_name,'/',1) and (not write_access or m.role in ('owner','admin','staff')))
 $$;

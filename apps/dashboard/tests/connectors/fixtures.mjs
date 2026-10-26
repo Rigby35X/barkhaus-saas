@@ -20,7 +20,7 @@ export const auth = {
 };
 /** TEST DOUBLE ONLY. No SQL or production animal repository. A+B supply these ports. */
 export class FixtureStore {
-  constructor(c=connection()) { this.c=c; this.animals={}; this.heads={}; this.jobs=[]; this.outcomes=[]; this.clock=1000; this.fence=0; this.writes=0; this.reviews=0; }
+  constructor(c=connection()) { this.c=c; this.animals={}; this.heads={}; this.jobs=[]; this.outcomes=[]; this.clock=1000; this.fence=0; this.writes=0; this.reviews=0; this.committedLeases=new Map(); }
   checkScope(s) { if(s.orgId!==this.c.orgId || s.connectionId!==this.c.id) throw new ConnectorError('forbidden'); }
   async enqueue(s,key) {
     this.checkScope(s);
@@ -45,11 +45,13 @@ export class FixtureStore {
   valid(l) { if(this.active?.token!==l.token || this.c.state!=='active' || this.clock>=l.expiresAt)throw new ConnectorError('cancelled');return this.jobs.find(j=>j.id===l.jobId); }
   async assertLease(l,now) { this.clock=now;this.valid(l); }
   async inbox(l) { return structuredClone(this.valid(l).box); }
-  async snapshot(l) { this.valid(l);return structuredClone(this.animals); }
+  async snapshot(l) { this.valid(l);return Object.fromEntries(Object.entries(this.animals).map(([id,a])=>[id,{revision:a.revision}])); }
   async saveInbox(l,p,b) { const j=this.valid(l);if(!j.box)j.box={page:structuredClone(p),before:structuredClone(b),completed:[]}; }
-  async transaction(l,run) {
+  async commitPage(l,run) {
     const j=this.valid(l);
-    const backup=structuredClone({animals:this.animals,heads:this.heads,box:j.box,counts:j.counts,seen:j.seen,writes:this.writes});
+    if(this.committedLeases.has(l.token))return structuredClone(this.committedLeases.get(l.token));
+    const backup=structuredClone({animals:this.animals,heads:this.heads,job:j,outcomes:this.outcomes,writes:this.writes,reviews:this.reviews});
+    let checkpointed=false;
     const tx={
       current:async id=>structuredClone(this.animals[id]??null),
       sourceHead:async id=>structuredClone(this.heads[id]??null),
@@ -62,7 +64,7 @@ export class FixtureStore {
           if(cmd.expectedRevision!==null)return {ok:false,code:'conflict'};
           const fields={name:'',species:'',breed:null,age:{kind:'unknown'},sex:'unknown',size:'unknown',biography:null,photos:[],lifecycle:'unknown',availability:'unknown',...cmd.fields};
           const owner={kind:'connector',connectionId:this.c.id};
-          a={contractVersion:'barkhaus.animal.v1',id:`animal-${this.c.orgId}-${Object.keys(this.animals).length+1}`,orgId:this.c.orgId,revision:1,source:{kind:'connector',connectionId:this.c.id,provider:'cognito',externalRecordId:cmd.externalRecordId},fields,ownership:Object.fromEntries(Object.keys(fields).map(k=>[k,owner])),publication:{state:'unpublished',publicProfileKey:null,approvedPhotos:[]},privateData:{internalNotes:'',medicalRecordIds:[],documentIds:[]},customFields:Object.fromEntries(Object.entries(cmd.customFields??{}).map(([k,value])=>[k,{value,owner}])),syncState:'current',applications:['local-app']};
+          a={contractVersion:'barkhaus.animal.v1',id:`animal-${this.c.orgId}-${Object.keys(this.animals).length+1}`,orgId:this.c.orgId,revision:1,source:{kind:'connector',connectionId:this.c.id,provider:'cognito',externalRecordId:cmd.externalRecordId},fields,ownership:Object.fromEntries(Object.keys(fields).map(k=>[k,Object.hasOwn(cmd.fields,k)?owner:{kind:'barkhaus'}])),publication:{state:'unpublished',publicProfileKey:null,approvedPhotos:[]},privateData:{internalNotes:'',medicalRecordIds:[],documentIds:[]},customFields:Object.fromEntries(Object.entries(cmd.customFields??{}).map(([k,value])=>[k,{value,owner}])),syncState:'current',applications:['local-app']};
         }
         this.animals[cmd.externalRecordId]=a;this.writes++;return {ok:true,animal:structuredClone(a),replayed:false};
       }},
@@ -71,19 +73,27 @@ export class FixtureStore {
         this.valid(l);
         j.box.completed.push(id);j.seen.push(id);
         this.heads[id]={revision,digest};
+        this.outcomes.push({jobId:j.id,cursor:j.cursor,id,outcome,revision,digest});
         if(['created','updated'].includes(outcome))j.counts[outcome]++;
       },
+      checkpoint:async()=>{await this.checkpointWithinPage(l);checkpointed=true;},
     };
-    try{return await run(tx);}catch(e){this.animals=backup.animals;this.heads=backup.heads;j.box=backup.box;j.counts=backup.counts;j.seen=backup.seen;this.writes=backup.writes;throw e;}
+    let result;
+    try{result=await run(tx);if(!checkpointed)throw Error('page checkpoint required');}catch(e){this.animals=backup.animals;this.heads=backup.heads;Object.assign(j,backup.job);this.outcomes=backup.outcomes;this.writes=backup.writes;this.reviews=backup.reviews;throw e;}
+    this.committedLeases.set(l.token,structuredClone(result));
+    // A transport failure AFTER the commit must never undo the committed receipt.
+    if(this.loseCommitAck){this.loseCommitAck=false;throw Error('commit acknowledgement lost');}
+    return result;
   }
-  async checkpoint(l) {
+  async checkpointWithinPage(l) {
     const j=this.valid(l);const box=j.box;
+    if(this.failCheckpoint){this.failCheckpoint=false;throw Error('checkpoint failure');}
     if(box.page.records.some(r=>!box.completed.includes(r.externalRecordId)))throw Error('outcomes required');
     j.cursor=box.page.nextCursor;
     if(j.cursor===null){j.state='completed';if(box.page.completeSnapshot){for(const id of Object.keys(this.animals))if(!j.seen.includes(id)){this.animals[id].syncState='missing_review';j.counts.missingReview++;this.reviews++;}}}
     else j.state='queued';
     j.box=null;
   }
-  async fail(l,f) { const j=this.valid(l);j.state=f.nextAttemptAt?'retry_wait':'failed';j.nextAttemptAt=f.nextAttemptAt;j.error=f; }
+  async fail(l,f) { const j=this.valid(l);if(this.committedLeases.has(l.token))return;j.state=f.nextAttemptAt?'retry_wait':'failed';j.nextAttemptAt=f.nextAttemptAt;j.error=f; }
   async release(l) { if(this.active?.token===l.token)this.active=null; }
 }

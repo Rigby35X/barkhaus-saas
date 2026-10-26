@@ -12,7 +12,8 @@ create function barkhaus_private.issue_organization_invitation(target_org bigint
 returns void language plpgsql set search_path='' as $$
 begin
  -- Caller must independently validate inviter with Auth before this trusted call.
- if not exists(select 1 from public.organization_memberships where org_id=target_org and user_id=inviter and is_active and role in ('owner','admin')) then raise exception 'Invitation issuer denied'; end if;
+ perform 1 from public.organization_memberships where org_id=target_org and user_id=inviter and is_active and role in ('owner','admin') for share;
+ if not found then raise exception 'Invitation issuer denied'; end if;
  if expiry<=now() or expiry>now()+interval '7 days' then raise exception 'Invalid invitation expiry'; end if;
  insert into barkhaus_private.organization_invitations values(token_digest,target_org,lower(trim(target_email)),target_role,expiry,null,inviter);
 end $$;
@@ -25,7 +26,8 @@ begin
  select lower(email) into verified_email from auth.users where id=auth.uid() and email_confirmed_at is not null;
  select * into invitation from barkhaus_private.organization_invitations where token_sha256=token_digest for update;
  if not found or invitation.expires_at<=now() or invitation.accepted_at is not null or verified_email is distinct from invitation.email then raise exception 'Invitation invalid or expired'; end if;
- if not exists(select 1 from public.organization_memberships where user_id=invitation.issued_by and org_id=invitation.org_id and is_active and role in ('owner','admin')) then raise exception 'Invitation issuer revoked'; end if;
+ perform 1 from public.organization_memberships where user_id=invitation.issued_by and org_id=invitation.org_id and is_active and role in ('owner','admin') for share;
+ if not found then raise exception 'Invitation issuer revoked'; end if;
  -- Existing or revoked memberships require explicit admin review; never reactivate
  -- or downgrade an owner implicitly through an old invitation.
  insert into public.organization_memberships(user_id,org_id,role) values(auth.uid(),invitation.org_id,invitation.role);

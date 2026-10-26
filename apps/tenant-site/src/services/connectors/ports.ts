@@ -4,7 +4,7 @@ import type { CognitoConnection } from './config.ts';
 
 export type Scope = { orgId: number; connectionId: string };
 export type Lease = Scope & { jobId: string; token: string; expiresAt: number };
-export type Snapshot = Record<string, AnimalRecord>; // Read BEFORE provider fetch; immutable for this inbox page.
+export type Snapshot = Record<string, { revision: number }>; // No private notes/documents; read BEFORE provider fetch.
 export type SuccessPage = Extract<ConnectorPage, { kind: 'success' }>;
 export interface Inbox { page: SuccessPage; before: Snapshot; completed: readonly string[] }
 export interface ClaimedJob { lease: Lease; connection: CognitoConnection; job: SyncJob }
@@ -16,6 +16,8 @@ export interface ConnectorTransaction {
   sourceHead(externalRecordId: string): Promise<{ revision: string; digest: string } | null>;
   /** Ledger + outcome + seen identity + counts commit atomically with writer.execute. */
   recordOutcome(externalRecordId: string, outcome: 'created'|'updated'|'unchanged'|'stale', revision: string, digest: string): Promise<void>;
+  /** Advance cursor/counts, consume the inbox and record the unit receipt in THIS transaction. */
+  checkpoint(): Promise<void>;
 }
 /** All methods must enforce tenant scope, active connection generation, cancellation,
  * deadline and current fencing token inside DB transactions. No in-process production store. */
@@ -30,13 +32,15 @@ export interface DurableConnectorStore {
   /** CAS inbox absent; persist immutable normalized page, digest and pre-fetch snapshot.
    * Also bound page count, total rows, cursor history and encrypted payload bytes. */
   saveInbox(lease: Lease, page: SuccessPage, before: Snapshot): Promise<void>;
-  transaction<T>(lease: Lease, operation: (tx: ConnectorTransaction) => Promise<T>): Promise<T>;
-  /** Require every inbox row outcome. Atomically advance cursor and clear inbox;
-   * terminal completeSnapshot after a verified full traversal may mark unseen scoped identities missing_review.
-   * Reset consecutive attempt count after successful page; reaper bounds abandoned attempts.
-   * Partial/failure/cancelled traversals NEVER mark missing. Never delete records. */
-  checkpoint(lease: Lease): Promise<void>;
-  /** Release lease; terminal failure or bounded retry_wait, safe code/message only. */
+  /** ONE bounded page transaction: recheck fence/generation/deadline, bind B's writer,
+   * write every animal/identity/source head/outcome, then tx.checkpoint() before commit.
+   * Any failure rolls the WHOLE page back. An immutable unit receipt resolves a lost
+   * commit acknowledgement; replay never reruns already committed mutations.
+   * Terminal verified complete snapshots may mark missing_review, never delete. */
+  commitPage<T>(lease: Lease, operation: (tx: ConnectorTransaction) => Promise<T>): Promise<T>;
+  /** After rollback only: terminal failure or bounded retry_wait, safe code/message.
+   * If this lease's unit already committed (lost acknowledgement), preserve that
+   * receipt/cursor/state instead of changing it back to retry_wait. */
   fail(lease: Lease, failure: { code: string; message: string; nextAttemptAt: string | null }): Promise<void>;
   release(lease: Lease): Promise<void>;
 }

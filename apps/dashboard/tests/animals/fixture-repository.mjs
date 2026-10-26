@@ -33,10 +33,12 @@ export function fixtureRepository(store, principal) {
       async findImport(orgId, mappingId, importKey) { return copy([...state.rows.values()].find(r => r.orgId === orgId && r.source.kind === 'native' && r.source.csvOrigin?.mappingId === mappingId && r.source.csvOrigin?.importKey === importKey) ?? null); },
       async verifyIngestion(actor, command) {
         if (command.kind === 'source_upsert') return principal?.kind === 'worker' && store.connections.has(`${actor.orgId}:${command.connectionId}`);
-        return command.kind === 'create_native' && command.csvOrigin?.mappingId === 'mapping-1001' && command.csvOrigin?.jobId === 'job-1001' && actor.orgId === 1001;
+        if (command.kind !== 'create_native' || !command.csvOrigin) return true;
+        return command.csvOrigin?.mappingId === 'mapping-1001' && command.csvOrigin?.jobId === 'job-1001' && actor.orgId === 1001;
       },
       async provider(orgId, connectionId) { const p = store.connections.get(`${orgId}:${connectionId}`); if (!p) throw Error('No scoped connection'); return p; },
       async allocateId() { return randomUUID(); },
+      async sourceOwnership(_orgId,connectionId) { return Object.fromEntries(['name','species','breed','age','sex','size','biography','photos','lifecycle','availability'].map(k=>[k,{kind:'connector',connectionId}])); },
       async put(animal, expected) {
         const k = tuple(animal.orgId,animal.id);
         if ((state.rows.get(k)?.revision ?? null) !== expected) return false;

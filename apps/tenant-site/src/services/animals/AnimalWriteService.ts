@@ -40,9 +40,9 @@ export class AnimalWriteService implements Writer {
       if (!validActor(verified) || !validActor(actor) || !sameActor(claim, verified) || verified.orgId !== command.orgId || (verified.kind === 'member' && verified.role === 'viewer')) return forbidden;
       if ((command.kind === 'source_upsert') !== (verified.kind === 'worker')) return forbidden;
       if (command.kind === 'source_upsert' && verified.kind === 'worker' && verified.connectionId !== command.connectionId) return forbidden;
-      if (command.kind === 'publish' && (verified.kind !== 'member' || !['owner','admin'].includes(verified.role))) return forbidden;
+      if (['publish', 'unpublish', 'archive'].includes(command.kind) && (verified.kind !== 'member' || !['owner','admin'].includes(verified.role))) return forbidden;
       // Revalidate job/lease scope even for replay; revoked/disconnected jobs cannot replay.
-      if ((command.kind === 'source_upsert' || (command.kind === 'create_native' && command.csvOrigin)) && !await tx.verifyIngestion(verified, command)) return forbidden;
+      if (!await tx.verifyIngestion(verified, command)) return forbidden;
       const receiptScope = scope(verified, command.idempotencyKey);
       const fingerprint = canonical(command);
       const prior = await tx.receipt(receiptScope);
@@ -80,7 +80,7 @@ export class AnimalWriteService implements Writer {
       record = {
         contractVersion: CONTRACT_VERSION, id: await tx.allocateId(), orgId: c.orgId, revision: 1,
         source: c.kind === 'source_upsert' ? { kind: 'connector', connectionId: c.connectionId, provider: await tx.provider(c.orgId, c.connectionId), externalRecordId: c.externalRecordId } : { kind: 'native', ...(c.csvOrigin ? { csvOrigin: c.csvOrigin } : {}) },
-        fields: initial, ownership: Object.fromEntries(Object.keys(initial).map(k => [k, owner])) as AnimalRecord['ownership'],
+        fields: initial, ownership: c.kind === 'source_upsert' ? await tx.sourceOwnership(c.orgId,c.connectionId) : Object.fromEntries(Object.keys(initial).map(k => [k, owner])) as AnimalRecord['ownership'],
         publication: { state: 'unpublished', publicProfileKey: null, approvedPhotos: [] },
         privateData: { internalNotes: '', documentIds: [], medicalRecordIds: [] },
         customFields: Object.fromEntries(Object.entries(c.customFields ?? {}).map(([k, value]) => [k, { value, owner }])),
@@ -93,8 +93,9 @@ export class AnimalWriteService implements Writer {
         privateData: { ...record.privateData, ...(c.kind === 'edit_native' && c.internalNotes !== undefined ? { internalNotes: c.internalNotes } : {}) },
         syncState: c.kind === 'source_upsert' ? 'current' : record.syncState,
       };
-      // Approval binds BOTH candidate identity and URL; replacement never inherits approval.
-      record.publication = { ...record.publication, approvedPhotos: record.publication.approvedPhotos.filter(a => record!.fields.photos.some(p => p.id === a.id && p.url === a.url)) };
+      // Approvals are local controls. The public projection matches exact ID+URL,
+      // so absent/replaced candidates remain hidden without granting source/staff
+      // authority to mutate the approval set.
     } else {
       record = structuredClone(record); record.revision++;
       if (c.kind === 'publish') {

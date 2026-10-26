@@ -39,6 +39,13 @@ test('viewer rendered editor disables local notes and save; blank create has no 
   assert.match(blank,/species<textarea[^>]*><\/textarea>/);
   assert.match(blank,/Save unpublished animal/);
 });
+test('staff cannot operate publication controls; owner/admin publication permission is explicit',()=>{
+  const props={orgId:1002,animal:record,canEdit:true,onSaved(){},onClose(){}};
+  const staff=renderToStaticMarkup(React.createElement(Editor,props));
+  for(const label of ['Approve and publish saved profile','Unpublish','Archive'])assert.match(staff,new RegExp('<button[^>]*disabled=""[^>]*>'+label));
+  const owner=renderToStaticMarkup(React.createElement(Editor,{...props,canPublish:true}));
+  for(const label of ['Unpublish','Archive'])assert.match(owner,new RegExp('<button(?![^>]*disabled)[^>]*>'+label));
+});
 test('network retry retains exact command/key; changed payload or revision allocates a fresh key',()=>{
   const first = {kind:'edit_native',idempotencyKey:'original',expectedRevision:7,fields:{name:'A'}};
   assert.equal(pendingCommand(first,{...first,idempotencyKey:'new'}),first);

@@ -52,19 +52,20 @@ export class ConnectorWorker {
         inbox = await this.store.inbox(lease);
       }
       if (!inbox) throw new ConnectorError('unavailable');
-      for (const record of inbox.page.records) {
-        if (abort.aborted) throw new ConnectorError('unavailable');
-        await this.store.assertLease(lease,this.now());
-        if (inbox.completed.includes(record.externalRecordId)) continue;
-        const identity = connectorIdentity(c.orgId,c.id,record.externalRecordId);
-        const digest = await recordDigest({ fields:record.fields, customFields:record.customFields ?? {} });
-        await this.store.transaction(lease,async tx=> {
+      // The durable adapter revalidates the lease inside the same page transaction.
+      // Do not call separately committing store methods from inside this callback.
+      await this.store.commitPage(lease,async tx=> {
+        for (const record of inbox!.page.records) {
+          if (abort.aborted) throw new ConnectorError('unavailable');
+          if (inbox!.completed.includes(record.externalRecordId)) continue;
+          const identity = connectorIdentity(c.orgId,c.id,record.externalRecordId);
+          const digest = await recordDigest({ fields:record.fields, customFields:record.customFields ?? {} });
           const head = await tx.sourceHead(record.externalRecordId);
           const order = sourceOrder(record.sourceRevision);
           if (head && order <= sourceOrder(head.revision)) {
             if (order === sourceOrder(head.revision) && digest !== head.digest) throw new ConnectorError('conflict');
             await tx.recordOutcome(record.externalRecordId,order < sourceOrder(head.revision) ? 'stale':'unchanged',head.revision,head.digest);
-            return;
+            continue;
           }
           const current = await tx.current(record.externalRecordId);
           const before = inbox!.before[record.externalRecordId];
@@ -86,10 +87,10 @@ export class ConnectorWorker {
           });
           if (!result.ok) throw new ConnectorError(result.code === 'conflict' ? 'conflict':'forbidden');
           await tx.recordOutcome(record.externalRecordId,current ? 'updated':'created',record.sourceRevision!,digest);
-        });
-      }
-      await this.store.assertLease(lease,this.now());
-      await this.store.checkpoint(lease);
+        }
+        if (abort.aborted) throw new ConnectorError('unavailable');
+        await tx.checkpoint();
+      });
     } catch (e) {
       const err = e instanceof ConnectorError ? e : new ConnectorError('unavailable');
       const retry = ['unavailable','rate_limited'].includes(err.code) && job.attempt < this.options.maxAttempts;

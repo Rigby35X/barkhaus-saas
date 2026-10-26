@@ -1,4 +1,4 @@
-import type { AnimalId, AnimalRecord, OrganizationId } from '../../../../../shared/contracts/v1/animal.ts';
+import type { AnimalFields, AnimalId, AnimalRecord, FieldOwner, OrganizationId } from '../../../../../shared/contracts/v1/animal.ts';
 import type { AnimalWrite, WriteActor, WriteResult } from '../../../../../shared/contracts/v1/ingestion.ts';
 
 /** Trusted server adapters only. Never implement this interface in a browser.
@@ -19,6 +19,7 @@ export interface AnimalTransaction {
    * Must atomically record CSV row outcomes/checkpoints alongside put/receipts. */
   verifyIngestion(actor: WriteActor, command: AnimalWrite): Promise<boolean>;
   provider(orgId: OrganizationId, connectionId: string): Promise<string>;
+  sourceOwnership(orgId: OrganizationId, connectionId: string): Promise<Record<keyof AnimalFields, FieldOwner>>;
   allocateId(): Promise<AnimalId>;
   /** Compare-and-swap and unique identity/public key constraints. null revision means INSERT only. */
   put(animal: AnimalRecord, expectedRevision: number | null): Promise<boolean>;

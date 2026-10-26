@@ -133,6 +133,7 @@ function App() {
           <AnimalsTab
             orgId={session.orgId}
             canEdit={session.role !== 'viewer'}
+            canPublish={canManageOrganization(session.role)}
             initialSearch={animalsSearch.query}
             searchNonce={animalsSearch.nonce}
           />

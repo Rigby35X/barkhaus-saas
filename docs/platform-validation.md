@@ -107,3 +107,14 @@ but reported policy/variable states do not establish live DB authorization.
 Earlier baseline checks and blockers above are historical evidence, not a claim
 of current staging readiness. No combined actual-SQL adapter, staging verification
 or production rollout is complete.
+
+## Integration execution outcome
+
+The user subsequently authorized cross-module implementation on
+`feature/platform-integration-v1-20261026`. The repaired schema, concrete SQL
+repository, atomic CSV batches/connector pages and current evidence are documented
+in [platform-integration-results.md](platform-integration-results.md).
+The earlier missing-adapter/atomicity findings are resolved locally on that branch:
+34 SQL integration, 41 security, 66 feature and 13 contract tests pass; strict
+typechecks and all three app builds pass. Staging checks, runtime activation and
+remote migration approval remain outstanding; PR #7 remains unmerged.
