@@ -45,3 +45,35 @@ values ('VERIFIED_AUTH_USER_UUID'::uuid, VERIFIED_ORG_ID, 'owner');
 - The migrations cover currently known tenant tables. New tenant tables and views need policies explicitly; creating a new table does not inherit these guards.
 - Revoke an account's membership by setting `is_active = false` or deleting the row in a trusted admin/server workflow. Database checks take effect immediately; cached frontend UI rechecks on focus, and unauthorized subsequent writes fail even while a tab is open.
 - Rotate any historical credentials or provider keys found in public git history. Removing an access-code login does not erase past commits.
+
+## Platform v1 candidate (Agent A, 2026-10-26)
+
+Contract base `813d605d5465e3b78264a8abd4a9ed790f74f14f`. The additional
+`202610260001_platform_v1.sql` and `202610260002_identity_invitation.sql` are local
+fixture-tested candidates only. They do not backfill/adopt existing animals,
+change MBPR, replace the public reader, or authorize applying Stage 2. See
+`docs/platform-a-evidence.md` and `docs/platform-a-interfaces.md` for physical
+mapping, SQL capabilities, integration prerequisites and verification limits.
+
+Run both administrator audits before considering these candidates. The v1 schema
+requires Stage 1 but can be fixture-tested independently of Stage 2. Migration
+number ordering is not permission to apply all migrations: the existing Stage 2
+still requires the public-site/submission cutover and staging evidence above.
+Never run an indiscriminate remote migration push as part of this assignment.
+
+Recovery UI now requests email with a fixed allowlisted callback, blocks workspace
+entry during password reset, validates the Auth user before updating and signs out
+on completion. Configure exact Supabase Auth redirect URLs before staging tests.
+Auth-server token expiry/reuse and email delivery are unverified locally.
+Invitations use hashed random tokens, confirmed matching emails, atomic single-use
+acceptance and a current issuer authorization check. Issuance and initial owner
+provisioning are administrator-only; signup metadata never grants membership.
+The provisioning routine attaches an independently verified Auth user to an
+independently verified existing organization, refusing already-provisioned orgs.
+Creating organization rows awaits actual schema reconciliation.
+
+Private document URLs are signed for 60 seconds after rechecking membership;
+previously issued URLs may remain usable until expiry. Verify actual expiration,
+revocation behavior and bucket privacy using isolated staging HTTP. Never put
+private attachments into the public animal-images bucket. Candidate migration
+fails if the private bucket already exists, forcing review of its configuration.
