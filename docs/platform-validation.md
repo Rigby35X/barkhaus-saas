@@ -90,3 +90,20 @@ Reviewable deliverables are the coordinator commit, shared v1 contracts/tests,
 mapping document, and four implementation branch assignments. No PR was pushed,
 no environment configuration was changed for this coding task, and no staging or
 production readiness is claimed.
+
+## Subsequent integration review
+
+A–D are now running in separate Cloud tasks from this contract commit. Their
+observed branch heads, dependency gates, schema/interface review and required
+follow-ups are in [platform-integration.md](platform-integration.md). PR #7's 17
+connector fixture tests were reproduced, but a separate injected checkpoint
+failure left one animal/outcome committed without cursor advancement. The new
+page-atomic requirement therefore remains unmet; PR #7 stays unmerged.
+
+A's SQL/evidence and B/C handoffs were reviewed without applying migrations or
+enabling runtime adapters. Current Git fetch/PR-page access succeeded; GitHub
+GraphQL access was forbidden. The cloud runtime status tool is now available,
+but reported policy/variable states do not establish live DB authorization.
+Earlier baseline checks and blockers above are historical evidence, not a claim
+of current staging readiness. No combined actual-SQL adapter, staging verification
+or production rollout is complete.

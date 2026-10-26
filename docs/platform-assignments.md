@@ -1,9 +1,14 @@
 # First milestone implementation assignments
 
 Use [kickoff](platform-kickoff.md), [v1 contracts](platform-contracts-v1.md),
-and [baseline evidence](platform-validation.md). The coordinator has completed
-the contract/baseline task and A's parallel **read-only** inventory. B/C/D feature
-implementation has not been launched; this document prepares their assignments.
+and [baseline evidence](platform-validation.md). At contract freeze, the coordinator
+had completed the contract/baseline task and A's parallel **read-only** inventory;
+B/C/D feature implementation had not been launched. All four implementation
+agents are now running in separate Cloud tasks from the frozen contract commit.
+
+Subsequent worker handoffs and required corrections are tracked in
+[the integration checklist](platform-integration.md). Its dependency gates and
+transaction decisions apply before connecting these modules or merging PR #7.
 
 ## Branches, ownership and gates
 
