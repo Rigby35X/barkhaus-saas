@@ -48,19 +48,20 @@ create table public.platform_animals (
  lifecycle text not null default 'unknown' check(lifecycle in ('intake','care','adopted','transferred','deceased','unknown')),
  availability text not null default 'unknown' check(availability in ('available','pending','unavailable','unknown')),
  publication text not null default 'unpublished' check(publication in ('unpublished','published','archived')),
- public_profile_key text, fields jsonb not null check(jsonb_typeof(fields)='object' and length(trim(fields->>'name'))>0 and length(trim(fields->>'species'))>0 and fields ? 'name' and fields ? 'species'),
+ public_profile_key text, fields jsonb not null check(jsonb_typeof(fields)='object' and coalesce(length(trim(fields->>'name')),0)>0 and coalesce(length(trim(fields->>'species')),0)>0 and jsonb_typeof(fields->'name')='string' and jsonb_typeof(fields->'species')='string' and fields ? 'name' and fields ? 'species'),
  field_owners jsonb not null default '{}' check(jsonb_typeof(field_owners)='object'),
  custom_fields jsonb not null default '{}' check(jsonb_typeof(custom_fields)='object'),
  custom_owners jsonb not null default '{}' check(jsonb_typeof(custom_owners)='object'),
  photos jsonb not null default '[]' check(jsonb_typeof(photos)='array'),
  approvals jsonb not null default '[]' check(jsonb_typeof(approvals)='array'),
  notes text not null default '',
- primary key(org_id,id), unique(org_id,public_profile_key), unique(org_id,connection_id,external_record_id),
+ primary key(org_id,id), unique(org_id,public_profile_key), unique(org_id,legacy_animal_id), unique(org_id,connection_id,external_record_id),
  unique(org_id,import_mapping_id,import_key),
  foreign key(org_id,connection_id) references public.platform_connections(org_id,id),
  check((source_kind='native' and connection_id is null and external_record_id is null) or
  (source_kind='connector' and connection_id is not null and external_record_id is not null and length(external_record_id)>0)),
  check((import_mapping_id is null)=(import_key is null)),
+ check(import_key is null or length(trim(import_key))>0),
  check(publication<>'published' or (public_profile_key is not null and length(trim(public_profile_key))>0))
 );
 -- Mapping namespace has many immutable revisions. Import identities bind to a
@@ -143,6 +144,7 @@ create trigger platform_animal_guard before insert or update on public.platform_
 -- Jobs/mappings/receipts/outcomes are written by B's trusted transactional writer.
 do $$ declare tab text; begin
  foreach tab in array array['platform_documents','platform_source_commits','platform_connections','platform_mappings','platform_jobs','platform_animals','platform_import_namespaces','platform_write_receipts','platform_row_outcomes'] loop
+ execute format('alter table public.%I add constraint positive_safe_org check(org_id between 1 and 9007199254740991)',tab);
  execute format('alter table public.%I enable row level security',tab);
  execute format('revoke all on public.%I from public,anon,authenticated',tab);
  execute format('grant select on public.%I to authenticated',tab);

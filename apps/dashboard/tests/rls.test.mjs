@@ -173,6 +173,23 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   await db.exec("insert into public.platform_row_outcomes values(1001,'csvjob','1','i','"+'a'.repeat(64)+"','{}')");
   await assert.rejects(db.exec("insert into public.platform_row_outcomes values(1001,'csvjob','1','i','"+'a'.repeat(64)+"','{}')"),/unique/);
  });
+ await t.test('org readers cannot see other org mappings, jobs, connections or document metadata',async()=>{
+  await db.exec("insert into public.platform_connections(org_id,id,provider) values(1002,'foreign','cognito')");
+  await db.exec("insert into public.platform_mappings values(1002,'foreign',1,'foreign','{}')");
+  await db.exec("insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id) values(1002,'foreign','connector','foreign',1,'foreign')");
+  await db.exec("insert into public.platform_documents values(1002,'doc','s','1002/medical/doc.pdf','medical')");
+  for(const table of ['platform_connections','platform_mappings','platform_jobs','platform_documents','platform_row_outcomes','platform_write_receipts','platform_source_commits']) {
+   assert.equal((await as(userA,`select * from public.${table} where org_id=1002`)).rows.length,0);
+  }
+  await assert.rejects(as(userA,`insert into public.platform_connections(org_id,id,provider) values(1002,'intruder','cognito')`),/permission denied/);
+ });
+ await t.test('admin publication allowed; JSON null required fields rejected',async()=>{
+  await db.exec(`update public.organization_memberships set role='admin' where user_id='${userA}' and org_id=1001`);
+  await as(userA,create('admin'));
+  await as(userA,"update public.platform_animals set publication='published',public_profile_key='admin',revision=2 where id='admin'");
+  await assert.rejects(as(userA,`insert into public.platform_animals(org_id,id,source_kind,fields) values(1001,'null','native','{"name":null,"species":"dog"}')`),/check constraint/);
+  await db.exec(`update public.organization_memberships set role='owner' where user_id='${userA}' and org_id=1001`);
+ });
  await t.test('private documents tenant scoped despite permissive legacy policy',async()=>{
   await as(userB,"insert into storage.objects(bucket_id,name) values('animal-private-documents','1001/medical/a.pdf')");
   await assert.rejects(as(userB,"insert into storage.objects(bucket_id,name) values('animal-private-documents','1002/medical/a.pdf')"),/row-level security/);
@@ -201,6 +218,28 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   } catch(e) {assert.match(e.message,/foreign key/);} finally {await db.exec('rollback');}
   assert.equal((await db.query("select * from public.platform_write_receipts where idempotency_key='rollback'")).rows.length,0);
   assert.notEqual((await db.query("select notes from public.platform_animals where org_id=1001 and id='a'")).rows[0].notes,'should rollback');
+ });
+ await db.exec(sql('migrations/202610260002_identity_invitation.sql'));
+ await t.test('trusted provisioning only; invitations email bound, expired and reused rejected',async()=>{
+  await assert.rejects(as(userB,`select barkhaus_private.provision_initial_owner(1002,'${userB}')`),/permission denied/);
+  await db.exec(`select barkhaus_private.provision_initial_owner(1002,'${userB}')`);
+  await assert.rejects(db.exec(`select barkhaus_private.provision_initial_owner(1002,'${userA}')`),/already provisioned/);
+  const token='c'.repeat(64), expired='d'.repeat(64);
+  await db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','viewer@example.test','viewer','${token}',now()+interval '1 day')`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`update auth.users set email_confirmed_at=null where id='${viewer}'`);
+  await assert.rejects(as(viewer,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`update auth.users set email_confirmed_at=now() where id='${viewer}'`);
+  assert.equal((await as(viewer,`select public.accept_organization_invitation('${token}') as org`)).rows[0].org,1002);
+  await assert.rejects(as(viewer,`select public.accept_organization_invitation('${token}')`),/invalid or expired/);
+  await db.exec(`insert into barkhaus_private.organization_invitations values('${expired}',1002,'owner@example.test','staff',now()-interval '1 day',null,'${userB}')`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${expired}')`),/invalid or expired/);
+  await assert.rejects(as(userB,`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','admin','${'e'.repeat(64)}',now()+interval '1 day')`),/permission denied/);
+  await assert.rejects(db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','owner','${'e'.repeat(64)}',now()+interval '1 day')`),/check constraint/);
+  await db.exec(`select barkhaus_private.issue_organization_invitation(1002,'${userB}','owner@example.test','staff','${'e'.repeat(64)}',now()+interval '1 day')`);
+  await db.exec(`update public.organization_memberships set is_active=false where user_id='${userB}' and org_id=1002`);
+  await assert.rejects(as(userA,`select public.accept_organization_invitation('${'e'.repeat(64)}')`),/issuer revoked/);
+
  });
  await db.close();
 });
