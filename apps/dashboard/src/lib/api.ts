@@ -1,5 +1,6 @@
+import { listAnimals, readAnimal } from '../features/animals/client';
+import type { AnimalRecord } from '../../../../shared/contracts/v1/animal';
 import { supabase } from './supabase';
-import { getCached, setCached, clearCache } from './apiCache';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -178,69 +179,39 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
 
 // ─── Animals ─────────────────────────────────────────────────────────────────
 
+/** Read-only compatibility projection for older dashboard consumers.
+ * String IDs require the canonical feature; never coerce identities to numbers.
+ */
+function legacyAnimal(record: AnimalRecord): Animal {
+  if (typeof record.id !== 'number') throw new Error('Open Animals to view canonical animal identities.');
+  const f = record.fields;
+  return { id: record.id, org_id: record.orgId, name: f.name, species: f.species,
+    breed: f.breed ?? undefined, description: f.biography ?? undefined,
+    age: f.age.kind === 'estimate' ? f.age.label : f.age.kind === 'birthday' ? f.age.date : undefined,
+    gender: f.sex, size: f.size, status: f.availability,
+    image_url: f.photos[0]?.url, revision: record.revision,
+  };
+}
 export async function getAnimals(orgId: number, status?: string): Promise<Animal[]> {
-  console.log('[getAnimals] orgId:', orgId, '| type:', typeof orgId, '| status:', status ?? 'all');
-
-  const cacheKey = `animals_org_${orgId}_${status ?? 'all'}`;
-  const cached = getCached<Animal[]>(cacheKey);
-  if (cached) {
-    console.log('[getAnimals] returning cached result, count:', cached.length);
-    return cached;
-  }
-
-  let query = supabase.from('animals').select('*').eq('org_id', orgId);
-  if (status) query = query.eq('status', status);
-
-  const { data, error } = await query;
-  console.log('[getAnimals] supabase response — data count:', data?.length ?? 0, '| error:', error);
-  if (error) throw error;
-  const result = data ?? [];
-  setCached(cacheKey, result);
-  return result;
+  const rows = (await listAnimals(orgId)).map(legacyAnimal);
+  return status ? rows.filter(r => r.status === status) : rows;
 }
-
-/** Backwards-compat alias */
-export async function fetchAnimals(orgId: number): Promise<Animal[]> {
-  return getAnimals(orgId);
-}
-
+export async function fetchAnimals(orgId: number): Promise<Animal[]> { return getAnimals(orgId); }
 export async function getAnimalById(id: number, orgId?: number): Promise<Animal> {
-  let query = supabase.from('animals').select('*').eq('id', id);
-  if (orgId !== undefined) query = query.eq('org_id', orgId);
-  const { data, error } = await query.single();
-  if (error) throw error;
-  return data;
+  if (orgId === undefined) throw new Error('An organization is required.');
+  return legacyAnimal(await readAnimal(orgId, id));
 }
-
-export async function createAnimal(data: Partial<Animal>): Promise<Animal> {
-  const { data: result, error } = await supabase.from('animals').insert(data).select().single();
-  if (error) throw error;
-  clearCache('animals_org_');
-  return result;
+/** Old partial-row writes have no revision/idempotency/ownership semantics.
+ * Fail explicitly; canonical editor calls writeAnimal with the frozen command.
+ */
+export async function createAnimal(_data: Partial<Animal>): Promise<Animal> {
+  throw new Error('Use the Animals editor to create a validated unpublished record.');
 }
-
-export async function updateAnimal(id: number, data: Partial<Animal>, orgId?: number): Promise<Animal> {
-  // Strip read-only / non-updatable columns that cause Supabase 400s
-  const updatePayload = { ...data } as Record<string, unknown>;
-  delete updatePayload['id'];
-  delete updatePayload['created_at'];
-  delete updatePayload['org_id'];
-  delete updatePayload['Code']; // PAWS field — not a Supabase column
-
-  let query = supabase.from('animals').update(updatePayload).eq('id', id);
-  if (orgId !== undefined) query = query.eq('org_id', orgId);
-  const { data: result, error } = await query.select().single();
-  if (error) throw error;
-  clearCache('animals_org_');
-  return result;
+export async function updateAnimal(_id: number, _data: Partial<Animal>, _orgId?: number): Promise<Animal> {
+  throw new Error('Use the Animals editor with the current revision to edit this record.');
 }
-
-export async function deleteAnimal(id: number, orgId?: number): Promise<void> {
-  let query = supabase.from('animals').delete().eq('id', id);
-  if (orgId !== undefined) query = query.eq('org_id', orgId);
-  const { error } = await query;
-  if (error) throw error;
-  clearCache('animals_org_');
+export async function deleteAnimal(_id: number, _orgId?: number): Promise<void> {
+  throw new Error('Use Archive in the Animals editor to retain animal history.');
 }
 
 export async function sendAnimalEmail(animalId: number, templateName: string): Promise<{ confirmation_message?: string }> {
