@@ -130,3 +130,15 @@ environment; branch publishing works through the existing HTTPS Git proxy.
 Draft-PR creation is attempted after publishing; if denied, use the branch compare
 link or restore GitHub API access. Do not request duplicate GitHub tokens merely
 because the API route is blocked.
+
+## Publication result
+
+Implementation commit `53ce3db` and checklist commit `9bb3cd7` are published.
+The integration branch is available on GitHub. Draft PR creation was attempted
+with base `feature/platform-contracts-v1-20261026`, but GitHub GraphQL returned
+`Forbidden`; no new PR was created. The complete prepared description is saved
+in [platform-integration-pr.md](platform-integration-pr.md).
+
+[Open the integration comparison](https://github.com/Rigby35X/barkhaus-saas/compare/feature/platform-contracts-v1-20261026...feature/platform-integration-v1-20261026?expand=1)
+to review or create the draft manually, or restore GitHub API access for creation.
+This does not require replacing working Git proxy authentication.
