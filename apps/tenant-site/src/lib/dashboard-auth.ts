@@ -34,3 +34,22 @@ export async function requireOrganizationAccess(
     return denied(503, 'Organization access could not be verified.');
   }
 }
+
+/** Signed document capability expires in 60 seconds. Never log or cache the URL. */
+export async function signPrivateAnimalDocument(request: Request, orgId: unknown, objectName: unknown): Promise<Response> {
+  const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' };
+  if (typeof objectName !== 'string' || !Number.isSafeInteger(orgId) ||
+      !objectName.startsWith(`${orgId}/`) || objectName.length > 512 ||
+      !objectName.split('/').every(part => /^[a-zA-Z0-9_.-]+$/.test(part) && part !== '.' && part !== '..')) {
+    return new Response(JSON.stringify({ error: 'Invalid private document path.' }), { status: 400, headers });
+  }
+  const access = await requireOrganizationAccess(request, orgId, ['owner', 'admin', 'staff', 'viewer'], headers);
+  if ('response' in access) return access.response;
+  try {
+    const { data, error } = await access.client.storage.from('animal-private-documents').createSignedUrl(objectName, 60);
+    if (error || !data?.signedUrl) throw new Error('Signing failed');
+    return new Response(JSON.stringify({ url: data.signedUrl, expiresIn: 60 }), { headers });
+  } catch {
+    return new Response(JSON.stringify({ error: 'Document unavailable.' }), { status: 403, headers });
+  }
+}
