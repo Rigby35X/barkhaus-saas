@@ -379,3 +379,7 @@ acceptance test. A reports 41 local security/SQL/auth/route tests; B/C report th
 fixture/typecheck/build results in their handoffs. Those claims were read, not
 rerun here. No actual A+B persistence adapter exists to run the combined DB tests.
 No production setting, branch, migration, MBPR path or deployment was changed.
+
+## PR #11 review ownership handoff
+
+The coordinator owns the schema/repository/connector/test repairs and staging preparation on `feature/platform-integration-v1-20261026`. Agent schema review and runtime review contributed bounded edits under that ownership. Worker branches A–D remain unchanged. PR #11 and #7 remain unmerged; no runtime gate was removed, remote migration applied or production integration enabled. See [platform-staging.md](platform-staging.md) for the migration allowlist, safe read-only export and operator dependencies, and [platform-integration-results.md](platform-integration-results.md) for evidence. Hosted compatibility, actual Auth/Storage checks and independent PostgreSQL connection tests remain open.

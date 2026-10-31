@@ -111,22 +111,26 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   await db.exec(`set role ${who ? 'authenticated' : 'anon'}; select set_config('request.jwt.claim.sub','${who ?? ''}',false)`);
   try {return await db.query(query);} finally {await db.exec('reset role');}
  };
+ const asNative = async (who, query) => {
+  await db.exec(`set role barkhaus_native_writer; select set_config('request.jwt.claim.sub','${who}',false)`);
+  try {return await db.query(query);} finally {await db.exec('reset role');}
+ };
  const create = (id,org=1001) => `insert into public.platform_animals(org_id,id,source_kind,fields) values(${org},'${id}','native','{"name":"Same name","species":"dog"}')`;
  await t.test('new data unpublished; tenant, viewer and anonymous denial',async()=>{
-  await as(userB,create('a'));
+  await asNative(userB,create('a'));
   assert.equal((await as(userA,"select publication from public.platform_animals")).rows[0].publication,'unpublished');
-  await assert.rejects(as(userB,create('cross',1002)),/row-level security/);
-  await assert.rejects(as(viewer,create('view')),/row-level security/);
+  await assert.rejects(asNative(userB,create('cross',1002)),/row-level security/);
+  await assert.rejects(asNative(viewer,create('view')),/row-level security/);
   await assert.rejects(as(null,'select * from public.platform_animals'),/permission denied/);
   await assert.rejects(as(userA,'select * from barkhaus_private.connection_credentials'),/permission denied/);
   await db.exec(create('other',1002));
   assert.equal((await as(userA,'select * from public.platform_animals')).rows.length,1);
  });
  await t.test('publication owner/admin only, revision and immutable keys',async()=>{
-  await assert.rejects(as(userB,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'"),/Publication/);
-  await as(userA,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'");
-  await assert.rejects(as(userA,"update public.platform_animals set public_profile_key='b',revision=3 where id='a'"),/Immutable public key/);
-  await assert.rejects(as(userA,"update public.platform_animals set notes='lost' where id='a'"),/Revision conflict/);
+  await assert.rejects(asNative(userB,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'"),/Publication/);
+  await asNative(userA,"update public.platform_animals set publication='published',public_profile_key='a',revision=2 where id='a'");
+  await assert.rejects(asNative(userA,"update public.platform_animals set public_profile_key='b',revision=3 where id='a'"),/Immutable public key/);
+  await assert.rejects(asNative(userA,"update public.platform_animals set notes='lost' where id='a'"),/Revision conflict/);
  });
  await t.test('competing compare-and-swap updates preserve loser input',async()=>{
   const attempted=['first','second'];
@@ -139,13 +143,13 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
   const connected=(id,org)=>`insert into public.platform_animals(org_id,id,source_kind,connection_id,external_record_id,fields,field_owners) values(${org},'${id}','connector','c','equal','{"name":"Source","species":"cat"}','{"name":{"kind":"connector","connectionId":"c"}}')`;
   await db.exec(connected('s',1001)); await db.exec(connected('s',1002));
   await assert.rejects(db.exec(connected('dup',1001)),/unique/);
-  await assert.rejects(as(userB,"update public.platform_animals set fields=fields || '{\"name\":\"bad\"}',revision=2 where id='s'"),/Source-owned/);
-  await as(userB,"update public.platform_animals set notes='local',revision=2 where id='s'");
+  await assert.rejects(asNative(userB,"update public.platform_animals set fields=fields || '{\"name\":\"bad\"}',revision=2 where id='s'"),/Source-owned/);
+  await asNative(userB,"update public.platform_animals set notes='local',revision=2 where id='s'");
   await assert.rejects(db.exec(`insert into public.platform_mappings values(1001,'m',1,'absent','{}')`),/foreign key/);
   await db.exec(`insert into public.platform_mappings values(1001,'m',1,'c','{}')`);
   await db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id,status,lease_owner,lease_until,fence) values(1001,'worker-job','connector','m',1,'c','running','fixture-worker',clock_timestamp()+interval '5 minutes',1)`);
   await assert.rejects(db.exec(`insert into public.platform_jobs(org_id,id,kind,mapping_id,mapping_revision,connection_id) values(1002,'j','connector','m',1,'c')`),/mapping connection mismatch/i);
-  await assert.rejects(as(userA,"update public.platform_animals set org_id=1002,revision=4 where id='a'"),/ownership|Immutable/);
+  await assert.rejects(asNative(userA,"update public.platform_animals set org_id=1002,revision=4 where id='a'"),/ownership|Immutable/);
  });
  await t.test('trusted connection worker cannot cross org or change local fields, publication or approvals',async()=>{
   const worker=async(query)=>{
@@ -187,9 +191,9 @@ test('v1 additive schema, atomic constraints and private storage', async (t) => 
  });
  await t.test('admin publication allowed; JSON null required fields rejected',async()=>{
   await db.exec(`update public.organization_memberships set role='admin' where user_id='${userA}' and org_id=1001`);
-  await as(userA,create('admin'));
-  await as(userA,"update public.platform_animals set publication='published',public_profile_key='admin',revision=2 where id='admin'");
-  await assert.rejects(as(userA,`insert into public.platform_animals(org_id,id,source_kind,fields) values(1001,'null','native','{"name":null,"species":"dog"}')`),/check constraint/);
+  await asNative(userA,create('admin'));
+  await asNative(userA,"update public.platform_animals set publication='published',public_profile_key='admin',revision=2 where id='admin'");
+  await assert.rejects(asNative(userA,`insert into public.platform_animals(org_id,id,source_kind,fields) values(1001,'null','native','{"name":null,"species":"dog"}')`),/check constraint/);
   await db.exec(`update public.organization_memberships set role='owner' where user_id='${userA}' and org_id=1001`);
  });
  await t.test('private documents tenant scoped despite permissive legacy policy',async()=>{

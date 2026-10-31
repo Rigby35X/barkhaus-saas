@@ -24,6 +24,7 @@ test('transactional ingestion schema preserves scoped authority and durable inpu
       } finally { await db.exec('reset role'); }
     };
     const member = (user, statement, values) => as('authenticated', {'request.jwt.claim.sub':user},statement,values);
+    const nativeWriter = (user, statement, values) => as('barkhaus_native_writer', {'request.jwt.claim.sub':user},statement,values);
     const executor = (org,statement,values) => as('barkhaus_platform_executor',{'barkhaus.actor_org':org},statement,values);
     const worker = (statement, values, fence = 1) => as('barkhaus_connector_worker', {
       'barkhaus.worker_org':1002,'barkhaus.worker_connection':'c','barkhaus.worker_job':'sync','barkhaus.worker_fence':fence,
@@ -43,7 +44,33 @@ test('transactional ingestion schema preserves scoped authority and durable inpu
       const role = (await db.query("select rolcanlogin,rolbypassrls from pg_roles where rolname='barkhaus_platform_executor'")).rows[0];
       assert.deepEqual(role,{rolcanlogin:false,rolbypassrls:false});
       for (const client of ['authenticated','anon','service_role']) assert.equal((await db.query("select pg_has_role($1,'barkhaus_platform_executor','MEMBER') as allowed",[client])).rows[0].allowed,false);
+      for (const client of ['authenticated','anon','service_role']) assert.equal((await db.query("select pg_has_role($1,'barkhaus_native_writer','MEMBER') as allowed",[client])).rows[0].allowed,false);
+      assert.deepEqual((await db.query("select rolcanlogin,rolbypassrls from pg_roles where rolname='barkhaus_native_writer'")).rows[0],{rolcanlogin:false,rolbypassrls:false});
       await assert.rejects(executor(1002,"insert into public.platform_animals(org_id,id,source_kind,fields) values(1002,'bad','native',$1)",[fields]),/permission denied/);
+    });
+
+    await t.test('direct authenticated Data API writes cannot bypass the server transaction writer',async()=>{
+      const insert="insert into public.platform_animals(org_id,id,source_kind,fields) values(1001,'trusted-native','native',$1)";
+      await assert.rejects(member(owner,insert,[fields]),/permission denied/);
+      await nativeWriter(owner,insert,[fields]);
+      assert.equal((await member(owner,"select id from public.platform_animals where id='trusted-native'")).rows.length,1);
+      await assert.rejects(member(owner,"update public.platform_animals set notes='bypass',revision=revision+1 where id='trusted-native'"),/permission denied/);
+      await nativeWriter(owner,"update public.platform_animals set notes='server-owned transaction',revision=revision+1 where id='trusted-native'");
+      assert.equal((await nativeWriter(viewer,"update public.platform_animals set notes='viewer',revision=revision+1 where id='trusted-native' returning id")).rows.length,0);
+      assert.equal((await nativeWriter(owner,"select notes from public.platform_animals where id='trusted-native'")).rows[0].notes,'server-owned transaction');
+    });
+
+    await t.test('hosted default ACLs cannot retain a service-role BYPASSRLS path to v1 tables',async()=>{
+      const tables=(await db.query("select tablename from pg_tables where schemaname='public' and left(tablename,9)='platform_' order by tablename")).rows;
+      assert.ok(tables.length>10);
+      for(const {tablename} of tables)for(const privilege of ['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']){
+        const {rows}=await db.query("select has_table_privilege('service_role',$1,$2) as allowed",[`public.${tablename}`,privilege]);
+        assert.equal(rows[0].allowed,false,`${tablename}: ${privilege}`);
+      }
+      await assert.rejects(as('service_role',{},'select * from public.platform_animals'),/permission denied/);
+      // Stage 1's separate, intentional legacy membership provisioning capability
+      // is unaffected by the v1-table revocation.
+      assert.equal((await db.query("select has_table_privilege('service_role','public.organization_memberships','INSERT') as allowed")).rows[0].allowed,true);
     });
 
     await t.test('source creation uses pinned mapped ownership and accepts mapped custom values',async()=>{
@@ -82,10 +109,10 @@ test('transactional ingestion schema preserves scoped authority and durable inpu
     });
 
     await t.test('CSV origin remains complete with no stable key and cannot cross orgs',async()=>{
-      await member(owner,"insert into public.platform_animals(org_id,id,source_kind,fields,csv_origin_job_id,csv_origin_mapping_id) values(1001,'csv-native','native',$1,'csvjob','csv')",[fields]);
+      await nativeWriter(owner,"insert into public.platform_animals(org_id,id,source_kind,fields,csv_origin_job_id,csv_origin_mapping_id) values(1001,'csv-native','native',$1,'csvjob','csv')",[fields]);
       const saved=(await member(owner,"select csv_origin_job_id,csv_origin_mapping_id,import_key from public.platform_animals where id='csv-native'")).rows[0];
       assert.deepEqual(saved,{csv_origin_job_id:'csvjob',csv_origin_mapping_id:'csv',import_key:null});
-      await assert.rejects(member(owner,"update public.platform_animals set csv_origin_job_id=null,csv_origin_mapping_id=null,revision=2 where id='csv-native'"),/Immutable animal identity/);
+      await assert.rejects(nativeWriter(owner,"update public.platform_animals set csv_origin_job_id=null,csv_origin_mapping_id=null,revision=2 where id='csv-native'"),/Immutable animal identity/);
       await assert.rejects(db.query("insert into public.platform_animals(org_id,id,source_kind,fields,csv_origin_job_id,csv_origin_mapping_id) values(1002,'escape','native',$1,'csvjob','csv')",[fields]),/CSV origin pinned job mismatch|foreign key/);
     });
 

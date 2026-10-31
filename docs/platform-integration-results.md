@@ -124,21 +124,20 @@ two-org HTTP/Auth/Storage expiry, recovery/invitations, browser routing, Cognito
 pagination/order/snapshot semantics and rollback in staging. Stage 2 public-site
 cutover and production rollout remain separate, unapproved tasks.
 
-Keep PR #7 unmerged. Review this consolidated integration branch instead of
-merging worker branches independently. GitHub API access was denied in this
-environment; branch publishing works through the existing HTTPS Git proxy.
-Draft-PR creation is attempted after publishing; if denied, use the branch compare
-link or restore GitHub API access. Do not request duplicate GitHub tokens merely
-because the API route is blocked.
+Keep PR #7 unmerged. Review [draft PR #11](https://github.com/Rigby35X/barkhaus-saas/pull/11), targeting `feature/platform-contracts-v1-20261026`; the user created it after the original API creation attempt was denied. Git branch publishing works through the existing HTTPS proxy. No duplicate GitHub token is needed.
 
-## Publication result
+## PR #11 review and staging preparation
 
-Implementation commit `53ce3db` and checklist commit `9bb3cd7` are published.
-The integration branch is available on GitHub. Draft PR creation was attempted
-with base `feature/platform-contracts-v1-20261026`, but GitHub GraphQL returned
-`Forbidden`; no new PR was created. The complete prepared description is saved
-in [platform-integration-pr.md](platform-integration-pr.md).
+The coordinator owns the cross-module review repairs on the integration branch; A/B/C/D worker branches remain unchanged. The review fixes post-COMMIT terminal connector lease reaping, removes inherited Supabase `service_role` platform-table ACLs, and reserves native animal DML for the trusted NOLOGIN/NOBYPASSRLS writer role. Direct authenticated REST writes cannot bypass CAS/receipts/validation. No runtime login or role delegation was enabled.
 
-[Open the integration comparison](https://github.com/Rigby35X/barkhaus-saas/compare/feature/platform-contracts-v1-20261026...feature/platform-integration-v1-20261026?expand=1)
-to review or create the draft manually, or restore GitHub API access for creation.
-This does not require replacing working Git proxy authentication.
+GitHub's generated PR merge reference has the expected coordinator base `9bb3cd7dac7d5fc6bebdf071a31e1c5f1fb4010e`; local merge-tree also reports no conflicts. Neither PR was merged. Git compatibility does not establish hosted CI status.
+
+The complete operator runbook is [platform-staging.md](platform-staging.md). It links the single read-only safe metadata export, fresh synthetic staging prerequisites, explicit migration allowlist, guarded two-organization seed, read-only acceptance SQL, synthetic CSV/connector inputs, blank environment template, offline configuration validator and gated HTTP smoke command. SQL expressions are fingerprinted to exclude embedded secrets; administrator-only semantic inspection remains required. This inventory is not replayable DDL.
+
+Current local review evidence:
+
+- Combined SQL integration suite includes checkpoint rollback, lost acknowledgement/replay, completed-page lease expiry, direct Data API write denial, realistic hosted default ACL denial, staging migration rehearsal, read-only export leak checks and fixture contract validation. Final count is recorded in `platform-validation.md`.
+- Security suites: 41 passing tests. Feature suites: 66 passing tests. Shared contracts: strict typecheck plus 13 passing tests. Dashboard and server strict typechecks pass.
+- Six offline configuration/smoke tests use mocks and make no network requests. Gated real HTTP/Auth checks and independent hosted PostgreSQL connections remain outstanding.
+
+All SQL executed here was local PGlite. No hosted export, migration, seed, Auth creation, deployment, runtime enablement or production change occurred. Administrator access/metadata and a new empty staging project are the next dependencies; follow the runbook before any future migration approval.

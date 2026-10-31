@@ -53,7 +53,7 @@ export class SqlAnimalTransaction implements AnimalTransaction {
     return this.sql.query<T>(query, parameters);
   }
   async animal<T = Record<string, any>>(query: string, parameters: any[] = []): Promise<{rows: T[]}> {
-    await this.sql.query(this.context.principal.kind === 'member' ? 'set local role authenticated' : 'set local role barkhaus_connector_worker');
+    await this.sql.query(this.context.principal.kind === 'member' ? 'set local role barkhaus_native_writer' : 'set local role barkhaus_connector_worker');
     return this.sql.query<T>(query, parameters);
   }
   async lock(key: readonly unknown[]): Promise<void> {

@@ -105,6 +105,31 @@ test('SQL page lost commit acknowledgement preserves authoritative completion an
   assert.equal((await h.db.query('select * from public.platform_write_receipts')).rows.length,1);
   assert.equal((await h.db.query('select * from public.platform_row_outcomes')).rows.length,2);
 });
+test('SQL reaper clears expired post-commit leases without reopening a completed page',async t=>{
+  const h=await harness(t);const job=await h.enqueue('crash-before-release');
+  // Simulate process death after COMMIT, before the finally block releases its lease.
+  const release=h.store.release.bind(h.store);h.store.release=async()=>{};
+  await h.worker.runOnce('verified-workload');h.store.release=release;
+  const before=(await h.db.query('select status,checkpoint,lease_owner from public.platform_jobs where org_id=$1 and id=$2',[1002,job.id])).rows[0];
+  assert.equal(before.status,'completed');assert.equal(before.lease_owner,'worker-1');
+  await h.db.query("update public.platform_jobs set lease_until=clock_timestamp()-interval '1 second' where org_id=$1 and id=$2",[1002,job.id]);
+  assert.equal(await h.store.claim('worker-1',Date.now(),60000),null);
+  const after=(await h.db.query('select status,checkpoint,lease_owner from public.platform_jobs where org_id=$1 and id=$2',[1002,job.id])).rows[0];
+  assert.equal(after.status,'completed');assert.equal(after.lease_owner,null);assert.deepEqual(after.checkpoint,before.checkpoint);
+  assert.equal((await h.db.query('select * from public.platform_animals')).rows.length,1);
+  assert.equal((await h.db.query('select * from public.platform_row_outcomes')).rows.length,1);
+  assert.equal((await h.db.query('select * from public.platform_unit_receipts')).rows.length,1);
+});
+test('SQL reaper never retries expired terminal failures or cancellations',async t=>{
+  const h=await harness(t);
+  for(const status of ['failed','cancelled']){
+    const job=await h.enqueue(`terminal-${status}`);const claimed=await h.store.claim('worker-1',Date.now(),60000);assert.ok(claimed);
+    await h.db.query("update public.platform_jobs set status=$3,lease_until=clock_timestamp()-interval '1 second' where org_id=$1 and id=$2",[1002,job.id,status]);
+    assert.equal(await h.store.claim('worker-1',Date.now(),60000),null);
+    const saved=(await h.db.query('select status,lease_owner from public.platform_jobs where org_id=$1 and id=$2',[1002,job.id])).rows[0];
+    assert.equal(saved.status,status);assert.equal(saved.lease_owner,null);
+  }
+});
 test('SQL deferred lease check rolls back page mutations when the lease expires immediately before COMMIT',async t=>{
   const h=await harness(t);const job=await h.enqueue('commit-expiry');h.faults.expireUnit=true;
   await h.worker.runOnce('verified-workload');

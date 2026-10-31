@@ -3,6 +3,26 @@
 begin;
 create role barkhaus_platform_executor nologin nobypassrls;
 grant usage on schema public,barkhaus_private,auth to barkhaus_platform_executor;
+-- No browser/service-role membership is granted. B's verified server transaction
+-- selects this role for native member reads/writes; plain authenticated REST can
+-- read its organization but cannot bypass CAS, receipts or batch/page orchestration.
+create role barkhaus_native_writer nologin nobypassrls;
+grant usage on schema public,barkhaus_private,auth to barkhaus_native_writer;
+grant execute on function barkhaus_private.organization_role(bigint) to barkhaus_native_writer;
+grant select,insert,update on public.platform_animals to barkhaus_native_writer;
+-- The invoker animal trigger validates CSV provenance against a pinned same-org
+-- job. This grants no metadata writes or private source-file/credential access.
+grant select on public.platform_jobs to barkhaus_native_writer;
+create policy native_job_read on public.platform_jobs for select to barkhaus_native_writer
+ using(barkhaus_private.organization_role(org_id) is not null);
+revoke insert,update,delete,truncate,references,trigger on public.platform_animals from authenticated;
+create policy native_member_read on public.platform_animals for select to barkhaus_native_writer
+ using(barkhaus_private.organization_role(org_id) is not null);
+create policy native_member_insert on public.platform_animals for insert to barkhaus_native_writer
+ with check(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'));
+create policy native_member_update on public.platform_animals for update to barkhaus_native_writer
+ using(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'))
+ with check(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'));
 
 alter table public.platform_connections
  add column generation bigint not null default 1 check(generation>0),
@@ -224,7 +244,7 @@ begin
    end loop;
   end if;
   if new.revision<>1 or new.publication<>'unpublished' or new.approvals<>'[]'::jsonb then raise exception 'New animals must start unpublished without approvals at revision 1'; end if;
-  if current_user='authenticated' then
+  if current_user in ('authenticated','barkhaus_native_writer') then
    if new.source_kind<>'native' then raise exception 'Trusted source provisioning required'; end if;
    for k in select jsonb_object_keys(new.field_owners) loop
     if new.field_owners->k is distinct from jsonb_build_object('kind','barkhaus') then raise exception 'Native ownership must remain BarkHaus'; end if;
@@ -249,7 +269,7 @@ begin
     if to_jsonb(new)->k is distinct from to_jsonb(old)->k and old.field_owners->k is distinct from jsonb_build_object('kind','connector','connectionId',old.connection_id) then raise exception 'Field not owned by connection'; end if;
    end loop;
   end if;
-  if current_user='authenticated' then
+  if current_user in ('authenticated','barkhaus_native_writer') then
    if new.field_owners<>old.field_owners or new.custom_owners<>old.custom_owners then raise exception 'Reviewed ownership operation required'; end if;
    for k in select jsonb_object_keys(old.field_owners) loop
     if coalesce(old.field_owners->k->>'kind','barkhaus')<>'barkhaus' and (new.fields->k is distinct from old.fields->k or (k='photos' and new.photos<>old.photos) or (k='lifecycle' and new.lifecycle<>old.lifecycle) or (k='availability' and new.availability<>old.availability)) then raise exception 'Source-owned field'; end if;

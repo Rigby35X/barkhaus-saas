@@ -80,7 +80,8 @@ export class SqlConnectorStore implements DurableConnectorStore {
       const s=this.capability;await tx.lock(['connection',s.connectionId]);
       const {rows:connections}=await tx.meta(`select * from public.platform_connections where org_id=$1 and id=$2 and active and state='active' for update`,[s.orgId,s.connectionId]);
       const c=connections[0];if(!c)return null;
-      await tx.meta(`update public.platform_jobs set lease_owner=null,status=case when attempt>=5 then 'failed' else 'retry_wait' end
+      await tx.meta(`update public.platform_jobs set lease_owner=null,lease_until=null,
+        status=case when status='running' then case when attempt>=5 then 'failed' else 'retry_wait' end else status end
         where org_id=$1 and connection_id=$2 and lease_until<=clock_timestamp() and lease_owner is not null`,[s.orgId,s.connectionId]);
       await tx.meta("update public.platform_jobs set status='failed' where org_id=$1 and connection_id=$2 and lease_owner is null and status in ('queued','retry_wait') and attempt>=5",[s.orgId,s.connectionId]);
       const {rows:busy}=await tx.meta(`select id from public.platform_jobs where org_id=$1 and connection_id=$2 and lease_owner is not null`,[s.orgId,s.connectionId]);if(busy.length)return null;

@@ -2,8 +2,8 @@ import { requireOrganizationAccess } from '../../lib/dashboard-auth.ts';
 import { jsonResponse } from './http.ts';
 import { validateAnimalWrite } from './validation.ts';
 
-/** Deliberately fail closed until A supplies reviewed transactional persistence and
- * verified actor resolution. No in-memory fallback, anon DB client or guessed RPC.
+/** Deliberately fail closed until staging proves authorization and transactional persistence
+ * using reviewed server pool and workload bindings. No in-memory fallback, anon DB client or guessed RPC.
  * Integrator replaces this gate with createAnimalHttpHandler(reviewedDependencies).
  */
 export async function animalRuntime(request: Request): Promise<Response> {

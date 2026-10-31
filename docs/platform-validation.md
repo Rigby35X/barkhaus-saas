@@ -118,3 +118,16 @@ The earlier missing-adapter/atomicity findings are resolved locally on that bran
 34 SQL integration, 41 security, 66 feature and 13 contract tests pass; strict
 typechecks and all three app builds pass. Staging checks, runtime activation and
 remote migration approval remain outstanding; PR #7 remains unmerged.
+
+## PR #11 review and staging preparation evidence
+
+Review fixes and the operator package are saved on `feature/platform-integration-v1-20261026`. The coordinator owns affected A/B/D interfaces on this integration branch; worker branches remain unchanged. PR #11 is the current draft; PR #7 remains unmerged.
+
+- Combined local integration suite: **47 passed, zero failures/skips**, including six offline config/HTTP mock tests, three staging export/rehearsal/fixture tests, hosted-default ACL and trusted-writer denial checks, connector terminal lease recovery and atomic checkpoint/lost-acknowledgement replay tests.
+- Security: **41 passed** (6 access, 24 SQL RLS, 7 server Auth/recovery, 4 routes).
+- Feature suites: **66 passed**. Shared contracts: **13 passed** plus strict typecheck.
+- Strict dashboard and platform server typechecks passed. Earlier three app builds remain baseline evidence; no app build or deployment enables the gated runtime.
+- Read-only export was executed in a local READ ONLY transaction with sentinel secrets in defaults/functions/views/policies and synthetic customer records; none appeared in the exported JSON. Fresh managed-like synthetic staging bootstrap, all four allowlisted migrations, guarded seed and read-only acceptance SQL pass locally.
+- GitHub PR merge ref identifies coordinator base `9bb3cd7dac7d5fc6bebdf071a31e1c5f1fb4010e`; local merge-tree is conflict-free. Hosted CI status cannot be established through the denied GitHub API.
+
+See [platform-staging.md](platform-staging.md) for exact administrator instructions and the prepared migration plan. All database execution was local PGlite; no remote migration, export, seed, Auth creation, runtime enablement, merge or production change occurred. Hosted schema/policy compatibility, staging Auth/Storage, real pool/workload bindings and independent PostgreSQL connection tests remain outstanding. Safe expression fingerprints do not replace administrator semantic review.

@@ -1,5 +1,8 @@
 -- Synthetic local fixture ONLY. Never apply to a hosted database.
 create role anon; create role authenticated; create role service_role bypassrls;
+-- Model hosted public-schema default grants; migrations must explicitly remove
+-- unintended effective privileges, including service_role's BYPASSRLS path.
+alter default privileges in schema public grant all on tables to anon,authenticated,service_role;
 create schema auth; create schema storage;
 create table auth.users(id uuid primary key, email text, email_confirmed_at timestamptz default now());
 create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;

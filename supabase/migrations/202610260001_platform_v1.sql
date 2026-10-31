@@ -140,13 +140,15 @@ begin
  return new;
 end $$;
 create trigger platform_animal_guard before insert or update on public.platform_animals for each row execute function barkhaus_private.guard_platform_animal();
--- Browser reads are tenant scoped; only native animal operational writes granted.
+-- Browser reads are tenant scoped; animal DML is assigned only to trusted roles.
 -- Jobs/mappings/receipts/outcomes are written by B's trusted transactional writer.
 do $$ declare tab text; begin
  foreach tab in array array['platform_documents','platform_source_commits','platform_connections','platform_mappings','platform_jobs','platform_animals','platform_import_namespaces','platform_write_receipts','platform_row_outcomes'] loop
  execute format('alter table public.%I add constraint positive_safe_org check(org_id between 1 and 9007199254740991)',tab);
  execute format('alter table public.%I enable row level security',tab);
- execute format('revoke all on public.%I from public,anon,authenticated',tab);
+ -- Supabase owner default ACLs can grant service_role access on CREATE TABLE.
+ -- Its BYPASSRLS must not become an alternate v1 persistence capability.
+ execute format('revoke all on public.%I from public,anon,authenticated,service_role',tab);
  execute format('grant select on public.%I to authenticated',tab);
  execute format('create policy tenant_read on public.%I for select to authenticated using(barkhaus_private.organization_role(org_id) is not null)',tab);
  execute format('create trigger immutable_org before update on public.%I for each row execute function barkhaus_private.protect_org_id()',tab);
@@ -163,9 +165,8 @@ grant execute on function barkhaus_private.worker_scope(bigint,text) to barkhaus
 create policy source_read on public.platform_animals for select to barkhaus_connector_worker using(source_kind='connector' and barkhaus_private.worker_scope(org_id,connection_id));
 create policy source_insert on public.platform_animals for insert to barkhaus_connector_worker with check(source_kind='connector' and barkhaus_private.worker_scope(org_id,connection_id));
 create policy source_update on public.platform_animals for update to barkhaus_connector_worker using(source_kind='connector' and barkhaus_private.worker_scope(org_id,connection_id)) with check(source_kind='connector' and barkhaus_private.worker_scope(org_id,connection_id));
-grant insert,update on public.platform_animals to authenticated;
-create policy animal_insert on public.platform_animals for insert to authenticated with check(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'));
-create policy animal_update on public.platform_animals for update to authenticated using(barkhaus_private.organization_role(org_id) in ('owner','admin','staff')) with check(barkhaus_private.organization_role(org_id) in ('owner','admin','staff'));
+-- Members retain tenant-scoped reads. Native animal writes are bound to the
+-- reviewed server-only writer role in migration003, never direct Data API DML.
 revoke all on barkhaus_private.connection_credentials from public,anon,authenticated,service_role;
 -- Private bucket must never be made public; preflight must confirm separately.
 insert into storage.buckets(id,name,public) values('animal-private-documents','animal-private-documents',false);
