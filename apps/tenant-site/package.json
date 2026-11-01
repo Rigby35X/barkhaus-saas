@@ -15,10 +15,10 @@
     "template:senior-sanctuary": "node scripts/process-template.js examples/senior-pet-sanctuary.config.json ./output"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/vercel": "^8.0.4",
     "@barkhaus/xano-client": "*",
     "@supabase/supabase-js": "^2.99.0",
-"@astrojs/sitemap": "^3.6.0",
-    "@astrojs/vercel": "^8.0.4",
     "@useparagon/connect": "^2.1.1",
     "astro": "^5.14.1",
     "astro-icon": "^1.1.5",
@@ -26,11 +26,13 @@
     "googleapis": "^164.1.0",
     "jose": "^6.1.0",
     "jsonwebtoken": "^9.0.2",
-    "less": "^4.4.1"
+    "less": "^4.4.1",
+    "pg": "^8.23.1"
   },
   "description": "Dedicated to rescuing and rehoming puppies and dogs in the San Diego area",
   "homepage": "https://missionbaypuppyrescue.org",
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14"

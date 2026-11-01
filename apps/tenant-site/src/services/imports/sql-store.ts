@@ -3,7 +3,7 @@ import { AnimalWriteService } from '../animals/AnimalWriteService.ts';
 import { digest, json, SqlAnimalRepository } from '../animals/sql-repository.ts';
 import type { SqlAnimalTransaction, SqlDatabase, SqlPrincipal, SqlSafety } from '../animals/sql-repository.ts';
 import { IMPORT_LIMITS, positive, validateMapping } from '../../../../dashboard/src/features/imports/csv.ts';
-import { sha256 } from './service.ts';
+import { ImportConflictError, sha256 } from './service.ts';
 import type { BatchTransaction, ImportDefinition, ImportInput, ImportStore, JobSession, RowTransaction } from './service.ts';
 
 type Member = Extract<SqlPrincipal, { kind: 'member' }>;
@@ -89,7 +89,7 @@ export class SqlImportStore implements ImportStore {
       await tx.lock(['csv-job', input.id]);
       const { rows: prior } = await tx.meta('select * from public.platform_jobs where org_id=$1 and id=$2', [input.orgId, input.id]);
       if (prior[0]) {
-        if (prior[0].kind !== 'csv' || prior[0].created_by !== member.userId || prior[0].definition.seal !== seal || prior[0].file_sha256 !== fileDigest) throw new Error('Changed import job replay');
+        if (prior[0].kind !== 'csv' || prior[0].created_by !== member.userId || prior[0].definition.seal !== seal || prior[0].file_sha256 !== fileDigest) throw new ImportConflictError('Changed import job replay');
         return this.project(tx, prior[0]);
       }
       const job: CsvImportJob = {

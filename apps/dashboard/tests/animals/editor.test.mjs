@@ -15,7 +15,7 @@ function load(path, mocks) {
   return exports;
 }
 const { default: Editor } = load('../../src/features/animals/AnimalEditor.tsx',{'./client':{}});
-const { pendingCommand } = load('../../src/features/animals/client.ts',{'../../lib/api':{}});
+const { pendingCommand } = load('../../src/features/animals/client.ts',{'../../lib/api':{},'../../lib/platform-http':{}});
 const record = {
   id: 'animal',orgId:1002,revision:7,source:{kind:'connector'},
   fields:{name:'Source animal',species:'Dog',breed:null,biography:null,age:{kind:'unknown'},sex:'unknown',size:'unknown',lifecycle:'care',availability:'available',photos:[]},

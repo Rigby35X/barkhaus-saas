@@ -154,7 +154,9 @@ export class SqlConnectorStore implements DurableConnectorStore {
             counts.missingReview+=Math.min(missing.length,100);moreFinalization=missing.length>100;
           }
           const state=box.page.nextCursor===null&&!moreFinalization?'completed':'queued';
-          const next={cursor:box.page.nextCursor,counts,history:[...history,...(box.page.nextCursor?[box.page.nextCursor]:[])],pages:(checkpoint.pages??0)+1,rows:(checkpoint.rows??0)+box.page.records.length,finalizing:moreFinalization};
+          const {rows:clock}=await tx.meta('select clock_timestamp() as completed_at');
+          const next={cursor:box.page.nextCursor,counts,history:[...history,...(box.page.nextCursor?[box.page.nextCursor]:[])],pages:(checkpoint.pages??0)+1,rows:(checkpoint.rows??0)+box.page.records.length,finalizing:moreFinalization,
+            completedAt:state==='completed'?new Date(clock[0].completed_at).toISOString():null};
           await tx.meta('update public.platform_jobs set checkpoint=$3,status=$4,attempt=0 where org_id=$1 and id=$2',[lease.orgId,lease.jobId,json(next),state]);
           await tx.meta('delete from public.platform_connector_inboxes where org_id=$1 and job_id=$2',[lease.orgId,lease.jobId]);
           if(moreFinalization){const body={page:{kind:'success',records:[],nextCursor:null,completeSnapshot:true},before:{}};await tx.meta('insert into public.platform_connector_inboxes values($1,$2,$3,$4)',[lease.orgId,lease.jobId,json(body),await recordDigest(body)]);}
@@ -174,7 +176,8 @@ export class SqlConnectorStore implements DurableConnectorStore {
       const {rows}=await tx.meta('select 1 from public.platform_unit_receipts where org_id=$1 and job_id=$2 and unit_key=$3',[lease.orgId,lease.jobId,`connector:${lease.token}`]);if(rows.length)return;
       if(String(row.fence)!==lease.token||row.lease_owner!==this.capability.workerId)return;
       await this.pinned(tx,lease);
-      await tx.meta(`update public.platform_jobs set status=$3,next_attempt_at=$4,checkpoint=checkpoint||$5::jsonb where org_id=$1 and id=$2`,[lease.orgId,lease.jobId,failure.nextAttemptAt?'retry_wait':'failed',failure.nextAttemptAt,json({error:{code:failure.code,message:failure.message}})]);
+      const {rows:clock}=await tx.meta('select clock_timestamp() as failed_at');
+      await tx.meta(`update public.platform_jobs set status=$3,next_attempt_at=$4,checkpoint=checkpoint||$5::jsonb where org_id=$1 and id=$2`,[lease.orgId,lease.jobId,failure.nextAttemptAt?'retry_wait':'failed',failure.nextAttemptAt,json({error:{code:failure.code,message:failure.message,at:new Date(clock[0].failed_at).toISOString()}})]);
     });
   }
   async release(lease:Lease):Promise<void>{

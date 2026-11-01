@@ -59,7 +59,15 @@ function canonical(value: unknown): string {
 function definitionSeal(input: Pick<ImportInput, 'id' | 'orgId' | 'mappingId' | 'mappingRevision' | 'matching'>, mapping: SavedMapping, digest: string, asOf: string): string {
   return sha256(canonical({ id: input.id, orgId: input.orgId, mappingId: input.mappingId, mappingRevision: input.mappingRevision, matching: input.matching, mapping, digest, asOf }));
 }
+export class ImportInputError extends Error {}
+export class ImportConflictError extends Error {}
+function checkedInput<T>(run: () => T): T {
+  try { return run(); } catch (error) { throw new ImportInputError(error instanceof Error ? error.message : 'Invalid import input'); }
+}
 function validateInput(input: unknown): asserts input is ImportInput {
+  checkedInput(() => validateImportInput(input));
+}
+function validateImportInput(input: unknown): asserts input is ImportInput {
   exact(input, ['id', 'orgId', 'mappingId', 'mappingRevision', 'matching', 'acknowledgeCreateOnly']);
   requireValue(textId(input.id) && positive(input.orgId) && textId(input.mappingId) && positive(input.mappingRevision) && typeof input.acknowledgeCreateOnly === 'boolean', 'Invalid import request');
 }
@@ -98,22 +106,22 @@ export class CsvImportService {
     return job;
   }
   async saveMapping(context: unknown, mapping: SavedMapping): Promise<void> {
-    validateMapping(mapping, mapping.orgId); const actor = await this.member(context, mapping.orgId);
+    checkedInput(() => validateMapping(mapping, mapping.orgId)); const actor = await this.member(context, mapping.orgId);
     await this.store.saveMapping(actor, structuredClone(mapping));
   }
   async preview(context: unknown, input: ImportInput, source: string): Promise<ImportPreview> {
     validateInput(input); await this.member(context, input.orgId);
     const mapping = await this.store.mapping(input.orgId, input.mappingId, input.mappingRevision);
     requireValue(mapping.id === input.mappingId && mapping.revision === input.mappingRevision, 'Mapping mismatch');
-    return previewCsv(source, mapping, input.matching, this.date(), input.orgId);
+    return checkedInput(() => previewCsv(source, mapping, input.matching, this.date(), input.orgId));
   }
   async start(context: unknown, input: ImportInput, source: string): Promise<CsvImportJob> {
     validateInput(input); const actor = await this.member(context, input.orgId);
     const mapping = await this.store.mapping(input.orgId, input.mappingId, input.mappingRevision);
     requireValue(mapping.id === input.mappingId && mapping.revision === input.mappingRevision, 'Mapping mismatch');
-    const asOf = this.date(); const preview = previewCsv(source, mapping, input.matching, asOf, input.orgId);
-    requireValue(!preview.issues.some(i => i.row === 1), 'Fix CSV header syntax before importing');
-    requireValue(input.matching.mode !== 'create_only' || input.acknowledgeCreateOnly, 'Acknowledge that a new create-only job creates new records');
+    const asOf = this.date(); const preview = checkedInput(() => previewCsv(source, mapping, input.matching, asOf, input.orgId));
+    checkedInput(() => requireValue(!preview.issues.some(i => i.row === 1), 'Fix CSV header syntax before importing'));
+    checkedInput(() => requireValue(input.matching.mode !== 'create_only' || input.acknowledgeCreateOnly, 'Acknowledge that a new create-only job creates new records'));
     return this.store.enqueue(actor, structuredClone(input), source, sha256(source), asOf, definitionSeal(input, mapping, sha256(source), asOf));
   }
   /** Trusted queue runner calls this once per tick. Never execute it as a browser background task. */

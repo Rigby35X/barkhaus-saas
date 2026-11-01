@@ -1,6 +1,7 @@
 import type { AnimalId, AnimalRecord } from '../../../../../shared/contracts/v1/animal.ts';
 import type { AnimalWrite, WriteResult } from '../../../../../shared/contracts/v1/ingestion.ts';
-import { getAdminApiUrl, getAuthHeaders } from '../../lib/api';
+import { getAuthHeaders } from '../../lib/api';
+import { getPlatformApiUrl } from '../../lib/platform-http';
 
 export class AnimalRequestError extends Error {
   readonly status: number;
@@ -8,8 +9,7 @@ export class AnimalRequestError extends Error {
 }
 export async function animalRequest<T>(orgId: number, query = '', command?: AnimalWrite): Promise<T> {
   if (!Number.isSafeInteger(orgId) || orgId < 1) throw new Error('An organization is required.');
-  const admin = new URL(await getAdminApiUrl(orgId, 'animals'));
-  admin.pathname = '/api/v1/animals';
+  const admin = new URL(getPlatformApiUrl('animals'));
   admin.search = query;
   const response = await fetch(admin, {
     method: command ? 'POST' : 'GET',

@@ -9,8 +9,10 @@
     "build:legacy": "rm -rf dist && mkdir dist && cp -r public/* dist/",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:security": "node tests/access.test.mjs && node tests/rls.test.mjs && node tests/server-auth.test.mjs && node tests/routes.test.mjs",
-    "test:integration": "node --test --test-concurrency=1 tests/integration/*.test.mjs"
+    "test:security": "node tests/access.test.mjs && node tests/rls.test.mjs && node tests/server-auth.test.mjs && node tests/routes.test.mjs && node --test tests/identity/*.test.mjs",
+    "test:integration": "node --test --test-concurrency=1 tests/integration/*.test.mjs",
+    "test:features": "node --test --test-concurrency=1 tests/animals/*.test.mjs tests/imports/*.test.mjs tests/connectors/*.test.mjs",
+    "test:postgres": "node --test --test-concurrency=1 tests/postgres/*.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.0",

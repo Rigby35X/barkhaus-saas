@@ -1,14 +1,25 @@
 # Connector scheduler and worker deployment plan (not deployed)
 
-This branch exports an asynchronous `ConnectorWorker.runOnce` and durable ports.
-Only synthetic Cognito transport/store/auth/writer doubles are supplied. There is
-no production queue, secret resolver, SQL, new public endpoint or active scheduler.
-A browser never executes the worker. Existing MBPR/proxy/Shopify paths are untouched.
+The integration branch supplies a concrete SQL worker store, member-scoped SQL
+control store, sanitized HTTP factory/browser client, connection panel and signed
+workload-token verifier. Existing page writes, identities, source history, outcomes
+and checkpoints still share one database transaction. None of these factories
+provisions or activates a live provider, queue, secret resolver or scheduler.
+Root composition may mount an authenticated 503 gate, but no live control route is
+enabled by this module. A browser never runs the sync worker. Existing MBPR,
+proxy and Shopify production paths remain unchanged.
+
+The native/manual + CSV route is first. Cognito is an explicitly configured MBPR
+integration example, never a default source, endpoint or organization requirement.
+See `docs/platform-d-round1-handoff.md` for exact composition and remaining gaps.
 
 ## Topology and composition
 
 1. A server control endpoint verifies session and active organization membership
-   through A's authorization helper, then calls `createConnectorControl`. Only
+   through A's authorization helper, then calls `createConnectorHttpHandler` with a
+   per-member `SqlConnectorControlStore`. This store rechecks/locks membership
+   inside each transaction. `createConnectorControl` remains the lower-level port
+   composition for non-HTTP callers. Only
    owner/admin may enqueue or disconnect. Staff may read sanitized job status.
    Do not deserialize `WriteActor`, credentials or organization defaults from JSON.
    Expose only explicit connection IDs in the authorized org. Rate limit requests.
@@ -22,8 +33,9 @@ A browser never executes the worker. Existing MBPR/proxy/Shopify paths are untou
    never worker actors, private source payloads, credentials or authority. Bind
    workload identity to audience/expiry and allowed worker service. It keeps working
    with every browser closed. Run under a supervisor/container with graceful stop.
-4. Inject A's `DurableConnectorStore`, A's workload/membership verifiers, a reviewed
-   Cognito transport and B's transactional `AnimalWriteService`. No memory store in
+4. Bind the concrete `SqlConnectorStore` to an independently reviewed scoped
+   capability, `createConnectorWorkloadVerifier`, a private server-side credential
+   resolver, a reviewed Cognito transport and B's shared SQL transaction. No memory store in
    production. `ConnectorTransaction.writer` MUST execute in the same DB transaction
    as ledger/outcome writes; wrapping an independently committing HTTP writer is
    invalid. D has no animal persistence implementation.
@@ -123,3 +135,32 @@ Local tests now cover whole-page checkpoint rollback, second-row rollback, lost
 commit acknowledgement replay and revision-only snapshots, with doubles only;
 they prove no deployed worker,
 DB authorization, external API compatibility or production readiness.
+
+## Control and workload composition
+
+`createConnectorHttpHandler({ authenticate, store, providers? })` accepts only
+server-verified member actors. Its store factory binds a `SqlConnectorControlStore`
+to that member principal. GET returns an explicit connection/mapping summary or
+sanitized job status; POST supports sync, disconnect and reconnect review. Owner
+or admin is required for actions; staff may read; viewers are denied connection
+controls. Unknown fields and oversized bodies fail closed. Provider endpoints,
+credential references, cursors, raw error messages and source bodies are omitted.
+
+Reconnect deliberately sets `configured` with `active=false`, advances generation
+and cancels old work. It does not verify new credentials, reactivate a provider or
+transfer animal field ownership. A trusted configuration/credential review and
+explicit activation remain prerequisites. Mapping revisions are displayed; editing
+provider mappings and creating connections still require a reviewed server flow.
+
+`createConnectorWorkloadVerifier` verifies asymmetric JWT signatures against the
+deployment-owned key selector, issuer, audience, short expiry/issued-at and an exact
+subject-to-worker allowlist. It returns only the internal worker ID. JWT organization
+or connection metadata never chooses SQL scope. Bind that worker ID separately to
+the exact configured organization/connection; queue messages are not authority.
+The module does not fetch a JWKS from an untrusted URL or create a workload identity.
+
+Completed page checkpoints now store database-clock `completedAt` in the same SQL
+transaction as outcomes/receipts. Failure metadata stores a safe code and timestamp;
+the summary regenerates a known message and suppresses failures older than a
+recorded successful sync. Legacy jobs without timestamps show no invented success
+time. No migration or customer-data access is needed for this JSON metadata.

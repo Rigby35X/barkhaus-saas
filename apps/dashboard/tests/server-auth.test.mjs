@@ -10,7 +10,7 @@ function guard(client, configured = true) {
   const source = raw.replaceAll('import.meta.env.PUBLIC_SUPABASE_URL', configured ? "'https://project.supabase.co'" : "''").replaceAll('import.meta.env.PUBLIC_SUPABASE_ANON_KEY', "'public-key'");
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
   const exports = {};
-  vm.runInNewContext(code, { exports, Response, require: () => ({ createClient: (_url, _key, options) => { calls++; assert.equal(options.auth.persistSession, false); return client; } }) });
+  vm.runInNewContext(code, { exports, Response, Headers, require: () => ({ createClient: (_url, _key, options) => { calls++; assert.equal(options.auth.persistSession, false); if (client instanceof Error) throw client; return client; } }) });
   return { check: exports.requireOrganizationAccess, sign: exports.signPrivateAnimalDocument, calls: () => calls };
 }
 const request = (token = 'verified-token') => new Request('https://api.barkhaus.io/admin', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
@@ -78,4 +78,31 @@ test('recovery redirects fixed; expired Auth session fails; password update sign
  const invitationClient={async rpc(name,args){rpcCalls++;assert.equal(name,'accept_organization_invitation');assert.deepEqual(Object.keys(args),['token_digest']);assert.match(args.token_digest,/^[a-f0-9]{64}$/);assert.notEqual(args.token_digest,'a'.repeat(64));return {error:null};}};
  await exports.acceptInvitation(invitationClient,'a'.repeat(64));assert.equal(rpcCalls,1);
  await assert.rejects(exports.acceptInvitation(invitationClient,'invalid'),/Invalid invitation/);assert.equal(rpcCalls,1);
+});
+
+
+test('authorization failures are private and retain caller CORS vary without trusting cache overrides', async () => {
+  const response=(await guard({}).check(request(null),9,['staff'],{'Vary':'Origin','Cache-Control':'public, max-age=600'})).response;
+  assert.equal(response.status,401);
+  assert.equal(response.headers.get('Cache-Control'),'private, no-store');
+  assert.equal(response.headers.get('Vary'),'Origin, Authorization');
+  const duplicate=(await guard({}).check(request(null),9,['staff'],{'Vary':'Origin, authorization'})).response;
+  assert.equal(duplicate.headers.get('Vary'),'Origin, authorization');
+});
+
+test('client initialization and membership failures are sanitized and cannot authorize a caller', async () => {
+  const auth=guard(new Error('sensitive deployment URL or key'));
+  const response=(await auth.check(request(),9,['staff'])).response;
+  assert.equal(response.status,503);
+  assert.ok(!(await response.text()).includes('sensitive'));
+  const sdk=client();sdk.from=()=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:{role:'owner'},error:new Error('sensitive SQL detail')};}});
+  const failed=(await guard(sdk).check(request(),9,['owner'])).response;
+  assert.equal(failed.status,503);
+  assert.ok(!(await failed.text()).includes('sensitive'));
+});
+
+test('verified principal comes only from current membership and unknown roles fail closed', async () => {
+  const access=await guard(client('staff')).check(new Request('https://api.barkhaus.io/admin',{method:'POST',headers:{Authorization:'Bearer verified-token'},body:JSON.stringify({kind:'worker',role:'owner',userId:'forged',orgId:10})}),9,['staff']);
+  assert.deepEqual(JSON.parse(JSON.stringify(access.principal)),{kind:'member',userId:'verified-user',orgId:9,role:'staff'});
+  assert.equal((await guard(client('super_admin')).check(request(),9,['super_admin'])).response.status,403);
 });

@@ -26,6 +26,7 @@ function withAccounts() {
 
 test('validates isolated staging configuration locally, with anon or publishable keys', () => {
   assert.equal(validateStagingConfig(env()).mode, 'gated');
+  assert.equal(validateStagingConfig({...env(),VITE_PLATFORM_API_ORIGIN:'http://localhost:5173'}).mode,'gated');
   assert.match(checkConfig(env()), /No network requests/);
   const publishable = { ...env(), VITE_SUPABASE_ANON_KEY: 'sb_publishable_public_test', PUBLIC_SUPABASE_ANON_KEY: 'sb_publishable_public_test' };
   assert.equal(validateStagingConfig(publishable).anonKey, publishable.PUBLIC_SUPABASE_ANON_KEY);
@@ -34,6 +35,7 @@ test('validates isolated staging configuration locally, with anon or publishable
 
 test('rejects production refs, mismatched URLs, missing keys, privileged keys and enabled runtime', () => {
   const cases = [
+    { VITE_PLATFORM_API_ORIGIN: 'https://app.barkhaus.io' },
     { BARKHAUS_STAGING_PROJECT_REF: PRODUCTION_REF },
     { BARKHAUS_STAGING_PROJECT_REF: '' },
     { PUBLIC_SUPABASE_URL: `https://${PRODUCTION_REF}.supabase.co` },

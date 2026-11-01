@@ -2,11 +2,13 @@ import type { WriteActor } from '../../../../../shared/contracts/v1/ingestion.ts
 import { AnimalWriteService } from './AnimalWriteService.ts';
 import { InvalidAnimalInput, positive, text, validateAnimalWrite } from './validation.ts';
 
-export interface AnimalHttpDependencies {
-  service: AnimalWriteService;
+export type AnimalHttpDependencies = {
   /** A's verified bearer identity resolver. Never deserialize an actor from the body. */
-  authenticate(request: Request, orgId: number): Promise<WriteActor | null>;
-}
+  authenticate(request: Request, orgId: number): Promise<WriteActor | Response | null>;
+} & (
+  | { service: AnimalWriteService; serviceForActor?: never }
+  | { service?: never; serviceForActor(actor: Extract<WriteActor, {kind:'member'}>): AnimalWriteService }
+);
 export const privateHeaders = { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store', Vary: 'Authorization' };
 export function jsonResponse(body: unknown, status = 200) { return new Response(JSON.stringify(body), { status, headers: privateHeaders }); }
 const codes = { forbidden: 403, conflict: 409, invalid: 400, not_found: 404 };
@@ -25,10 +27,13 @@ export function createAnimalHttpHandler(deps: AnimalHttpDependencies) {
         try { command = validateAnimalWrite(JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))); }
         catch { return jsonResponse({ error: 'Invalid animal command' }, 400); }
         const actor = await deps.authenticate(request, command.orgId);
+        if (actor instanceof Response) return new Response(actor.body, { status: actor.status, headers: { ...Object.fromEntries(actor.headers), ...privateHeaders } });
         if (!actor) return jsonResponse({ error: 'forbidden' }, 403);
         // HTTP is member-only. Trusted workers call the shared service server-to-server.
         if (actor.kind !== 'member' || command.kind === 'source_upsert' || (command.kind === 'create_native' && command.csvOrigin)) return jsonResponse({ error: 'forbidden' }, 403);
-        const result = await deps.service.execute(actor, command);
+        const service = deps.serviceForActor?.(actor) ?? deps.service;
+        if (!service) throw new Error('Missing reviewed animal service');
+        const result = await service.execute(actor, command);
         return jsonResponse(result, result.ok ? 200 : codes[result.code]);
       }
       if (request.method !== 'GET') return jsonResponse({ error: 'Method not allowed' }, 405);
@@ -37,7 +42,10 @@ export function createAnimalHttpHandler(deps: AnimalHttpDependencies) {
       if (!rawOrg || !/^[1-9]\d*$/.test(rawOrg)) return jsonResponse({ error: 'Organization required' }, 400);
       const orgId = Number(rawOrg); positive(orgId);
       const actor = await deps.authenticate(request, orgId);
+      if (actor instanceof Response) return new Response(actor.body, { status: actor.status, headers: { ...Object.fromEntries(actor.headers), ...privateHeaders } });
       if (!actor || actor.kind !== 'member') return jsonResponse({ error: 'forbidden' }, 403);
+      const service = deps.serviceForActor?.(actor) ?? deps.service;
+      if (!service) throw new Error('Missing reviewed animal service');
       // JSON encoded ID preserves numeric vs string identity exactly.
       const rawId = u.searchParams.get('animalId');
       const id = rawId === null ? undefined : JSON.parse(rawId);
@@ -45,10 +53,10 @@ export function createAnimalHttpHandler(deps: AnimalHttpDependencies) {
       if (documentId !== null) {
         if (id === undefined) return jsonResponse({ error: 'Animal required' }, 400);
         text(documentId, true, 200);
-        const access = await deps.service.document(actor, orgId, id, documentId);
+        const access = await service.document(actor, orgId, id, documentId);
         return access ? jsonResponse(access) : jsonResponse({ error: 'not_found' }, 404);
       }
-      const result = await deps.service.read(actor, orgId, id);
+      const result = await service.read(actor, orgId, id);
       return result === null ? jsonResponse({ error: 'not_found' }, 404) : jsonResponse(result);
     } catch (e) {
       if (e instanceof InvalidAnimalInput || e instanceof SyntaxError) return jsonResponse({ error: 'Invalid animal request' }, 400);

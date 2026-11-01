@@ -26,6 +26,7 @@ function ImportWorkspace({ orgId, canImport, client }: CsvOnboardingProps) {
   const [mode, setMode] = useState<'stable_key' | 'create_only' | 'reviewed'>('stable_key');
   const [keyColumn, setKeyColumn] = useState(''); const [reviewed, setReviewed] = useState<Record<number, { action: 'create' | 'update'; id: string; idType: 'number' | 'string'; revision: string }>>({});
   const [ack, setAck] = useState(false); const [preview, setPreview] = useState<ImportPreview | null>(null);
+  const [recoverJobId, setRecoverJobId] = useState('');
   const [job, setJob] = useState<CsvImportJob | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const [statusLabel, setStatusLabel] = useState(''); const [lifecycle, setLifecycle] = useState<AnimalFields['lifecycle']>('care'); const [availability, setAvailability] = useState<AnimalFields['availability']>('unavailable');
   const mutate = (next: SavedMapping) => { setMapping({ ...next, revision: saved ? mapping.revision + 1 : next.revision }); setSaved(false); setPreview(null); setJob(null); };
@@ -38,6 +39,8 @@ function ImportWorkspace({ orgId, canImport, client }: CsvOnboardingProps) {
     <h2 className="text-xl font-semibold">Import animals from CSV</h2>
     <p>{client.behavior === 'fixture' ? 'Fixture mode: synthetic data only; nothing is persisted.' : 'Server import service'} · Imported animals remain unpublished. Photo URL imports are disabled.</p>
     {!canImport && <p role="status">View-only access. Staff, admins, and owners can import.</p>}
+    <a download="barkhaus-animals-template.csv" href={'data:text/csv;charset=utf-8,' + encodeURIComponent('ImportKey,Name,Species,Status\nrescue-001,Willow,dog,Available\nrescue-002,"Fern, Junior",cat,Pending\n')}>Download CSV template</a>
+    <div><label>Recover existing job ID <input value={recoverJobId} onChange={e => setRecoverJobId(e.target.value)} /></label><button disabled={busy || !canImport || !recoverJobId.trim()} onClick={() => void work(async () => setJob(await client.job(orgId, recoverJobId.trim())))}>Recover saved import</button><p>After a reload, enter the original request ID. Recovery reads progress and does not create another job.</p></div>
     <button disabled={busy} onClick={() => void work(async () => setMappings((await client.listMappings(orgId)).filter(m => m.orgId === orgId)))}>Load saved mappings</button>
     <fieldset disabled={busy || !canImport} className="space-y-3">
       <legend>1. File and reusable mapping</legend><button onClick={() => { setMapping({ version: 1, id: '', revision: 1, orgId, fields: [], statusMap: {} }); setSaved(false); setPreview(null); setJob(null); }}>New mapping</button>

@@ -32,8 +32,7 @@ test('fresh hosted-like staging bootstrap, explicit migration allowlist and guar
   const fixture=read('audits/platform_v1_fixture.sql');
   const managed=fixture.split('\n').filter(line=>!/^create table public\./.test(line)&&!/^insert into public\./.test(line)&&!/^insert into auth\./.test(line)).join('\n');
   await db.exec(managed);
-  await db.exec(read('staging/000_public_prerequisites.sql'));
-  for(const name of ['202609290000_identity_foundation.sql','202610260001_platform_v1.sql','202610260002_identity_invitation.sql','202610260003_transactional_ingestion.sql']) await db.exec(read('migrations/'+name));
+  await db.exec(readFileSync(new URL('../../../../deploy/staging/platform-setup.sql',import.meta.url),'utf8'));
   const seed=read('staging/020_synthetic_seed.sql');
   await assert.rejects(()=>db.exec(seed),/Replace all five/);
   await db.exec('rollback');

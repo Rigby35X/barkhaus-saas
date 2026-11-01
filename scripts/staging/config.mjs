@@ -47,6 +47,8 @@ export function validateStagingConfig(env = process.env) {
   if (dashboardKey !== anonKey) throw new Error('Dashboard and tenant public keys must match.');
   const dashboardOrigin = origin(env, 'BARKHAUS_STAGING_APP_ORIGIN', 5173);
   const tenantOrigin = origin(env, 'BARKHAUS_STAGING_API_ORIGIN', 4321);
+  const platformOrigin = env.VITE_PLATFORM_API_ORIGIN;
+  if (platformOrigin && ![dashboardOrigin, tenantOrigin].includes(platformOrigin)) throw new Error('VITE_PLATFORM_API_ORIGIN must match a validated staging application or API origin.');
   const accounts = {};
   const roles = ['OWNER_A', 'VIEWER_A', 'REVOKED_A'];
   const hasAccount = roles.some(role => ['EMAIL', 'PASSWORD'].some(field => Boolean(env[`BARKHAUS_STAGING_${role}_${field}`])));

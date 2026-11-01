@@ -1,5 +1,7 @@
 # Next implementation assignments: native management and CSV first
 
+**Execution update:** the bounded A–D runtime pass described here has now run on the coordinator integration checkout. See [platform-round1-status.md](platform-round1-status.md) for implemented files, test evidence and exact remaining gaps. Do not relaunch these completed bounded tasks or mistake them for Round 1 acceptance.
+
 This continues [the kickoff](platform-kickoff.md) and [PR #11](https://github.com/Rigby35X/barkhaus-saas/pull/11); it does not restart the four original branches. The first A–D implementations and cross-module atomicity repairs are integrated locally. Both administrator metadata exports are received. Hosted staging acceptance, runtime binding and production rollout are not complete.
 
 ## Product scope

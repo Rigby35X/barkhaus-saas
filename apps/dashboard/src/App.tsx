@@ -15,7 +15,7 @@ import type { TabKey } from './components/Sidebar';
 
 // Lazy-loaded tabs
 const DashboardOverview = lazy(() => import('./tabs/DashboardOverview'));
-const AnimalsTab = lazy(() => import('./tabs/AnimalsTab'));
+const AnimalsTab = lazy(() => import('./tabs/AnimalWorkspaceTab'));
 const ApplicationsTab = lazy(() => import('./tabs/ApplicationsTab'));
 const WebsiteContentTab = lazy(() => import('./tabs/WebsiteContentTab'));
 const SettingsTab = lazy(() => import('./tabs/SettingsTab'));
@@ -155,7 +155,7 @@ function App() {
       case 'donations':
         return <DonationsTab orgId={session.orgId} onNavigateToSettings={handleNavigateToPayments} />;
       case 'integrations':
-        return <IntegrationsTab orgId={session.orgId} />;
+        return <IntegrationsTab orgId={session.orgId} role={session.role} />;
       default:
         return <DashboardOverview orgId={session.orgId} onTabChange={navigate} />;
     }
