@@ -1,0 +1,31 @@
+{
+  "status": "prepared-not-applied",
+  "projectRef": "idybpiomulkebvhqibdp",
+  "siteUrl": "http://localhost:5173",
+  "dashboardRedirectUrls": [
+    "http://localhost:5173/login",
+    "http://localhost:5173/signup",
+    "http://localhost:5173/auth/callback",
+    "http://localhost:5173/?identity=recovery",
+    "http://localhost:5173/login?plan=starter&billing=paid",
+    "http://localhost:5173/login?plan=starter&billing=trial",
+    "http://localhost:5173/login?plan=growth&billing=paid",
+    "http://localhost:5173/login?plan=growth&billing=trial",
+    "http://localhost:5173/login?plan=pro&billing=paid",
+    "http://localhost:5173/login?plan=pro&billing=trial",
+    "http://localhost:5173/signup?plan=starter&billing=paid",
+    "http://localhost:5173/signup?plan=starter&billing=trial",
+    "http://localhost:5173/signup?plan=growth&billing=paid",
+    "http://localhost:5173/signup?plan=growth&billing=trial",
+    "http://localhost:5173/signup?plan=pro&billing=paid",
+    "http://localhost:5173/signup?plan=pro&billing=trial"
+  ],
+  "googleAuthorizedRedirectUri": "https://idybpiomulkebvhqibdp.supabase.co/auth/v1/callback",
+  "googleAppDisplayName": "BarkHaus Staging",
+  "productionChanges": false,
+  "notes": [
+    "Exact URLs only; no wildcard or user-supplied returnTo.",
+    "Google provider/client keys and test-user configuration require authorized administrator setup.",
+    "Supabase custom Auth domain, if selected later, changes the Google callback URI and requires separate review."
+  ]
+}

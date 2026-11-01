@@ -30,19 +30,22 @@ function authModule(client) {
   const exports = {};
   const storage = new Map([['barkhausAdminSession', '{"orgId":8}'], ['barkhausAuthToken', 'legacy']]);
   let cleanedUrl = '';
+  const session = new Map();
   vm.runInNewContext(code, {
     exports,
     require: (id) => {
       if (id === './supabase') return { supabase: client };
+      if (id === '../features/identity/signup') return {SIGNUP_INTENT_KEY:'barkhausSignupIntent'};
       if (id === './apiCache') return { clearCache() {} };
       if (id === './access') return { isOrganizationRole, toOrgConfig };
       throw new Error(`Unexpected dependency: ${id}`);
     },
     localStorage: { getItem: (k) => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v), removeItem: (k) => storage.delete(k) },
+    sessionStorage: { getItem: k => session.get(k) ?? null, setItem: (k,v) => session.set(k,v), removeItem: k => session.delete(k) },
     URL,
     window: { location: { href: 'https://app.barkhaus.io/?token=legacy&view=animals#section' }, history: { replaceState: (_state, _unused, url) => { cleanedUrl = url; } } },
   });
-  return { exports, storage, cleanedUrl: () => cleanedUrl };
+  return { exports, storage, session, cleanedUrl: () => cleanedUrl };
 }
 
 test('legacy token/session are discarded; unrelated URL state is retained', () => {
@@ -54,27 +57,44 @@ test('legacy token/session are discarded; unrelated URL state is retained', () =
 });
 
 test('invalid Auth user blocks memberships even with a stored legacy session', async () => {
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: null }, error: new Error('expired') }) }, from: () => { throw new Error('must not query'); } });
+  const module = authModule({ auth: { getUser: async () => ({ data: { user: null }, error: new Error('expired') }) }, rpc: () => { throw new Error('must not query'); } });
   await assert.rejects(module.exports.loadOrganizationAccess(), /expired/);
 });
 
-test('membership queries use validated user ID and active status; unknown roles are rejected', async () => {
-  const filters = [];
+test('organization access uses the member-only RPC after Auth validation; unknown roles are rejected', async () => {
+  let verified = false;
   const rows = [
     { org_id: 9, role: 'viewer', organizations: { org: 'Rescue Nine' } },
     { org_id: 10, role: 'super_admin', organizations: { org: 'Forbidden' } },
   ];
-  const chain = { select() { return this; }, eq(k, v) { filters.push([k, v]); return this; }, async order() { return { data: rows, error: null }; } };
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified-user' } }, error: null }) }, from: (table) => { assert.equal(table, 'organization_memberships'); return chain; } });
+  const module = authModule({
+    auth: { getUser: async () => { verified = true; return { data: { user: { id: 'verified-user' } }, error: null }; } },
+    rpc: async (name, args) => {
+      assert.equal(verified, true);
+      assert.equal(name, 'my_organization_access');
+      assert.equal(args, undefined); // Actor and organization cannot be supplied by the browser.
+      return { data: rows, error: null };
+    },
+  });
   const access = await module.exports.loadOrganizationAccess();
-  assert.deepEqual(filters, [['user_id', 'verified-user'], ['is_active', true]]);
   assert.equal(access.length, 1);
   assert.equal(access[0].orgId, 9);
   assert.equal(access[0].role, 'viewer');
 });
 
 test('membership database errors fail closed without a default admin fallback', async () => {
-  const chain = { select() { return this; }, eq() { return this; }, async order() { return { data: null, error: new Error('missing table') }; } };
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified' } }, error: null }) }, from: () => chain });
+  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified' } }, error: null }) }, rpc: async () => ({data:null,error:new Error('missing RPC')}) });
   await assert.rejects(module.exports.loadOrganizationAccess(), /could not load/);
+});
+
+test('sign-out clears organization preference and signup intent before another account signs in',async()=>{
+ let signedOut=false;
+ const module=authModule({auth:{async signOut(){signedOut=true;return {error:null};}}});
+ module.storage.set('barkhausPreferredOrganization','9');
+ module.session.set('barkhausSignupIntent','{"plan":"pro","billing":"paid"}');
+ await module.exports.logout();
+ assert.equal(signedOut,true);
+ assert.equal(module.storage.has('barkhausPreferredOrganization'),false);
+ assert.equal(module.session.has('barkhausSignupIntent'),false);
+ assert.equal(module.storage.has('barkhausAdminSession'),false);
 });

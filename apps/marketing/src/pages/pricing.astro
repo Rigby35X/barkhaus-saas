@@ -7,8 +7,8 @@ import Footer from '../components/Footer.astro';
 
 const faqs = [
   {
-    question: 'Is there a free trial?',
-    answer: "Yes! Every plan includes a 14-day free trial — no credit card required. After your trial, choose the plan that fits your rescue.",
+    question: 'Do I have to start with a free trial?',
+    answer: "No. Sign up and choose the plan that fits your rescue. A trial is optional when offered; account creation does not activate a subscription or charge your card.",
   },
   {
     question: 'Can I change plans at any time?',
@@ -40,7 +40,7 @@ const faqs = [
   <div class="pt-28 pb-16 bg-cloud text-center">
     <div class="max-w-3xl mx-auto px-4">
       <h1 class="font-serif text-4xl sm:text-5xl font-bold text-deep-taupe mb-4">Simple, Honest Pricing</h1>
-      <p class="text-lg text-deep-taupe">No surprise fees. No locked-in contracts. Start free for 14 days.</p>
+      <p class="text-lg text-deep-taupe">Choose the plan that fits your rescue. Sign up without being required to start a trial.</p>
     </div>
   </div>
 
@@ -123,8 +123,8 @@ const faqs = [
               </li>
             ))}
           </ul>
-          <a href="/signup?plan=starter" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
-            Start Free Trial
+          <a href="/signup?plan=starter&amp;billing=paid" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
+            Sign up
           </a>
         </div>
 
@@ -155,8 +155,8 @@ const faqs = [
               </li>
             ))}
           </ul>
-          <a href="/signup?plan=growth" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-warm-brown text-white hover:opacity-90">
-            Start Free Trial
+          <a href="/signup?plan=growth&amp;billing=paid" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-warm-brown text-white hover:opacity-90">
+            Sign up
           </a>
         </div>
 
@@ -184,8 +184,8 @@ const faqs = [
               </li>
             ))}
           </ul>
-          <a href="/signup?plan=pro" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
-            Start Free Trial
+          <a href="/signup?plan=pro&amp;billing=paid" class="block text-center px-6 py-3 rounded-xl font-semibold text-sm transition bg-cloud text-deep-taupe border border-stone hover:bg-dove">
+            Sign up
           </a>
         </div>
       </div>
@@ -212,7 +212,7 @@ const faqs = [
   <CTABanner
     headline="Start Saving Lives Today"
     subtext="14-day free trial on all plans. No credit card required."
-    primaryCta={{ label: 'Start Free Trial', href: '/signup' }}
+    primaryCta={{ label: 'Sign up', href: '/signup' }}
     secondaryCta={{ label: 'Contact Sales', href: '/contact' }}
   />
 

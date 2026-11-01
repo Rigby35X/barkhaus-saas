@@ -5,7 +5,7 @@ const TABS: TabKey[] = ['overview', 'animals', 'applications', 'events', 'donati
 
 export function organizationSlug(org: OrganizationAccess): string {
   const slug = org.orgConfig.subdomain?.toLowerCase();
-  return slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && !['login', 'dashboard'].includes(slug)
+  return slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) && !['login', 'signup', 'dashboard', 'auth'].includes(slug)
     ? slug : `org-${org.orgId}`;
 }
 
@@ -14,7 +14,8 @@ export function workspacePath(org: OrganizationAccess, tab: TabKey): string {
 }
 
 export function resolveWorkspaceRoute(pathname: string, access: OrganizationAccess[]) {
-  if (['/', '/login', '/dashboard'].includes(pathname)) return { kind: 'entry' as const };
+  const entryPath = pathname.replace(/\/$/, '') || '/';
+  if (['/', '/login', '/signup', '/dashboard', '/auth/callback'].includes(entryPath)) return { kind: 'entry' as const };
   const match = /^\/([a-z0-9-]+)(?:\/([a-z-]+))?\/?$/.exec(pathname);
   if (!match || (match[2] && !TABS.includes(match[2] as TabKey))) return { kind: 'missing' as const };
   // Resolve only among verified memberships. Ambiguous slugs fail closed.

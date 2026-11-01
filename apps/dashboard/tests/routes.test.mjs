@@ -26,3 +26,12 @@ test('organizations without a valid slug get a stable id route', () => {
   assert.equal(workspacePath(org, 'overview'), '/org-9/overview');
   assert.equal(resolveWorkspaceRoute('/org-9/animals', [org]).organization, org);
 });
+
+
+test('login, signup and callback paths are entry routes rather than customer organizations', () => {
+  for (const path of ['/login','/login/','/signup','/signup/','/auth/callback','/auth/callback/']) assert.equal(resolveWorkspaceRoute(path,[mbpr]).kind,'entry');
+  for (const slug of ['login','signup','auth','dashboard']) {
+    const organization={...mbpr,orgId:12,orgConfig:{subdomain:slug}};
+    assert.equal(workspacePath(organization,'animals'),'/org-12/animals');
+  }
+});

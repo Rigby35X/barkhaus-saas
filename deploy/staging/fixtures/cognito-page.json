@@ -1,0 +1,5 @@
+{
+  "entries": [{"EntryNumber": "900001", "UpdatedAt": "2026-10-26T00:00:00.000Z", "Name": "Pip", "Species": "dog", "Code": "Ready", "Kennel": "S1", "Photos": []}],
+  "nextCursor": null,
+  "completeSnapshot": false
+}

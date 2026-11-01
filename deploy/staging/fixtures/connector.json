@@ -1,0 +1,12 @@
+{
+ "version":1,"id":"staging-cognito","orgId":1002,"provider":"cognito",
+ "credentialRef":"fixture://staging-only","state":"active",
+ "capabilities":{"direction":"inbound","pagination":"cursor","incremental":false},
+ "config":{"endpoint":"https://fixture.invalid/entries","formId":"999","identityColumn":"EntryNumber","revisionColumn":"UpdatedAt","statusColumn":"Code","pageSize":10},
+ "mapping":{"version":1,"id":"staging-connector-map","revision":1,"orgId":1002,"fields":[
+  {"sourceColumn":"Name","target":{"kind":"core","field":"name"},"transform":"text"},
+  {"sourceColumn":"Species","target":{"kind":"core","field":"species"},"transform":"text"},
+  {"sourceColumn":"Photos","target":{"kind":"core","field":"photos"},"transform":"photos"},
+  {"sourceColumn":"Kennel","target":{"kind":"custom","key":"kennel"},"transform":"text"}
+ ],"statusMap":{"Ready":{"lifecycle":"care","availability":"available"}}}
+}

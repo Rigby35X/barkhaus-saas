@@ -113,3 +113,9 @@ Complete setup/access prompts before unattended work. Do not rely on a laptop br
 Start the coordinator contract/baseline task first; launch A alongside it for read-only security inventory.
 Launch B/C/D implementation after the shared-contract commit exists.
 Stop at reviewable changes and documented blockers. Production rollout is a separate task.
+
+## Current product priority and next gate
+
+Native BarkHaus management plus CSV onboarding is the first route to complete end to end. Cognito is currently MBPR's configured integration, not a global nonprofit prerequisite or a default source. All source options translate into the same normalized animal contract and saved organization-scoped mappings. Google Sheets follows acceptance of the reusable connector framework. A future switch to native management is an explicit reviewed ownership transition; disconnecting a source alone does not perform that transition.
+
+Both source and empty-staging metadata are now received. The coordinator separated additive identity primitives into `202609290000_identity_foundation.sql` so the platform-only prepared sequence excludes legacy Stage1/Stage2 permission cutovers. See [platform-next-assignments.md](platform-next-assignments.md) and [platform-staging.md](platform-staging.md). All hosted migrations, write enablement, provider activation and production changes remain gated.

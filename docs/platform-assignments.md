@@ -1,5 +1,7 @@
 # First milestone implementation assignments
 
+Current follow-up scope, native/CSV-first priority and file handoffs are in [platform-next-assignments.md](platform-next-assignments.md). The original assignments below record the first implementation round; do not restart those branches or reuse their old baseline for follow-up tasks.
+
 Use [kickoff](platform-kickoff.md), [v1 contracts](platform-contracts-v1.md),
 and [baseline evidence](platform-validation.md). At contract freeze, the coordinator
 had completed the contract/baseline task and A's parallel **read-only** inventory;

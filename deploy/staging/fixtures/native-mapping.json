@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "id": "staging-native-animals",
+  "revision": 1,
+  "orgId": 1001,
+  "fields": [
+    {"sourceColumn": "Name", "target": {"kind": "core", "field": "name"}, "transform": "trim"},
+    {"sourceColumn": "Species", "target": {"kind": "core", "field": "species"}, "transform": "trim"},
+    {"sourceColumn": "Status", "target": {"kind": "core", "field": "lifecycle"}, "transform": "status"}
+  ],
+  "statusMap": {}
+}

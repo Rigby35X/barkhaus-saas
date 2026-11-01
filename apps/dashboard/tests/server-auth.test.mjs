@@ -10,8 +10,8 @@ function guard(client, configured = true) {
   const source = raw.replaceAll('import.meta.env.PUBLIC_SUPABASE_URL', configured ? "'https://project.supabase.co'" : "''").replaceAll('import.meta.env.PUBLIC_SUPABASE_ANON_KEY', "'public-key'");
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
   const exports = {};
-  vm.runInNewContext(code, { exports, Response, require: () => ({ createClient: (_url, _key, options) => { calls++; assert.equal(options.auth.persistSession, false); return client; } }) });
-  return { check: exports.requireOrganizationAccess, calls: () => calls };
+  vm.runInNewContext(code, { exports, Response, Headers, require: () => ({ createClient: (_url, _key, options) => { calls++; assert.equal(options.auth.persistSession, false); if (client instanceof Error) throw client; return client; } }) });
+  return { check: exports.requireOrganizationAccess, sign: exports.signPrivateAnimalDocument, calls: () => calls };
 }
 const request = (token = 'verified-token') => new Request('https://api.barkhaus.io/admin', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
 function client(role = 'staff', valid = true, active = true) {
@@ -49,4 +49,60 @@ test('missing project configuration fails closed', async () => {
   const auth = guard({}, false);
   assert.equal((await auth.check(request(), 9, ['staff'])).response.status, 503);
   assert.equal(auth.calls(), 0);
+});
+
+test('private document signing rechecks membership, uses private bucket and bounded expiry', async()=>{
+ const sdk=client('viewer');
+ sdk.storage={from(bucket){ assert.equal(bucket,'animal-private-documents');return {async createSignedUrl(path,ttl){assert.equal(path,'9/medical/file.pdf');assert.equal(ttl,60);return {data:{signedUrl:'https://fixture.test/signed'},error:null};}};}};
+ const auth=guard(sdk);
+ const response=await auth.sign(request(),9,'9/medical/file.pdf');
+ assert.equal(response.status,200); assert.equal(response.headers.get('Cache-Control'),'no-store');
+ assert.equal((await response.json()).expiresIn,60);
+ assert.equal((await auth.sign(request(),9,'10/medical/file.pdf')).status,400);
+ assert.equal((await auth.sign(request(),9,'9/../file.pdf')).status,400);
+ assert.equal((await guard(client('viewer',true,false)).sign(request(),9,'9/medical/file.pdf')).status,403);
+});
+
+test('recovery redirects fixed; expired Auth session fails; password update signs out',async()=>{
+ const raw=readFileSync(new URL('../src/features/identity/recovery.ts',import.meta.url),'utf8');
+ const exports={};vm.runInNewContext(ts.transpileModule(raw,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{exports,URL,Set,crypto:globalThis.crypto,TextEncoder});
+ assert.equal(exports.identityRedirect('https://app.barkhaus.io'),'https://app.barkhaus.io/?identity=recovery');
+ for(const origin of ['https://app.barkhaus.io.evil.test','javascript:alert(1)','https://evil.test','https://app.barkhaus.io/path']) assert.throws(()=>exports.identityRedirect(origin));
+ let updated=0, signedOut=0;
+ const sdk={auth:{getUser:async()=>({data:{user:null},error:new Error('expired')}),updateUser:async()=>{updated++;return {error:null};},signOut:async()=>{signedOut++;return {error:null};}}};
+ await assert.rejects(exports.finishRecovery(sdk,'long password value'),/expired/);assert.equal(updated,0);
+ sdk.auth.getUser=async()=>({data:{user:{id:'verified'}},error:null});
+ await assert.rejects(exports.finishRecovery(sdk,'short'),/12 characters/);
+ await exports.finishRecovery(sdk,'long password value');assert.equal(updated,1);assert.equal(signedOut,1);
+ let rpcCalls=0;
+ const invitationClient={async rpc(name,args){rpcCalls++;assert.equal(name,'accept_organization_invitation');assert.deepEqual(Object.keys(args),['token_digest']);assert.match(args.token_digest,/^[a-f0-9]{64}$/);assert.notEqual(args.token_digest,'a'.repeat(64));return {error:null};}};
+ await exports.acceptInvitation(invitationClient,'a'.repeat(64));assert.equal(rpcCalls,1);
+ await assert.rejects(exports.acceptInvitation(invitationClient,'invalid'),/Invalid invitation/);assert.equal(rpcCalls,1);
+});
+
+
+test('authorization failures are private and retain caller CORS vary without trusting cache overrides', async () => {
+  const response=(await guard({}).check(request(null),9,['staff'],{'Vary':'Origin','Cache-Control':'public, max-age=600'})).response;
+  assert.equal(response.status,401);
+  assert.equal(response.headers.get('Cache-Control'),'private, no-store');
+  assert.equal(response.headers.get('Vary'),'Origin, Authorization');
+  const duplicate=(await guard({}).check(request(null),9,['staff'],{'Vary':'Origin, authorization'})).response;
+  assert.equal(duplicate.headers.get('Vary'),'Origin, authorization');
+});
+
+test('client initialization and membership failures are sanitized and cannot authorize a caller', async () => {
+  const auth=guard(new Error('sensitive deployment URL or key'));
+  const response=(await auth.check(request(),9,['staff'])).response;
+  assert.equal(response.status,503);
+  assert.ok(!(await response.text()).includes('sensitive'));
+  const sdk=client();sdk.from=()=>({select(){return this;},eq(){return this;},async maybeSingle(){return {data:{role:'owner'},error:new Error('sensitive SQL detail')};}});
+  const failed=(await guard(sdk).check(request(),9,['owner'])).response;
+  assert.equal(failed.status,503);
+  assert.ok(!(await failed.text()).includes('sensitive'));
+});
+
+test('verified principal comes only from current membership and unknown roles fail closed', async () => {
+  const access=await guard(client('staff')).check(new Request('https://api.barkhaus.io/admin',{method:'POST',headers:{Authorization:'Bearer verified-token'},body:JSON.stringify({kind:'worker',role:'owner',userId:'forged',orgId:10})}),9,['staff']);
+  assert.deepEqual(JSON.parse(JSON.stringify(access.principal)),{kind:'member',userId:'verified-user',orgId:9,role:'staff'});
+  assert.equal((await guard(client('super_admin')).check(request(),9,['super_admin'])).response.status,403);
 });

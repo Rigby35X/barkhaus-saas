@@ -107,3 +107,51 @@ but reported policy/variable states do not establish live DB authorization.
 Earlier baseline checks and blockers above are historical evidence, not a claim
 of current staging readiness. No combined actual-SQL adapter, staging verification
 or production rollout is complete.
+
+## Integration execution outcome
+
+The user subsequently authorized cross-module implementation on
+`feature/platform-integration-v1-20261026`. The repaired schema, concrete SQL
+repository, atomic CSV batches/connector pages and current evidence are documented
+in [platform-integration-results.md](platform-integration-results.md).
+The earlier missing-adapter/atomicity findings are resolved locally on that branch:
+34 SQL integration, 41 security, 66 feature and 13 contract tests pass; strict
+typechecks and all three app builds pass. Staging checks, runtime activation and
+remote migration approval remain outstanding; PR #7 remains unmerged.
+
+## PR #11 review and staging preparation evidence
+
+Review fixes and the operator package are saved on `feature/platform-integration-v1-20261026`. The coordinator owns affected A/B/D interfaces on this integration branch; worker branches remain unchanged. PR #11 is the current draft; PR #7 remains unmerged.
+
+- Combined local integration suite: **47 passed, zero failures/skips**, including six offline config/HTTP mock tests, three staging export/rehearsal/fixture tests, hosted-default ACL and trusted-writer denial checks, connector terminal lease recovery and atomic checkpoint/lost-acknowledgement replay tests.
+- Security: **41 passed** (6 access, 24 SQL RLS, 7 server Auth/recovery, 4 routes).
+- Feature suites: **66 passed**. Shared contracts: **13 passed** plus strict typecheck.
+- Strict dashboard and platform server typechecks passed. Earlier three app builds remain baseline evidence; no app build or deployment enables the gated runtime.
+- Read-only export was executed in a local READ ONLY transaction with sentinel secrets in defaults/functions/views/policies and synthetic customer records; none appeared in the exported JSON. Fresh managed-like synthetic staging bootstrap, all four allowlisted migrations, guarded seed and read-only acceptance SQL pass locally.
+- GitHub PR merge ref identifies coordinator base `9bb3cd7dac7d5fc6bebdf071a31e1c5f1fb4010e`; local merge-tree is conflict-free. Hosted CI status cannot be established through the denied GitHub API.
+
+See [platform-staging.md](platform-staging.md) for exact administrator instructions and the prepared migration plan. All database execution was local PGlite; no remote migration, export, seed, Auth creation, runtime enablement, merge or production change occurred. Hosted schema/policy compatibility, staging Auth/Storage, real pool/workload bindings and independent PostgreSQL connection tests remain outstanding. Safe expression fingerprints do not replace administrator semantic review.
+
+## Administrator source metadata received
+
+The user-supplied safe export is parsed and reviewed in [platform-source-export-review.md](platform-source-export-review.md). Required legacy tables/org ID types exist, but the current Stage 1 plan is blocked: RLS is disabled on 20 of 21 public tables, anon has broad grants, and no public-schema policies are exported. Enabling RLS without anon policies would deny current anonymous row access. Local writer/ingestion tests do not establish preservation of public-site/MBPR behavior. No remote migrations or production changes are approved by this evidence.
+
+## Empty staging metadata received
+
+The second uploaded safe export is reviewed in [platform-staging-export-review.md](platform-staging-export-review.md): PostgreSQL 17.11, no public/private application objects, no Storage buckets, managed Storage RLS enabled, expected built-in roles and broad default ACLs. Both administrator exports are received. The source Stage 1 compatibility blocker remains; no remote migration or staging execution was authorized or performed.
+
+## Additive identity boundary repair and native-first follow-up
+
+New-platform fixtures now use identity000 + platform001/002/003, excluding both legacy cutovers. Historical legacy RLS tests explicitly use identity000 + legacy001. **52 integration tests, 41 security tests, dashboard/server strict typechecks and dashboard build pass** after this repair. Source-shaped SQL regressions prove the new path preserves synthetic legacy anonymous reads/submissions and metadata while enforcing new-platform isolation and an allowlisted member display RPC. No hosted migration/runtime enablement occurred. See [platform-next-assignments.md](platform-next-assignments.md) for native/CSV-first follow-up ownership and acceptance; Cognito is not mandatory onboarding.
+
+## Round 1 runtime composition pass
+
+Native SQL HTTP/pg composition, persistent CSV HTTP/client/supervised runner and sanitized connector controls/workload verification are implemented locally; dashboard native/CSV and connector panels are composed. Mounted routes remain authorized503 gates. [platform-round1-status.md](platform-round1-status.md) records the exact scope and remaining gaps. Current validation: 58 integration,48 security,90 feature,13 contract and9 genuine local PostgreSQL tests; strict typechecks and dashboard/tenant-site builds pass. The single-transaction prepared staging bundle also passes local rehearsal and allowlist freshness checks. No hosted migration/user/Storage/provider activation occurred. Round1 is not complete: native media intake/history, delivery/provider runtime bindings and actual browser/hosted acceptance remain outstanding.
+
+## Login/signup feedback repair
+
+The user clarified that the first tested account already belongs to MBPR; a different email reached a second legacy login form, not proven MBPR access. Public-only artifact review confirms live marketing/dashboard differ from the draft candidate and use incompatible cross-origin sign-in handoff. No customer/account API was queried. See [platform-live-login-review.md](platform-live-login-review.md).
+
+Candidate changes centralize sign-in/signup/Google callbacks on the dashboard origin, preserve allowlisted paid/trial plan preference without activating billing, replace trial-only CTA labels with Sign up, and present no-membership accounts with a separate setup/invitation screen. Logout clears old organization and signup preferences. Existing verified MBPR members remain eligible for MBPR; unknown/erroring membership never becomes a default organization.
+
+Current targeted validation: **57 dashboard security/identity/routing tests** (7 access,24 SQL RLS,10 server authorization/recovery,5 routes,11 identity), **4 marketing auth-handoff tests**, strict dashboard/server typechecks and marketing/dashboard builds pass. The previously prepared staging SQL bundle remains unchanged and passes its freshness check. Actual Google branding, provider redirect configuration, real email/OAuth login and paid checkout remain outstanding; no production or hosted changes were made. [Simple staging test plan](platform-login-test-plan.md) records the next user-facing checks.

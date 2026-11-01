@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "status": "prepared-not-authorized-for-remote-application",
+  "projectRef": "idybpiomulkebvhqibdp",
+  "purpose": "provider-independent platform identity and animal persistence",
+  "orderedSqlFiles": [
+    "supabase/staging/000_public_prerequisites.sql",
+    "supabase/migrations/202609290000_identity_foundation.sql",
+    "supabase/migrations/202610260001_platform_v1.sql",
+    "supabase/migrations/202610260002_identity_invitation.sql",
+    "supabase/migrations/202610260003_transactional_ingestion.sql"
+  ],
+  "excludedSqlFiles": [
+    "supabase/migrations/202609290001_dashboard_memberships.sql",
+    "supabase/migrations/202609290002_private_data_cutover.sql",
+    "supabase/audits/platform_v1_fixture.sql"
+  ],
+  "subsequentSeedTemplate": "supabase/staging/020_synthetic_seed.sql",
+  "readOnlyAcceptance": "supabase/staging/030_acceptance_readonly.sql",
+  "requiredBeforeRemoteApplication": [
+    "review exact integration commit and project reference",
+    "review managed role, default ACL and Storage compatibility",
+    "obtain explicit authorization for staging migration application"
+  ],
+  "productionChanges": false,
+  "enableRuntimeWrites": false,
+  "enableProviderIntegrations": false
+}

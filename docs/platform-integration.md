@@ -1,5 +1,34 @@
 # Integration checklist and dependency decisions
 
+## Execution update and ownership handoff
+
+The user authorized coordinator ownership of the affected A/B/C/D files on
+`feature/platform-integration-v1-20261026`. This supersedes worker-exclusive file
+ownership **on this integration branch only**. Original worker branches remain
+unchanged. Checklist commit `9bb3cd7` was pushed to the coordinator branch first;
+all four exact worker heads below were fetched and copied to the integration
+branch without merging any GitHub PR. B/C/D code was initially copied with its
+runtime gates intact; physical integration proceeded after schema review and the
+first actual-SQL writer tests passed.
+
+Bounded delegation on this shared integration checkout: a schema reviewer repaired
+SQL/fixtures; separate assignments repaired C's batch port/SQL store and D's page
+port. The coordinator implemented B's SQL repository/transport and D's SQL store,
+reviewed cross-module changes, and owns the consolidated tests and result report.
+No delegate switched, pushed or modified a worker branch.
+
+Completed local gates: G0 ownership handoff, G1 reviewed SQL foundation, G2 concrete
+transaction-bound writer, G3-C batch persistence, and G3-D page persistence.
+Combined two-org SQL/authorization tests and all application builds pass. G4's
+interactive browser history/live HTTP checks, G5 staging and G6 PR merge approval
+remain outstanding. PR #7 stays unmerged; runtime HTTP stays 503-gated, provider
+and scheduler integrations remain disabled, and remote migrations remain unapplied.
+
+The initial review/findings below are preserved as history. Their missing-adapter
+and atomicity failures are resolved locally by this branch; deployment prerequisites
+are not. See [implementation and test evidence](platform-integration-results.md)
+for current commands, guarantees and remaining blockers.
+
 Coordinator review: 2026-10-26. Contract base:
 `813d605d5465e3b78264a8abd4a9ed790f74f14f`.
 This is a review and follow-up plan, not an approval to apply SQL, enable routes,
@@ -350,3 +379,21 @@ acceptance test. A reports 41 local security/SQL/auth/route tests; B/C report th
 fixture/typecheck/build results in their handoffs. Those claims were read, not
 rerun here. No actual A+B persistence adapter exists to run the combined DB tests.
 No production setting, branch, migration, MBPR path or deployment was changed.
+
+## PR #11 review ownership handoff
+
+The coordinator owns the schema/repository/connector/test repairs and staging preparation on `feature/platform-integration-v1-20261026`. Agent schema review and runtime review contributed bounded edits under that ownership. Worker branches A–D remain unchanged. PR #11 and #7 remain unmerged; no runtime gate was removed, remote migration applied or production integration enabled. See [platform-staging.md](platform-staging.md) for the migration allowlist, safe read-only export and operator dependencies, and [platform-integration-results.md](platform-integration-results.md) for evidence. Hosted compatibility, actual Auth/Storage checks and independent PostgreSQL connection tests remain open.
+
+## Native-first follow-up ownership and dependencies
+
+The coordinator owns the identity000 extraction, legacy001 refactor, member projection RPC, auth consumer, shared harnesses and prepared staging allowlist on the integration branch. Bounded review/testing and next-assignment documentation were delegated with disjoint file ownership. A–D original worker branches remain unchanged. Future follow-up file ownership is explicit in [platform-next-assignments.md](platform-next-assignments.md); shared SQL/contracts/navigation remain coordinator-owned unless the tracker records a transfer. Native/CSV acceptance precedes configured connector acceptance. Both legacy cutovers are excluded; all remote application/runtime/provider/production gates remain closed.
+
+The exact frozen starting commit for every next implementation agent A/B/C/D is `6c0429d72c904f3f03b7452e911f8f64585e7b44`. This freezes a reviewable implementation baseline, not a hosted release. The current bounded review agents completed their local assignments; new long-running A–D Cloud implementation tasks are not claimed to be running.
+
+## Executed bounded Round 1 runtime handoff
+
+The A–D runtime assignments were executed on the shared integration checkout starting at documentation HEAD `b9df0fa` over frozen implementation baseline `6c0429d72c904f3f03b7452e911f8f64585e7b44`; each agent owned the files in its module handoff, without commits or branch switches. A separate reviewer owned only `tests/postgres/**` and local PostgreSQL evidence. Coordinator owns all publication, shared composition/manifests/gates/bundle generation and final acceptance. Original A–D remote branches remain untouched. See [platform-round1-status.md](platform-round1-status.md) for actual closures and remaining native media/history, delivery/provider and hosted acceptance work. Both PRs remain unmerged, all mounted write factories disabled and production unchanged.
+
+## Login/signup ownership handoff
+
+After the user's live-login report, the coordinator delegated dashboard identity/signup/LoginScreen/routes and bounded tests to A, and public-only artifact investigation to a read-only reviewer. Coordinator owns marketing CTA/auth handoff/callback compatibility, App/no-membership composition, logout preference cleanup, shared test/config/docs and publication. Changes remain on the integration branch; worker branches, hosted memberships/Google settings and production are unchanged. Existing MBPR account access is expected only through verified membership; no new-account MBPR access was established by the reported screenshots. See [platform-live-login-review.md](platform-live-login-review.md) and [platform-login-test-plan.md](platform-login-test-plan.md).
