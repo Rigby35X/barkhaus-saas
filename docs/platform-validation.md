@@ -131,3 +131,7 @@ Review fixes and the operator package are saved on `feature/platform-integration
 - GitHub PR merge ref identifies coordinator base `9bb3cd7dac7d5fc6bebdf071a31e1c5f1fb4010e`; local merge-tree is conflict-free. Hosted CI status cannot be established through the denied GitHub API.
 
 See [platform-staging.md](platform-staging.md) for exact administrator instructions and the prepared migration plan. All database execution was local PGlite; no remote migration, export, seed, Auth creation, runtime enablement, merge or production change occurred. Hosted schema/policy compatibility, staging Auth/Storage, real pool/workload bindings and independent PostgreSQL connection tests remain outstanding. Safe expression fingerprints do not replace administrator semantic review.
+
+## Administrator source metadata received
+
+The user-supplied safe export is parsed and reviewed in [platform-source-export-review.md](platform-source-export-review.md). Required legacy tables/org ID types exist, but the current Stage 1 plan is blocked: RLS is disabled on 20 of 21 public tables, anon has broad grants, and no public-schema policies are exported. Enabling RLS without anon policies would deny current anonymous row access. Local writer/ingestion tests do not establish preservation of public-site/MBPR behavior. No remote migrations or production changes are approved by this evidence.

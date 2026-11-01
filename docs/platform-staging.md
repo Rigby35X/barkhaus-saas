@@ -37,9 +37,9 @@ Set the explicit project reference, application/API origins and `BARKHAUS_STAGIN
 
 Start the dashboard and tenant API locally with the staging-only environment (`npm run dev --workspace=apps/dashboard` and `npm run dev --workspace=apps/tenant-site -- --port 4321`). These processes must receive the same validated staging configuration. Do not deploy either to production. No SQL login is needed for the gated HTTP checks. A future PostgreSQL pool login must be server-only, use TLS and reviewed least-privilege group membership; do not use a browser JWT, service-role HTTP key or proxy placeholder as a SQL password. No login/grant provisioning is included here.
 
-## 4. Proposed migration sequence — pending compatibility approval
+## 4. Proposed migration sequence — BLOCKED by source review
 
-**Do not run this sequence yet.** First review both exports, administrator-only policy semantics, project reference and role/grant compatibility. Record approval against a specific integration commit. Never use blanket `supabase db push` for this branch.
+**Do not run this sequence yet.** The supplied source export now shows that Stage 1 would enable legacy-table RLS without anon policies and could interrupt the existing public site/submissions. See [platform-source-export-review.md](platform-source-export-review.md). Resolve that compatibility/cutover design before authorizing this sequence; the sequence below is a historical proposal, not an approved plan. Also review both exports, administrator-only policy semantics, project reference and role/grant compatibility. Record approval against a specific integration commit. Never use blanket `supabase db push` for this branch.
 
 On the new staging project only, execute and retain results in this exact order after approval:
 
