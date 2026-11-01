@@ -6,6 +6,8 @@ import { selectOrganization, canManageOrganization } from './lib/access';
 import { useOrganizationSession } from './hooks/useOrganizationSession';
 import { clearCache } from './lib/apiCache';
 import LoginScreen from './components/LoginScreen';
+import PendingWorkspace from './components/PendingWorkspace';
+import { captureSignupIntent, readSavedSignupIntent } from './features/identity/signup';
 import Layout from './components/Layout';
 import Onboarding from './components/Onboarding';
 import OnboardingWizard from './components/OnboardingWizard';
@@ -45,6 +47,13 @@ function App() {
   const [animalsSearch, setAnimalsSearch] = useState({ query: '', nonce: 0 });
   const [settingsInitialSection, setSettingsInitialSection] = useState('');
   const [logoutError, setLogoutError] = useState('');
+  const [signupIntent,setSignupIntent] = useState(()=>readSavedSignupIntent(sessionStorage));
+  useEffect(()=>{
+    if (['/signup','/signup/','/auth/callback','/auth/callback/'].includes(location.pathname)) {
+      setSignupIntent(captureSignupIntent(location.search,sessionStorage));
+    }
+  },[location.pathname,location.search]);
+  useEffect(()=>{ setSignupIntent(readSavedSignupIntent(sessionStorage)); },[account.user?.id]);
 
   const orgId = session?.orgId;
   const role = session?.role;
@@ -70,7 +79,7 @@ function App() {
   };
   const handleLogout = async () => {
     setLogoutError('');
-    try { await logout(); } catch { setLogoutError('Sign out failed. Please retry.'); }
+    try { await logout(); setSignupIntent(null); } catch { setLogoutError('Sign out failed. Please retry.'); }
   };
   const handleRestartTour = () => {
     resetOnboarding();
@@ -105,6 +114,7 @@ function App() {
       </div>
     </div>
   );
+  if (account.user && !account.error && account.access.length === 0) return <><PendingWorkspace intent={signupIntent} onRetry={account.retry} onLogout={()=>void handleLogout()} />{logoutError && <p role="alert">{logoutError}</p>}</>;
   if (account.error || !session) return (
     <div className="min-h-screen bg-cloud flex items-center justify-center p-6">
       <div className="max-w-md bg-white rounded-2xl border border-silver-gray p-8 space-y-4">

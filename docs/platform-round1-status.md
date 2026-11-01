@@ -60,3 +60,9 @@ The source-shaped synthetic regressions preserve legacy grants/RLS/anonymous rea
 5. Complete the real browser demonstration: native create/edit/reload/media/history; CSV mapping/preview/fix/retry/recover; deliberate publication/private projection; configured connector replay preserving local fields; two organizations and revoked/viewer/cross-org actors; MBPR unchanged. Only then assess runtime activation/merge and call Round 1 accepted.
 
 Round 2 organization onboarding/website/applications/Sheets remains later work. No approval to merge, deploy, apply remote SQL, provision hosted users or enable production integrations is implied by these local results.
+
+## Login/signup feedback repair
+
+The user's live screenshots were investigated using public artifacts only. The live marketing/dashboard still run older sign-in code. The original MBPR account legitimately should have MBPR access; a different email reached a second old login screen, not proven MBPR access. The candidate now uses one dashboard-origin sign-in/signup flow, Google callbacks on that origin, **Sign up** wording, an optional trial rather than mandatory trial choice, and safe paid-plan preference preservation. New accounts without a membership get a separate pending-organization screen; an existing MBPR membership may open MBPR. No customer account data was accessed to test this.
+
+This fixes candidate authentication entry/handoff behavior, not production. New organization self-provisioning and actual payment checkout are still absent. Google display-name/custom Auth-domain configuration and full real staging login tests remain operator-reviewed dependencies. See [platform-live-login-review.md](platform-live-login-review.md) for evidence and [platform-login-test-plan.md](platform-login-test-plan.md) for simple acceptance steps.

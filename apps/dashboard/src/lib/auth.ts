@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { clearCache } from './apiCache';
+import { SIGNUP_INTENT_KEY } from '../features/identity/signup';
 import { isOrganizationRole, toOrgConfig, type OrganizationAccess } from './access';
 
 const PREFERRED_ORG_KEY = 'barkhausPreferredOrganization';
@@ -33,6 +34,7 @@ export async function logout(): Promise<void> {
   clearCache();
   clearLegacySession();
   localStorage.removeItem(PREFERRED_ORG_KEY);
+  sessionStorage.removeItem(SIGNUP_INTENT_KEY);
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }

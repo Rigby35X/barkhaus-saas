@@ -34,3 +34,13 @@ Successful completion covers the runner's membership/private-Storage scope only.
 - `node_modules/.bin/tsc -p apps/tenant-site/tsconfig.platform.json`: pass after helper change.
 
 The additive identity migration, narrow organization-access RPC and invitation database logic were reviewed. The source's existing legacy RLS exposure remains a separate cutover; this handoff neither weakens new-platform guards nor claims to repair legacy production permissions. No remote acceptance command was run.
+
+## Login/signup follow-up from user feedback
+
+A subsequent bounded assignment adds a clear returning-user `/login` screen and separate `/signup` screen. Email signup captures name, organization name and allowlisted plan/billing preferences, requests confirmation and uses a generic existing-account response. Paid preference is the default; trial is an explicit choice. Signup metadata is editable preference only and never provisions an organization, role, membership, checkout or subscription. Full native organization setup remains a later trusted server flow; the root App owns its pending-setup screen.
+
+Google OAuth is initiated only from the dashboard, with fixed allowlisted dashboard callbacks. The helper does not accept arbitrary return URLs or pass legacy tokens. Provider activation, OAuth consent branding/custom Auth domain, authorized redirect configuration and deployed application settings are operator configuration tasks, not changed here. A staff invitation entered into the email flow must be accepted through email sign-in; OAuth does not silently discard or forward that token. Existing recovery/invitation helpers remain passing.
+
+`features/identity/signup.ts` exports `captureSignupIntent(search, storage)`, `readSavedSignupIntent(storage)` and strict callback helpers. A valid session can bypass LoginScreen, so root App must capture allowlisted callback preferences on entry as well. `/signup` and `/auth/callback` are entry routes, never organization slugs; neither route creates or selects MBPR/org 9. Actual workspace selection still derives from verified memberships.
+
+New local evidence: four signup helper/render tests and five routing tests pass; ten existing server-auth/recovery/invitation tests pass; dashboard strict typecheck passes. No hosted signup, OAuth request, user provisioning, migration, billing activation or deployed configuration change was performed.
