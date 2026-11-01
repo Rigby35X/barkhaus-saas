@@ -14,7 +14,7 @@ Disconnecting currently preserves records and local information. It must not be 
 
 ## Baseline, ownership and safety gates
 
-The coordinator freezes the integration commit **after** the identity/legacy migration split and combined regression checks. Record its full SHA in the task launch message, create each follow-up branch from that exact commit and verify `git rev-parse HEAD`. Do not relaunch from `813d605`, an old worker head or an unreviewed PR merge ref. This document does not claim the next four Cloud tasks are running.
+The frozen follow-up implementation baseline for **all four agents A, B, C and D** is `6c0429d72c904f3f03b7452e911f8f64585e7b44`. It contains the identity/legacy migration split and the passing combined regression suite. Create each follow-up branch from this exact commit and verify `git rev-parse HEAD`. A later documentation-only handoff commit pins this SHA; copy the current assignment into each task launch message. Do not relaunch from `813d605`, an old worker head or an unreviewed PR merge ref. This document does not claim the next four Cloud tasks are running.
 
 The coordinator owns `supabase/migrations/**`, `supabase/staging/**`, `supabase/audits/**`, `shared/contracts/**`, dependency manifests/lockfiles, `apps/dashboard/src/App.tsx`, `apps/dashboard/src/components/Sidebar.tsx`, onboarding/navigation composition and shared integration-test infrastructure. SQL requests from every agent go through this one owner. A reviews identity/schema changes but does not independently edit shared migrations during this handoff. Transfer exact files in the tracker before changing this division.
 
