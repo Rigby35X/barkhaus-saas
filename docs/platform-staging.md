@@ -12,7 +12,7 @@ Prepared for [draft PR #11](https://github.com/Rigby35X/barkhaus-saas/pull/11). 
 
 ## Selected staging project
 
-The user supplied staging project reference `idybpiomulkebvhqibdp`, distinct from production. Its expected HTTPS API URL is `https://idybpiomulkebvhqibdp.supabase.co`; the blank-key configuration template now contains this nonsecret reference/URL. Project identity/emptiness has not yet been independently verified. Next evidence: run the same read-only schema export in this project and label its output `staging-empty-schema-export`.
+The user supplied staging project reference `idybpiomulkebvhqibdp`, distinct from production. Its expected HTTPS API URL is `https://idybpiomulkebvhqibdp.supabase.co`; the blank-key configuration template now contains this nonsecret reference/URL. The user-supplied staging export now confirms no application objects in `public`/`barkhaus_private` and no configured Storage buckets. See [platform-staging-export-review.md](platform-staging-export-review.md). Project identity is user-attested; the export does not identify a Supabase reference or inventory Auth users. Both requested exports are received; no repeat export is needed for current code-level migration repair.
 
 The current Cloud environment does not allow this staging HTTPS hostname and has no database secret binding or TCP grant. Existing runtime values are not evidence of staging configuration. No network rule, credential, runtime setting or hosted project was changed when recording the reference. Keep all migration/seed/runtime gates in place; source-review blockers still apply.
 

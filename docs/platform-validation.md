@@ -135,3 +135,7 @@ See [platform-staging.md](platform-staging.md) for exact administrator instructi
 ## Administrator source metadata received
 
 The user-supplied safe export is parsed and reviewed in [platform-source-export-review.md](platform-source-export-review.md). Required legacy tables/org ID types exist, but the current Stage 1 plan is blocked: RLS is disabled on 20 of 21 public tables, anon has broad grants, and no public-schema policies are exported. Enabling RLS without anon policies would deny current anonymous row access. Local writer/ingestion tests do not establish preservation of public-site/MBPR behavior. No remote migrations or production changes are approved by this evidence.
+
+## Empty staging metadata received
+
+The second uploaded safe export is reviewed in [platform-staging-export-review.md](platform-staging-export-review.md): PostgreSQL 17.11, no public/private application objects, no Storage buckets, managed Storage RLS enabled, expected built-in roles and broad default ACLs. Both administrator exports are received. The source Stage 1 compatibility blocker remains; no remote migration or staging execution was authorized or performed.
