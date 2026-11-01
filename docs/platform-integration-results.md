@@ -141,3 +141,11 @@ Current local review evidence:
 - Six offline configuration/smoke tests use mocks and make no network requests. Gated real HTTP/Auth checks and independent hosted PostgreSQL connections remain outstanding.
 
 All SQL executed here was local PGlite. No hosted export, migration, seed, Auth creation, deployment, runtime enablement or production change occurred. Administrator access/metadata and a new empty staging project are the next dependencies; follow the runbook before any future migration approval.
+
+## Native/CSV-first identity boundary repair
+
+The coordinator split additive identity setup from legacy RLS cutover. New `202609290000_identity_foundation.sql` creates memberships/helpers and a narrow authenticated organization display RPC; dashboard access uses that RPC. Historical Stage1 now explicitly requires identity000 and contains only legacy permission changes. The prepared staging allowlist excludes both legacy cutovers and keeps every runtime/provider gate enabled. No existing legacy RLS/grants are changed by the new platform sequence.
+
+Validation after the split: **52 integration tests**, **41 security tests**, both dashboard/platform strict typechecks and the dashboard production build pass. Source-shaped SQL regression checks compare legacy grants/RLS/policies/triggers, preserve synthetic anon reads/form submissions, deny new-platform anon/cross-org/viewer/revoked access and exclude unapproved organization fields from the RPC. Existing 66 feature/13 contract results remain earlier baseline evidence, not newly rerun hosted checks. All SQL execution was local PGlite.
+
+The native/manual + CSV route is the next complete acceptance target; Cognito remains MBPR's explicitly configured provider example. [Next assignments](platform-next-assignments.md) identify A/B/C/D ownership and gates. Missing runtime factories, import API/UI bindings, connector controls/deployment adapters, real Auth/Storage and independent PostgreSQL connection evidence remain explicit work. Staging schema readiness does not imply that workflow or the full BarkHaus product is complete.

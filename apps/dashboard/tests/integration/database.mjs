@@ -13,7 +13,7 @@ export async function fixture(path) {
   const db=new PGlite(path);
   const read=name=>readFileSync(new URL('../../../../supabase/'+name,import.meta.url),'utf8');
   await db.exec(read('audits/platform_v1_fixture.sql'));
-  for(const name of ['202609290001_dashboard_memberships.sql','202610260001_platform_v1.sql','202610260002_identity_invitation.sql','202610260003_transactional_ingestion.sql'])await db.exec(read('migrations/'+name));
+  for(const name of ['202609290000_identity_foundation.sql','202610260001_platform_v1.sql','202610260002_identity_invitation.sql','202610260003_transactional_ingestion.sql'])await db.exec(read('migrations/'+name));
   await db.exec(`insert into auth.users(id,email) values('${owner2.userId}','owner2@example.test');
     insert into public.organization_memberships(user_id,org_id,role) values
     ('${owner.userId}',1001,'owner'),('${staff.userId}',1001,'staff'),('${viewer.userId}',1001,'viewer'),('${owner2.userId}',1002,'owner');`);

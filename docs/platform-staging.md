@@ -43,23 +43,27 @@ Set the explicit project reference, application/API origins and `BARKHAUS_STAGIN
 
 Start the dashboard and tenant API locally with the staging-only environment (`npm run dev --workspace=apps/dashboard` and `npm run dev --workspace=apps/tenant-site -- --port 4321`). These processes must receive the same validated staging configuration. Do not deploy either to production. No SQL login is needed for the gated HTTP checks. A future PostgreSQL pool login must be server-only, use TLS and reviewed least-privilege group membership; do not use a browser JWT, service-role HTTP key or proxy placeholder as a SQL password. No login/grant provisioning is included here.
 
-## 4. Proposed migration sequence — BLOCKED by source review
+## 4. Revised platform-only migration sequence — prepared, not remotely approved
 
-**Do not run this sequence yet.** The supplied source export now shows that Stage 1 would enable legacy-table RLS without anon policies and could interrupt the existing public site/submissions. See [platform-source-export-review.md](platform-source-export-review.md). Resolve that compatibility/cutover design before authorizing this sequence; the sequence below is a historical proposal, not an approved plan. Also review both exports, administrator-only policy semantics, project reference and role/grant compatibility. Record approval against a specific integration commit. Never use blanket `supabase db push` for this branch.
+**Do not run this sequence yet.** The source export showed that legacy Stage 1 would enable RLS without anon policies and could interrupt existing reads/submissions. Identity primitives have now been extracted into additive `202609290000_identity_foundation.sql`. The platform-only sequence below excludes **both** legacy cutover migrations; it changes no legacy organization/animal/form/website RLS or privileges. A source-shaped local regression verifies preserved anonymous synthetic reads/submissions. This does not fix the source's existing broad access or constitute full MBPR browser/provider regression evidence.
 
-On the new staging project only, execute and retain results in this exact order after approval:
+The machine-readable prepared allowlist is `deploy/staging/migration-plan.json`. Review both exports, the exact integration commit, project reference, administrator-only policy semantics, managed role/Storage compatibility and future staging access. Obtain explicit staging migration authorization separately. Never use blanket `supabase db push` for this branch.
 
-1. `supabase/staging/000_public_prerequisites.sql` — synthetic public legacy prerequisites only; refuses existing application objects. It does not recreate Supabase-managed auth/storage/roles.
-2. `supabase/migrations/202609290001_dashboard_memberships.sql` — Stage1 memberships and policies.
-3. `supabase/migrations/202610260001_platform_v1.sql` — additive canonical platform schema.
+On the new staging project only, retain results from this exact sequence **after approval**:
+
+1. `supabase/staging/000_public_prerequisites.sql` — synthetic public legacy prerequisites only; refuses existing application objects. Never run this bootstrap in production.
+2. `supabase/migrations/202609290000_identity_foundation.sql` — new membership table, private authorization helpers and a member-only organization display RPC. It does not alter existing legacy tables or Storage policies.
+3. `supabase/migrations/202610260001_platform_v1.sql` — additive canonical platform schema and private document bucket.
 4. `supabase/migrations/202610260002_identity_invitation.sql` — invitation issuance/acceptance authorization.
 5. `supabase/migrations/202610260003_transactional_ingestion.sql` — transactional ingestion and trusted roles.
-6. Make a private local copy of `supabase/staging/020_synthetic_seed.sql`, replace all five UUID placeholders with the staging Auth UUIDs and run that copy. It creates only organizations 1001/1002 and synthetic memberships, and refuses existing application rows.
-7. Run `supabase/staging/030_acceptance_readonly.sql` and the safe metadata export again; preserve outputs with the exact applied commit and project reference.
+6. After synthetic accounts exist and seed application is authorized, make a private local copy of `supabase/staging/020_synthetic_seed.sql`, replace its five UUID declarations with staging Auth UUIDs and run that copy. Keep the zero-UUID guard unchanged. It creates only organizations 1001/1002 and synthetic memberships, and refuses existing application rows.
+7. Run `supabase/staging/030_acceptance_readonly.sql` and the safe metadata export again; retain results with the exact applied commit and project reference.
 
-**Exclude `202609290002_private_data_cutover.sql` (Stage2)** until public-reader/submission cutover is separately approved. Never run `supabase/audits/platform_v1_fixture.sql` on hosted Supabase; it creates local substitutes for managed infrastructure. Stop on any error and record it; do not weaken grants/RLS to proceed. Recover by recreating this disposable staging project and repeating the reviewed sequence, rather than applying destructive rollback SQL or touching production.
+**Exclude `202609290001_dashboard_memberships.sql` and `202609290002_private_data_cutover.sql`.** They are legacy permission cutovers requiring a separate public-reader/submission replacement and approval. The filename of historical Stage 1 no longer means it supplies the membership primitives; those now live in identity000. Historical legacy-cutover tests load both identity000 and Stage1 explicitly, separate from the new-platform tests.
 
-The synthetic prerequisite schema is deliberately minimal. Passing it does not prove compatibility with actual production schema or existing public submission policies.
+Never run `supabase/audits/platform_v1_fixture.sql` on hosted Supabase; it creates local substitutes for managed infrastructure. Stop on any error and record it; do not weaken grants/RLS. Recover by recreating this disposable staging project and repeating the reviewed sequence, not by applying destructive rollback SQL or touching production.
+
+The synthetic prerequisite schema is deliberately minimal. The narrow `my_organization_access` RPC lets a member load workspace display configuration without granting access to legacy `organizations(*)`. Existing legacy dashboard tabs/API helpers, organization settings writes, public-site publishing and animal-image uploads are **not** made safe/operational by the additive identity path. The blank staging project has no `animal-images` bucket or upload policies; a reviewed native media flow remains part of B's hosted acceptance. The new private document bucket remains separate.
 
 ## 5. Acceptance evidence and remaining gates
 

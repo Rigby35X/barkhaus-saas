@@ -29,3 +29,7 @@ The single exported policy is an anon INSERT policy on `storage.objects`; its pr
 5. Administrator-only review of fingerprinted policy/default/function semantics, actual staging Auth/Storage and independent PostgreSQL connection tests remain outstanding. This export is a metadata inventory, not replayable DDL or a complete data-quality audit.
 
 No SQL was executed against Supabase, no data was requested from legacy tables, no remote migration was applied, and no production configuration or integration changed during this review. PR #11/#7 remain unmerged and runtime gates remain enabled.
+
+## Subsequent local compatibility repair
+
+The coordinator extracted additive identity primitives into `202609290000_identity_foundation.sql` and changed dashboard organization access to an authenticated-only display RPC. The revised prepared platform allowlist excludes legacy Stage1/Stage2. Source-shaped regression tests now preserve legacy RLS/grants/policies, synthetic anonymous reads and form inserts while new-platform isolation remains enforced. This resolves the platform setup dependency locally; the legacy exposure/cutover and real hosted MBPR regression evidence remain outstanding. No remote application is approved by this amendment.

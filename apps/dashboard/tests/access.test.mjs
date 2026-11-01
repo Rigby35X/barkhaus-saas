@@ -54,27 +54,32 @@ test('legacy token/session are discarded; unrelated URL state is retained', () =
 });
 
 test('invalid Auth user blocks memberships even with a stored legacy session', async () => {
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: null }, error: new Error('expired') }) }, from: () => { throw new Error('must not query'); } });
+  const module = authModule({ auth: { getUser: async () => ({ data: { user: null }, error: new Error('expired') }) }, rpc: () => { throw new Error('must not query'); } });
   await assert.rejects(module.exports.loadOrganizationAccess(), /expired/);
 });
 
-test('membership queries use validated user ID and active status; unknown roles are rejected', async () => {
-  const filters = [];
+test('organization access uses the member-only RPC after Auth validation; unknown roles are rejected', async () => {
+  let verified = false;
   const rows = [
     { org_id: 9, role: 'viewer', organizations: { org: 'Rescue Nine' } },
     { org_id: 10, role: 'super_admin', organizations: { org: 'Forbidden' } },
   ];
-  const chain = { select() { return this; }, eq(k, v) { filters.push([k, v]); return this; }, async order() { return { data: rows, error: null }; } };
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified-user' } }, error: null }) }, from: (table) => { assert.equal(table, 'organization_memberships'); return chain; } });
+  const module = authModule({
+    auth: { getUser: async () => { verified = true; return { data: { user: { id: 'verified-user' } }, error: null }; } },
+    rpc: async (name, args) => {
+      assert.equal(verified, true);
+      assert.equal(name, 'my_organization_access');
+      assert.equal(args, undefined); // Actor and organization cannot be supplied by the browser.
+      return { data: rows, error: null };
+    },
+  });
   const access = await module.exports.loadOrganizationAccess();
-  assert.deepEqual(filters, [['user_id', 'verified-user'], ['is_active', true]]);
   assert.equal(access.length, 1);
   assert.equal(access[0].orgId, 9);
   assert.equal(access[0].role, 'viewer');
 });
 
 test('membership database errors fail closed without a default admin fallback', async () => {
-  const chain = { select() { return this; }, eq() { return this; }, async order() { return { data: null, error: new Error('missing table') }; } };
-  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified' } }, error: null }) }, from: () => chain });
+  const module = authModule({ auth: { getUser: async () => ({ data: { user: { id: 'verified' } }, error: null }) }, rpc: async () => ({data:null,error:new Error('missing RPC')}) });
   await assert.rejects(module.exports.loadOrganizationAccess(), /could not load/);
 });

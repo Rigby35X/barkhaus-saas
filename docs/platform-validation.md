@@ -139,3 +139,7 @@ The user-supplied safe export is parsed and reviewed in [platform-source-export-
 ## Empty staging metadata received
 
 The second uploaded safe export is reviewed in [platform-staging-export-review.md](platform-staging-export-review.md): PostgreSQL 17.11, no public/private application objects, no Storage buckets, managed Storage RLS enabled, expected built-in roles and broad default ACLs. Both administrator exports are received. The source Stage 1 compatibility blocker remains; no remote migration or staging execution was authorized or performed.
+
+## Additive identity boundary repair and native-first follow-up
+
+New-platform fixtures now use identity000 + platform001/002/003, excluding both legacy cutovers. Historical legacy RLS tests explicitly use identity000 + legacy001. **52 integration tests, 41 security tests, dashboard/server strict typechecks and dashboard build pass** after this repair. Source-shaped SQL regressions prove the new path preserves synthetic legacy anonymous reads/submissions and metadata while enforcing new-platform isolation and an allowlisted member display RPC. No hosted migration/runtime enablement occurred. See [platform-next-assignments.md](platform-next-assignments.md) for native/CSV-first follow-up ownership and acceptance; Cognito is not mandatory onboarding.

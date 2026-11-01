@@ -12,7 +12,7 @@ const digest = 'a'.repeat(64);
 test('transactional ingestion schema preserves scoped authority and durable inputs', async t => {
   const db = new PGlite();
   try {
-    for (const path of ['audits/platform_v1_fixture.sql', 'migrations/202609290001_dashboard_memberships.sql',
+    for (const path of ['audits/platform_v1_fixture.sql', 'migrations/202609290000_identity_foundation.sql',
       'migrations/202610260001_platform_v1.sql', 'migrations/202610260002_identity_invitation.sql',
       'migrations/202610260003_transactional_ingestion.sql']) await db.exec(sql(path));
     await db.exec(`insert into public.organization_memberships(user_id,org_id,role) values('${owner}',1001,'owner'),('${staff}',1001,'staff'),('${viewer}',1001,'viewer')`);

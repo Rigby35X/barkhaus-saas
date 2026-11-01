@@ -1,48 +1,16 @@
--- Stage 1: new Auth-backed dashboard access. Apply in staging first.
--- Existing anon access for the public tenant site is deliberately not changed here.
--- Stage 2 is required to revoke anonymous access to private data and writes.
+-- LEGACY DASHBOARD RLS CUTOVER; excluded from the platform-only staging allowlist.
+-- Requires 202609290000_identity_foundation.sql. Do not apply remotely until
+-- public reads/submissions have an approved replacement and regression evidence.
+-- Preserving anon grants alone does NOT preserve access when no anon policies
+-- exist. Source metadata review identified this exact compatibility blocker.
+-- Stage2 private-data cutover is a separate subsequent deployment decision.
 begin;
-
-create schema if not exists barkhaus_private;
-revoke all on schema barkhaus_private from public;
-grant usage on schema barkhaus_private to authenticated;
-
--- Fail if an unreviewed membership table already exists rather than silently adopting it.
-create table public.organization_memberships (
-  user_id uuid not null references auth.users(id) on delete cascade,
-  org_id bigint not null references public.organizations(id) on delete cascade,
-  role text not null check (role in ('owner', 'admin', 'staff', 'viewer')),
-  is_active boolean not null default true,
-  created_at timestamptz not null default now(),
-  primary key (user_id, org_id)
-);
-create index organization_memberships_org_idx on public.organization_memberships(org_id);
-alter table public.organization_memberships enable row level security;
-revoke all on public.organization_memberships from public, anon, authenticated;
-grant select on public.organization_memberships to authenticated;
-grant all on public.organization_memberships to service_role;
-create policy membership_self_read on public.organization_memberships
-  for select to authenticated using (user_id = (select auth.uid()) and is_active);
-
--- Run as postgres/table owner; private functions avoid recursive membership policies.
--- Roles come from this table, never editable JWT user_metadata.
-create function barkhaus_private.organization_role(target_org bigint)
-returns text language sql stable security definer set search_path = '' as $$
-  select m.role from public.organization_memberships m
-  where m.org_id = target_org and m.user_id = (select auth.uid()) and m.is_active
-$$;
-revoke all on function barkhaus_private.organization_role(bigint) from public, anon;
-grant execute on function barkhaus_private.organization_role(bigint) to authenticated;
-
-create function barkhaus_private.protect_org_id()
-returns trigger language plpgsql set search_path = '' as $$
-begin
-  if new.org_id is distinct from old.org_id then
-    raise exception 'Organization ownership cannot be changed' using errcode = '42501';
-  end if;
-  return new;
+do $$ begin
+ if to_regclass('public.organization_memberships') is null
+   or to_regprocedure('barkhaus_private.organization_role(bigint)') is null then
+  raise exception 'Apply reviewed identity foundation before legacy RLS cutover';
+ end if;
 end $$;
-revoke all on function barkhaus_private.protect_org_id() from public;
 
 -- Required tables fail closed if missing or incompatible. Optional existing tables
 -- are protected too; new tenant tables must receive equivalent policies explicitly.

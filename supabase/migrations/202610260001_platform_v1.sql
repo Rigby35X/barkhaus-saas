@@ -1,4 +1,4 @@
--- Additive v1 foundation. Requires reviewed Stage 1; no legacy backfill/cutover.
+-- Additive v1 foundation. Requires reviewed additive identity foundation; no legacy backfill/cutover.
 begin;
 create table public.platform_connections (
  org_id bigint not null references public.organizations(id), id text not null,

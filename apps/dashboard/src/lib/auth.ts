@@ -41,17 +41,18 @@ export async function loadOrganizationAccess(): Promise<OrganizationAccess[]> {
   // Validate the user with Auth; local storage or user_metadata cannot grant access.
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('Your session has expired. Please sign in again.');
-  const { data, error } = await supabase
-    .from('organization_memberships')
-    .select('org_id, role, organizations(*)')
-    .eq('user_id', userData.user.id)
-    .eq('is_active', true)
-    .order('org_id');
+  // The database derives active memberships from auth.uid() and returns only
+  // approved organization display fields, without exposing the legacy table.
+  const { data, error } = await supabase.rpc('my_organization_access');
   if (error) throw new Error('We could not load your organization access. Please retry or contact your administrator.');
 
-  return (data ?? []).flatMap((membership) => {
-    const org = Array.isArray(membership.organizations) ? membership.organizations[0] : membership.organizations;
-    if (!org || !Number.isSafeInteger(membership.org_id) || !isOrganizationRole(membership.role)) return [];
+  return ((data ?? []) as unknown[]).flatMap((entry) => {
+    if (!entry || typeof entry !== 'object') return [];
+    const membership = entry as Record<string, unknown>;
+    const org = membership.organizations;
+    if (!org || typeof org !== 'object' || Array.isArray(org) ||
+        typeof membership.org_id !== 'number' || !Number.isSafeInteger(membership.org_id) ||
+        !isOrganizationRole(membership.role)) return [];
     return [{ orgId: membership.org_id, role: membership.role, orgConfig: toOrgConfig(org as Record<string, unknown>) }];
   });
 }
