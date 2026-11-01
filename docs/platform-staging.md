@@ -10,6 +10,12 @@ Prepared for [draft PR #11](https://github.com/Rigby35X/barkhaus-saas/pull/11). 
 - Removed direct authenticated animal INSERT/UPDATE privileges, which bypassed writer validation and receipts. Trusted member writes use a dedicated `barkhaus_native_writer` NOLOGIN/NOBYPASSRLS role, with membership RLS. No runtime login or role membership is provisioned. Metadata executor has no animal write privilege; connector role remains scoped.
 - Runtime authenticates and authorizes before returning 503. SQL pool factories, workload identity, secret resolution and import/connector HTTP/queue bindings remain deployment prerequisites. No environment variable in the staging template enables writes.
 
+## Selected staging project
+
+The user supplied staging project reference `idybpiomulkebvhqibdp`, distinct from production. Its expected HTTPS API URL is `https://idybpiomulkebvhqibdp.supabase.co`; the blank-key configuration template now contains this nonsecret reference/URL. Project identity/emptiness has not yet been independently verified. Next evidence: run the same read-only schema export in this project and label its output `staging-empty-schema-export`.
+
+The current Cloud environment does not allow this staging HTTPS hostname and has no database secret binding or TCP grant. Existing runtime values are not evidence of staging configuration. No network rule, credential, runtime setting or hosted project was changed when recording the reference. Keep all migration/seed/runtime gates in place; source-review blockers still apply.
+
 ## 1. Export administrator metadata, read-only
 
 1. In Supabase Dashboard, select the **existing source project**. Verify its project reference in Project Settings; do not use a customer dashboard account.
