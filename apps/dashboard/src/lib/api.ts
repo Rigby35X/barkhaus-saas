@@ -265,12 +265,98 @@ export async function getWebsiteContent(orgId: number, pageSlug?: string): Promi
   if (pageSlug) query = query.eq('page_slug', pageSlug);
   const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizeWebsiteSection);
 }
 
 /** Backwards-compat alias */
 export async function fetchWebsiteContent(orgId: number): Promise<WebsiteSection[]> {
   return getWebsiteContent(orgId);
+}
+
+function parseWebsiteContent(value: unknown): Record<string, unknown> {
+  if (typeof value === 'string') {
+    try { value = JSON.parse(value); } catch { return {}; }
+  }
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown> : {};
+}
+
+function storedWebsiteValues(value: unknown): Record<string, unknown> {
+  const { content: nested, ...fields } = parseWebsiteContent(value);
+  return { ...fields, ...parseWebsiteContent(nested) };
+}
+
+function normalizeWebsiteSection(section: WebsiteSection): WebsiteSection {
+  const values = storedWebsiteValues(section.content);
+  const normalized = { ...section };
+  for (const [key, value] of Object.entries(values)) {
+    if (normalized[key] == null || (section.section_key === 'footer' && key.startsWith('footer_'))) {
+      normalized[key] = value;
+    }
+  }
+  return normalized;
+}
+
+function containsSavedValues(actual: unknown, expected: unknown): boolean {
+  if (expected && typeof expected === 'object') {
+    if (!actual || typeof actual !== 'object') return false;
+    return Object.entries(expected).every(([key, value]) =>
+      containsSavedValues((actual as Record<string, unknown>)[key], value)
+    );
+  }
+  return actual === expected;
+}
+
+async function writeWebsiteSection(
+  orgId: number,
+  pageSlug: string,
+  sectionKey: string,
+  updates: Record<string, unknown>,
+  existing?: WebsiteSection | null,
+): Promise<WebsiteSection> {
+  // Footer is organization-wide; never store a new page-specific footer.
+  const targetPage = sectionKey === 'footer' ? 'global' : pageSlug;
+  const footerValues = Object.fromEntries(Object.entries(updates).filter(([key]) => key.startsWith('footer_')));
+  const payload: Record<string, unknown> = {
+    ...updates, org_id: orgId, page_slug: targetPage, section_key: sectionKey,
+    is_visible: true, updated_at: new Date().toISOString(),
+  };
+  // Keep JSON and column-based storage consistent on installations supporting both.
+  if (sectionKey === 'footer' && existing && Object.prototype.hasOwnProperty.call(existing, 'content')) {
+    payload.content = { ...storedWebsiteValues(existing.content), ...footerValues };
+  }
+
+  async function write(record: Record<string, unknown>) {
+    if (existing) {
+      return supabase.from('website_content').update(record)
+        .eq('id', existing.id).eq('org_id', orgId).select().single();
+    }
+    return supabase.from('website_content').insert(record).select().single();
+  }
+
+  let result = await write(payload);
+  // Some installations store footer fields in JSON rather than dedicated columns.
+  // Retry only this specific schema mismatch; never mask permissions/validation errors.
+  if (sectionKey === 'footer' && result.error &&
+      ['PGRST204', '42703'].includes(result.error.code) &&
+      /footer_/.test(result.error.message)) {
+    const storedFooter = existing ? normalizeWebsiteSection(existing) : {};
+    const allFooterValues = Object.fromEntries(
+      Object.entries(storedFooter).filter(([key]) => key.startsWith('footer_'))
+    );
+    const jsonPayload = Object.fromEntries(Object.entries(payload).filter(([key]) => !key.startsWith('footer_')));
+    jsonPayload.content = { ...storedWebsiteValues(existing?.content), ...allFooterValues, ...footerValues };
+    result = await write(jsonPayload);
+  }
+  if (result.error) throw result.error;
+  const { data, error } = await supabase.from('website_content').select('*')
+    .eq('id', result.data.id).eq('org_id', orgId).single();
+  if (error) throw error;
+  const saved = normalizeWebsiteSection(data);
+  if (!containsSavedValues(saved, updates)) {
+    throw new Error('The saved content could not be verified. Your edits are still here; please retry.');
+  }
+  return saved;
 }
 
 export async function saveWebsiteContentSection(
@@ -279,28 +365,24 @@ export async function saveWebsiteContentSection(
   sectionKey: string,
   content: Record<string, unknown>,
 ): Promise<WebsiteSection> {
-  console.log('[saveWebsiteContentSection] upserting', { orgId, pageSlug, sectionKey, content });
-  const { data, error } = await supabase
-    .from('website_content')
-    .upsert(
-      { org_id: orgId, page_slug: pageSlug, section_key: sectionKey, is_visible: true, ...content, updated_at: new Date().toISOString() },
-      { onConflict: 'org_id,page_slug,section_key' }
-    )
-    .select()
-    .single();
+  const targetPage = sectionKey === 'footer' ? 'global' : pageSlug;
+  const { data, error } = await supabase.from('website_content').select('*')
+    .eq('org_id', orgId).eq('page_slug', targetPage).eq('section_key', sectionKey).maybeSingle();
   if (error) throw error;
-  return data;
+  // Insert new sections directly: do not require an unverified upsert constraint.
+  return writeWebsiteSection(orgId, targetPage, sectionKey, content, data);
 }
 
-export async function updateWebsiteSection(sectionId: number, content: Record<string, unknown>): Promise<WebsiteSection> {
-  const { data, error } = await supabase
-    .from('website_content')
-    .update({ is_visible: true, ...content, updated_at: new Date().toISOString() })
-    .eq('id', sectionId)
-    .select()
-    .single();
+export async function updateWebsiteSection(
+  sectionId: number,
+  content: Record<string, unknown>,
+  orgId?: number,
+): Promise<WebsiteSection> {
+  let query = supabase.from('website_content').select('*').eq('id', sectionId);
+  if (orgId != null) query = query.eq('org_id', orgId);
+  const { data, error } = await query.single();
   if (error) throw error;
-  return data;
+  return writeWebsiteSection(data.org_id, data.page_slug, data.section_key, content, data);
 }
 
 // ─── Organization ─────────────────────────────────────────────────────────────
