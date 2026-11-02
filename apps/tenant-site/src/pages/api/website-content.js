@@ -131,16 +131,16 @@ export async function GET({ request, locals }) {
             const footerContent = { ...parsedFooter, ...parseSectionContent(parsedFooter.content) };
             organizedContent['footer'] = {
               content: {
-                footer_organization_name: section.footer_organization_name ?? footerContent.footer_organization_name ?? footerContent.organization_name,
-                footer_address_line_one: section.footer_address_line_one ?? footerContent.footer_address_line_one ?? footerContent.address_line_one,
-                footer_address_line_two: section.footer_address_line_two ?? footerContent.footer_address_line_two ?? footerContent.address_line_two,
-                footer_address_city: section.footer_address_city ?? footerContent.footer_address_city ?? footerContent.address_city,
-                footer_address_state: section.footer_address_state ?? footerContent.footer_address_state ?? footerContent.address_state,
-                footer_address_zip: section.footer_address_zip ?? footerContent.footer_address_zip ?? footerContent.address_zip,
-                footer_phone: section.footer_phone ?? footerContent.footer_phone ?? footerContent.phone,
-                footer_email: section.footer_email ?? footerContent.footer_email ?? footerContent.email,
-                footer_copyright: section.footer_copyright ?? footerContent.footer_copyright ?? footerContent.copyright,
-                footer_ein: section.footer_ein ?? footerContent.footer_ein ?? footerContent.ein
+                footer_organization_name: footerContent.footer_organization_name ?? footerContent.organization_name ?? section.footer_organization_name,
+                footer_address_line_one: footerContent.footer_address_line_one ?? footerContent.address_line_one ?? section.footer_address_line_one,
+                footer_address_line_two: footerContent.footer_address_line_two ?? footerContent.address_line_two ?? section.footer_address_line_two,
+                footer_address_city: footerContent.footer_address_city ?? footerContent.address_city ?? section.footer_address_city,
+                footer_address_state: footerContent.footer_address_state ?? footerContent.address_state ?? section.footer_address_state,
+                footer_address_zip: footerContent.footer_address_zip ?? footerContent.address_zip ?? section.footer_address_zip,
+                footer_phone: footerContent.footer_phone ?? footerContent.phone ?? section.footer_phone,
+                footer_email: footerContent.footer_email ?? footerContent.email ?? section.footer_email,
+                footer_copyright: footerContent.footer_copyright ?? footerContent.copyright ?? section.footer_copyright,
+                footer_ein: footerContent.footer_ein ?? footerContent.ein ?? section.footer_ein
               }
             };
           } else {
