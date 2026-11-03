@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { RECOVERY_PENDING } from '../features/identity/recovery';
 import type { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { clearLegacySession, loadOrganizationAccess } from '../lib/auth';
@@ -14,6 +15,10 @@ export function useOrganizationSession() {
 
   useEffect(() => {
     clearLegacySession();
+    if (new URL(window.location.href).searchParams.get('identity') === 'recovery') {
+      sessionStorage.setItem(RECOVERY_PENDING, 'true');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
     if (!isSupabaseConfigured) {
       setLoading(false);
       return;
@@ -23,6 +28,12 @@ export function useOrganizationSession() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const refresh = async () => {
       const request = ++generation;
+      // Keep the invitation form mounted until acceptance finishes; a SIGNED_IN
+      // event alone must not navigate away and hide an acceptance error.
+      if (sessionStorage.getItem('barkhausInvitationPending') === 'true') {
+        clearCache(); setAccess([]); setUser(null); setLoading(false);
+        return;
+      }
       clearCache();
       setAccess([]);
       setLoading(true);
@@ -31,8 +42,9 @@ export function useOrganizationSession() {
         const { data, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
         if (disposed || request !== generation) return;
-        setUser(data.session?.user ?? null);
-        const memberships = data.session ? await loadOrganizationAccess() : [];
+        const recovering = sessionStorage.getItem(RECOVERY_PENDING) === 'true' || sessionStorage.getItem('barkhausInvitationPending') === 'true';
+        setUser(recovering ? null : data.session?.user ?? null);
+        const memberships = data.session && !recovering ? await loadOrganizationAccess() : [];
         if (!disposed && request === generation) setAccess(memberships);
       } catch (err) {
         if (!disposed && request === generation) setError(err instanceof Error ? err.message : 'Unable to load your account.');
@@ -42,7 +54,15 @@ export function useOrganizationSession() {
     };
     // Do not await Supabase requests inside the Auth callback (the SDK holds a lock).
     const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
+      if (event === 'PASSWORD_RECOVERY') {
+        sessionStorage.setItem(RECOVERY_PENDING, 'true');
+        window.dispatchEvent(new Event('barkhaus-recovery'));
+        ++generation;
+        clearCache();
+        setUser(null);
+        setAccess([]);
+        setLoading(false);
+      } else if (event === 'SIGNED_OUT') {
         ++generation;
         clearCache();
         setUser(null);
