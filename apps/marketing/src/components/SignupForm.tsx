@@ -93,16 +93,7 @@ export default function SignupForm() {
 
   const handleGoogleSignup = async () => {
     setGoogleLoading(true);
-    const { error: oauthError } = await getSupabase().auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://barkhaus.io/auth/callback',
-      },
-    });
-    if (oauthError) {
-      setError(oauthError.message);
-      setGoogleLoading(false);
-    }
+    window.location.assign(new URL('/login', APP_URL()).href);
   };
 
   const handleStep2Submit = (e: FormEvent) => {
