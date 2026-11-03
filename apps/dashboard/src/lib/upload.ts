@@ -49,6 +49,11 @@ export function compressImage(file: File, maxWidthPx = 1200, quality = 0.82): Pr
 
 /** Uploads a file directly to Supabase Storage and returns its public URL. */
 export async function uploadImage(file: File, folder: string, orgId: number): Promise<string> {
+  if (!Number.isSafeInteger(orgId) || orgId < 1) throw new Error('An organization is required.');
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) throw new Error('Only raster images can enter the public image bucket. Private documents require signed private storage.');
+  if (file.size > 10 * 1024 * 1024) throw new Error('Image exceeds 10 MiB.');
+  if (!/^[a-zA-Z0-9_-]+$/.test(folder)) throw new Error('Invalid image folder.');
+  if (folder === 'animals') throw new Error('Animal photo uploads require the reviewed private candidate storage and CAS completion service.');
   if (!isSupabaseConfigured) {
     throw new Error('Image upload failed: Supabase Storage is not configured.');
   }
