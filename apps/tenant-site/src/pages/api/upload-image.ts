@@ -1,10 +1,6 @@
 import type { APIRoute } from 'astro'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-)
 
 const ALLOWED_ORIGINS = [
   'https://app.barkhaus.io',
@@ -28,6 +24,9 @@ export const OPTIONS: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const corsHeaders = getCorsHeaders(request)
+  const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL,import.meta.env.PUBLIC_SUPABASE_ANON_KEY,{
+    global:{headers:{Authorization:request.headers.get('authorization') || ''}},auth:{persistSession:false}
+  })
   try {
     const formData = await request.formData()
     const file = formData.get('image') as File | null

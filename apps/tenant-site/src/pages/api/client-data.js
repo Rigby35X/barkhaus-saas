@@ -1,3 +1,4 @@
+import { publishedContact } from '../../lib/published-contact.js';
 /**
  * API Endpoint for Client Data
  * Serves organization data to frontend components
@@ -37,7 +38,7 @@ export async function GET({ request, locals }) {
       if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
       const rows = await res.json();
       if (!rows || rows.length === 0) throw new Error('Organization not found');
-      const data = rows[0];
+      const data = {...rows[0], ...await publishedContact(orgId, {url:import.meta.env.PUBLIC_SUPABASE_URL,key:import.meta.env.PUBLIC_SUPABASE_ANON_KEY})};
       console.log('✅ Organization data fetched from Supabase:', data.org);
 
       const dynamicData = {
@@ -45,21 +46,21 @@ export async function GET({ request, locals }) {
         org: data.org || clientData.name,
         name: data.org || clientData.name,
         slug: data.slug || clientData.slug,
-        email: data.email || clientData.email,
-        phone: data.phone || clientData.phoneFormatted,
-        phoneForTel: data.phone || clientData.phoneForTel,
-        phoneFormatted: data.phone || clientData.phoneFormatted,
+        email: data.email ?? '',
+        phone: data.phone ?? '',
+        phoneForTel: data.phone ?? '',
+        phoneFormatted: data.phone ?? '',
         address: {
-          lineOne: data.address || clientData.address?.lineOne,
+          lineOne: data.address ?? '',
           lineTwo: '',
-          city: data.city || clientData.address?.city,
-          state: data.state || clientData.address?.state,
-          zip: data.zip_code || clientData.address?.zip,
+          city: data.city ?? '',
+          state: data.state ?? '',
+          zip: data.zip_code ?? '',
           mapLink: clientData.address?.mapLink
         },
         domain: data.custom_domain || data.website || clientData.domain,
         website: data.website || clientData.domain,
-        ein: data.ein || clientData.ein,
+        ein: data.ein ?? '',
         orgId: orgId,
         logo_url: data.logo_light_url || clientData.logo_url,
         primary_color: data.primary_color || clientData.primary_color,

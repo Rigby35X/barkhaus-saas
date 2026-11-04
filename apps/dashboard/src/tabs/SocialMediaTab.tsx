@@ -1,3 +1,4 @@
+import { tenantApiOrigin } from '../lib/tenantApiOrigin';
 import { sessionHeaders } from '../lib/sessionHeaders';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -129,7 +130,7 @@ export default function SocialMediaTab({ orgId, orgConfig }: SocialMediaTabProps
     const generated: GeneratedResult[] = [];
 
     const subdomain = orgConfig.subdomain ?? 'mbpr';
-    const endpoint = `https://${subdomain}.preview.barkhaus.io/api/admin/generate-social-content`;
+    const endpoint = `${tenantApiOrigin(subdomain)}/api/admin/generate-social-content`;
 
     for (const platform of selectedPlatforms) {
       const payload = {

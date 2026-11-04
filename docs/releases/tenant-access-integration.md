@@ -14,13 +14,19 @@ Combines PR #12 (`05543d0`) and PR #13 (`b16727c`). Integration branch: `fix/ten
 - Image writes require tenant owner/admin membership and tenant-prefixed paths; reviewed anonymous storage upload policy is removed. Existing public image URLs remain public.
 - Retired secret-fragment diagnostic response; removed the tenant Vercel configuration that disabled TLS verification.
 
-## Database state — do not confuse local tests with live staging
+## Current staging state
 
-- Production database, memberships, domains, and deployments were NOT changed.
-- The previously empty **Barkhaus Staging** project (`idybpiomulkebvhqibdp`) received the schema-only baseline in `supabase/staging/schema.sql`. No production rows were copied.
-- The RLS migration has NOT been applied to Supabase staging. The connector confirmation expired twice. Do not bypass this confirmation using execute_sql.
-- Isolation tests passed in PGlite (PostgreSQL WASM), with test-only auth.uid() and storage stubs, using fictional organizations/users and transaction rollback. This validates SQL semantics; it does not validate Supabase Auth, PostgREST, Storage API or OAuth configuration.
-- Staging bootstrap is a snapshot for this EMPTY staging project only, not a production migration. It already includes organization_memberships. Do not rerun the older membership CREATE TABLE migration on top of this baseline.
+- Production database, memberships, domains and deployments are unchanged.
+- Both new migrations are applied to Barkhaus Staging (`idybpiomulkebvhqibdp`); all 22 public tables have RLS.
+- Private organization email/phone/address/EIN fields are excluded from the public organization view. Website contact data comes only from visible global footer content; profile fields never become public by default.
+- Live anonymous HTTP: animals, applications and tokens_table return 401; public_animals and public_website_content return 200.
+- Live Supabase transaction tests passed: owner membership isolation, owner insert/read, cross-organization insert rejection, and cleared footer value preservation. Those temporary test users and rows were rolled back. Update/delete and storage-path assertions passed locally; the full live SQL test confirmation expired, so those paths are not claimed as live-verified.
+- One persistent fictional organization (`id=9`, BarkHaus Test Rescue) and a visible test footer are staged for browser testing. No production records were copied, and no real user is linked to the test organization yet.
+- PR branch-specific preview variables now point dashboard, tenant and marketing at staging; production variables are untouched. VITE_TENANT_API_ORIGIN and PUBLIC_APP_URL keep API calls/login on staging. DASHBOARD_ORIGIN is the exact branch dashboard alias.
+- The inherited production service-role key is explicitly disabled on this tenant preview branch. Image uploads now use caller JWT/RLS. The public application-submit endpoint still needs a securely provisioned STAGING service-role key to run; do not copy production's key or put a service key in GitHub, VITE_ or PUBLIC_ variables.
+- Staging Google provider is disabled (confirmed via Auth settings API). Email auth is enabled. Provider credentials and URL allowlist cannot be changed through the connected Supabase tools.
+- Advisors no longer report public tables without RLS. They flag the three deliberate read-only public projections as definer views; review their fixed column lists/predicates. Eight tables without established client access fail closed with RLS and no client policies. Reference: https://supabase.com/docs/guides/database/database-linter?lint=0010_security_definer_view
+- Schema-only staging bootstrap already included organization_memberships. Never rerun the older membership CREATE TABLE migration on top of that baseline.
 
 ## Validation
 
@@ -32,6 +38,7 @@ node apps/dashboard/tests/website-content.test.mjs
 node apps/tenant-site/tests/organization-auth.test.mjs
 node apps/tenant-site/tests/middleware-auth.test.mjs
 node apps/tenant-site/tests/application-record.test.mjs
+node apps/tenant-site/tests/published-contact.test.mjs
 node apps/tenant-site/tests/database-access.test.mjs
 npx tsc --noEmit --project apps/dashboard/tsconfig.app.json
 npm run build --workspace=apps/dashboard
@@ -43,13 +50,12 @@ npm run build --workspace=apps/marketing
 
 ## Required before production approval
 
-1. Complete Supabase's confirmation and apply the two new migrations in timestamp order (public projections, then private-data policies) to Barkhaus Staging. Confirm storage policies and advisors; run the transaction test there.
-2. Configure this branch's Vercel previews to use staging URL/public key; server tenant preview needs staging service-role key for application submissions and legacy image upload. Never put that key in VITE_/PUBLIC_ variables or GitHub. Set an explicitly allowed staging dashboard origin for CORS. Set server-only `DASHBOARD_ORIGIN` to the exact staging dashboard origin; middleware owns API CORS. Local tests verify this configurable origin, but browser verification is still required.
-3. Configure staging Google provider and exact app return URL. Test Google and email login, session refresh, logout, owner membership, and missing membership against Supabase.
-4. Test real API/Storage calls under signed-out, owner A, owner B, read-only member, and unlinked identities. Verify footer save/reload and visible website data. Public animal view must exclude private notes/location; applications must never be publicly readable.
-5. Check service integrations intentionally blocked by the new guard. Existing Gmail/Google legacy callbacks do not yet provide verified organization scope; they must remain blocked until OAuth state and credential storage ownership are implemented. Do not remove the guard to make an old callback work.
-6. Confirm the public application endpoint has the production service key and tenant resolution. Review abuse controls/rate limits for the public form before launch. Verify no existing external forms depend on direct anonymous database inserts.
-7. Production rollout needs TWO phases: apply the first new migration to create public views (without revoking base-table access), deploy verified app consumers, THEN apply the second new migration for RLS/grant/storage changes. Review which Vercel projects share tenant-site; do not assume site-0 alone serves the wildcard domain. No domain reassignment or Cognito/animals-proxy changes are part of this patch.
-8. Verify stage-to-production schema drift, back up current policies/grants, and keep the migration transactional. A Vercel rollback alone cannot reverse a database permission change. Do not restore broad anonymous grants as a routine rollback.
+1. In Supabase **Barkhaus Staging > Authentication > Sign In / Providers > Google**, configure and enable Google. In Google Cloud, authorize the staging Supabase callback: `https://idybpiomulkebvhqibdp.supabase.co/auth/v1/callback`. Never paste the client secret in chat.
+2. In staging **Authentication > URL Configuration**, set Site URL and allow the exact dashboard branch origin: `https://barkhaus-admin-git-fix-tenant-access-b4649f-rigby35xs-projects.vercel.app`. This implementation returns PKCE login to the origin root. Do not change production auth settings or allow arbitrary preview domains.
+3. Sign into staging with the intended owner account. Verify the resulting staging identity, then link only that identity to the fictional test organization for the browser test. Production membership does not automatically carry across projects.
+4. Browser-test Google/email login, session refresh/logout, footer save/reload/public display and image uploads. Test requests under owner A/B, member and unlinked identities. Do not call a build success end-to-end verification.
+5. Provision the server-only staging service key and the staging animal-images bucket before public application submission testing. Test submission, no public application reads, and rate/abuse controls. Existing Google/Gmail integration callbacks without verified tenant scope intentionally remain blocked pending separate OAuth-state/credential ownership work.
+6. Confirm current domain/project mappings and which projects share tenant-site. Cognito/animals-proxy settings and domain assignments are not changed by this patch.
+7. Production rollout requires TWO phases: first new migration (public projections), compatible app consumers, then second new migration (private data/storage policies). Review schema drift and back up policies/grants. Vercel rollback alone cannot reverse database permission changes; do not restore anonymous grants as a routine rollback.
 
-This PR is a coordinated implementation candidate, not a production-ready release. Keep #12/#13 open until the integration is reviewed; do not merge all three independently.
+Keep PR #14 draft until these checks pass. It incorporates #12/#13; do not merge all three independently.

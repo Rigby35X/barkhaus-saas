@@ -1,3 +1,4 @@
+import { tenantApiOrigin } from './tenantApiOrigin';
 import { sessionHeaders } from './sessionHeaders';
 // AI reply drafting for Applications / Communications.
 //
@@ -23,7 +24,7 @@ export interface DraftReplyContext {
 
 export async function draftReply(orgId: number, context: DraftReplyContext): Promise<string> {
   const subdomain = ORGANIZATIONS[orgId]?.subdomain ?? 'mbpr';
-  const endpoint = `https://${subdomain}.preview.barkhaus.io/api/admin/draft-reply`;
+  const endpoint = `${tenantApiOrigin(subdomain)}/api/admin/draft-reply`;
 
   console.log(`[draftReply] POST ${endpoint}`, context);
   const res = await fetch(endpoint, {

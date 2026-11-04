@@ -5,6 +5,7 @@ DO $$ BEGIN
  ASSERT NOT has_table_privilege('anon','public.animals','TRUNCATE'),'Anonymous truncate grant';
  ASSERT NOT has_table_privilege('authenticated','public.animals','TRUNCATE'),'Authenticated truncate grant';
 END $$;
+INSERT INTO storage.buckets(id,name,public) VALUES('animal-images','animal-images',false) ON CONFLICT(id) DO NOTHING;
 INSERT INTO auth.users(id,email) VALUES
  ('00000000-0000-0000-0000-000000000001','owner-a@example.invalid'),
  ('00000000-0000-0000-0000-000000000002','owner-b@example.invalid'),
@@ -21,8 +22,9 @@ INSERT INTO public.website_content(org_id,page_slug,section_key,is_visible,headl
  (100001,'global','footer',true,'Published'),(100001,'home','hero',false,'Draft');
 SET LOCAL ROLE anon;
 DO $$ BEGIN
- ASSERT (SELECT count(*) FROM public.public_animals)=2,'Public filter failed';
- ASSERT (SELECT count(*) FROM public.public_website_content)=1,'Draft leaked';
+ ASSERT (SELECT count(*) FROM public.public_animals WHERE org_id IN (100001,100002,100003))=2,'Public filter failed';
+ ASSERT (SELECT count(*) FROM public.public_website_content WHERE org_id IN (100001,100002,100003))=1,'Draft leaked';
+ ASSERT NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='public_organizations' AND column_name IN ('email','phone','address','ein','contact_email')),'Private organization contacts exposed';
  ASSERT NOT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='public_animals' AND column_name IN ('internal_notes','medical_notes','location')),'Private fields exposed';
  BEGIN PERFORM * FROM public.animals; RAISE EXCEPTION 'Anonymous private read allowed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM * FROM public.applications; RAISE EXCEPTION 'Anonymous application read allowed'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;

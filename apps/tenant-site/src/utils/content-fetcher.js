@@ -1,3 +1,4 @@
+import { publishedContact } from '../lib/published-contact.js';
 /**
  * Content Fetcher Utility
  * Fetches dynamic content from Supabase directly.
@@ -337,7 +338,7 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows || rows.length === 0) throw new Error('Organization not found');
-    const data = rows[0];
+    const data = {...rows[0], ...await publishedContact(orgId, {url:import.meta.env.PUBLIC_SUPABASE_URL,key:import.meta.env.PUBLIC_SUPABASE_ANON_KEY})};
     console.log(`✅ Fetched organization data for org ${orgId}`);
 
     return {

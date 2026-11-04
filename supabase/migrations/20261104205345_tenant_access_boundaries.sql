@@ -1,9 +1,11 @@
+-- No private organization-profile contact/address/EIN columns are exposed.
+-- Public contact details come only from explicitly visible website footer content.
 -- Phase 1: safe read-only projections. Deploy compatible app consumers before phase 2.
 CREATE VIEW public.public_organizations WITH (security_barrier=true) AS
-SELECT id,org,slug,email,phone,address,city,state,zip_code,subdomain,custom_domain,website,ein,
+SELECT id,org,slug,subdomain,custom_domain,website,
  is_active,logo_light_url,logo_dark_url,favicon_url,heading_font,body_font,primary_color,
  secondary_color,accent_color,text_color,background_color,facebook_url,instagram_url,
- contact_email,mission_statement,founded_year,font_scale,heading_color,body_text_color,link_color
+ mission_statement,founded_year,font_scale,heading_color,body_text_color,link_color
 FROM public.organizations WHERE is_active IS TRUE;
 CREATE VIEW public.public_animals WITH (security_barrier=true) AS
 SELECT a.id,a.org_id,a.created_at,a.name,a.litter_name,a.species,a.breed,a.description,
