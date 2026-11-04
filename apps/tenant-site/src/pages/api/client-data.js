@@ -7,11 +7,11 @@ import clientData from '@data/client.json';
 
 const CACHE_CONTROL_HEADER = 'public, s-maxage=300, stale-while-revalidate=600';
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request?.headers.get('authorization') || `Bearer ${key}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -31,7 +31,7 @@ export async function GET({ request, locals }) {
 
     try {
       const res = await fetch(
-        `${getSupabaseUrl()}/rest/v1/organizations?select=*&id=eq.${orgId}`,
+        `${getSupabaseUrl()}/rest/v1/public_organizations?select=*&id=eq.${orgId}`,
         { headers: getSupabaseHeaders() }
       );
       if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
@@ -78,7 +78,7 @@ export async function GET({ request, locals }) {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           'Cache-Control': CACHE_CONTROL_HEADER
         }
       });
@@ -121,7 +121,7 @@ export async function PUT({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/organizations?id=eq.${orgId}`,
-      { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(supabaseUpdateData) }
+      { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(supabaseUpdateData) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const result = await res.json();
@@ -148,7 +148,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
   });
 }

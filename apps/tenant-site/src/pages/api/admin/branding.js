@@ -1,11 +1,11 @@
 // API endpoint for organization branding management
 // Handles GET and PUT requests for custom fonts and colors
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request.headers.get('authorization'),
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -31,7 +31,7 @@ export async function GET({ request }) {
   try {
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/organizations?select=*&id=eq.${orgId}`,
-      { headers: getSupabaseHeaders() }
+      { headers: getSupabaseHeaders(request) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const rows = await res.json();
@@ -114,7 +114,7 @@ export async function PUT({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/organizations?id=eq.${orgId}`,
-      { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(supabaseData) }
+      { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(supabaseData) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const updated = await res.json();

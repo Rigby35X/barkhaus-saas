@@ -7,11 +7,11 @@ export const prerender = false;
 
 const CACHE_CONTROL_HEADER = 'public, s-maxage=30, stale-while-revalidate=60';
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request?.headers.get('authorization') || `Bearer ${key}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -76,6 +76,8 @@ const commonFooter = {
 };
 
 function getFallbackContentForPage(pageSlug) {
+  // Let the global footer component retain its own safe defaults on API failure.
+  if (pageSlug === 'global') return {};
   const fallbacks = {
     homepage: {
       hero: { headline: "Every Dog Deserves a Loving Home", subheadline: "Rescue • Love • Adopt", body_text: "At Mission Bay Puppy Rescue, we're dedicated to finding loving homes for dogs in need.", button_text: "Meet Our Dogs", button_link: "/our-animals/" },
@@ -109,7 +111,7 @@ export async function GET({ request, locals }) {
 
     try {
       const res = await fetch(
-        `${getSupabaseUrl()}/rest/v1/website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
+        `${getSupabaseUrl()}/rest/v1/public_website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
         { headers: getSupabaseHeaders() }
       );
       if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
@@ -120,18 +122,25 @@ export async function GET({ request, locals }) {
       sections.forEach(section => {
         if (section.page_slug === pageSlug || section.page_slug === 'global') {
           if (section.section_key === 'footer') {
+            // Global footer settings apply to every page, regardless of row order.
+            const globalFooter = sections.find(item =>
+              item.section_key === 'footer' && item.page_slug === 'global'
+            );
+            if (globalFooter && section !== globalFooter) return;
+            const parsedFooter = parseSectionContent(section.content);
+            const footerContent = { ...parsedFooter, ...parseSectionContent(parsedFooter.content) };
             organizedContent['footer'] = {
               content: {
-                footer_organization_name: section.footer_organization_name,
-                footer_address_line_one: section.footer_address_line_one,
-                footer_address_line_two: section.footer_address_line_two,
-                footer_address_city: section.footer_address_city,
-                footer_address_state: section.footer_address_state,
-                footer_address_zip: section.footer_address_zip,
-                footer_phone: section.footer_phone,
-                footer_email: section.footer_email,
-                footer_copyright: section.footer_copyright,
-                footer_ein: section.footer_ein
+                footer_organization_name: footerContent.footer_organization_name ?? footerContent.organization_name ?? section.footer_organization_name,
+                footer_address_line_one: footerContent.footer_address_line_one ?? footerContent.address_line_one ?? section.footer_address_line_one,
+                footer_address_line_two: footerContent.footer_address_line_two ?? footerContent.address_line_two ?? section.footer_address_line_two,
+                footer_address_city: footerContent.footer_address_city ?? footerContent.address_city ?? section.footer_address_city,
+                footer_address_state: footerContent.footer_address_state ?? footerContent.address_state ?? section.footer_address_state,
+                footer_address_zip: footerContent.footer_address_zip ?? footerContent.address_zip ?? section.footer_address_zip,
+                footer_phone: footerContent.footer_phone ?? footerContent.phone ?? section.footer_phone,
+                footer_email: footerContent.footer_email ?? footerContent.email ?? section.footer_email,
+                footer_copyright: footerContent.footer_copyright ?? footerContent.copyright ?? section.footer_copyright,
+                footer_ein: footerContent.footer_ein ?? footerContent.ein ?? section.footer_ein
               }
             };
           } else {
@@ -235,11 +244,14 @@ export async function PUT({ request }) {
     // Find existing record
     const findRes = await fetch(
       `${getSupabaseUrl()}/rest/v1/website_content?select=id&org_id=eq.${orgId}&section_key=eq.${encodeURIComponent(sectionKey)}&page_slug=eq.${encodeURIComponent(targetPageSlug)}`,
-      { headers: getSupabaseHeaders() }
+      { headers: getSupabaseHeaders(request) }
     );
     if (!findRes.ok) throw new Error(`Supabase HTTP ${findRes.status}`);
     const existing = await findRes.json();
 
+    if (content && ['id','org_id','orgId','page_slug','section_key','created_at'].some(key => Object.hasOwn(content,key))) {
+      return new Response(JSON.stringify({error:'Content contains protected fields.'}), {status:400,headers:{'Content-Type':'application/json'}});
+    }
     const recordData = {
       org_id: parseInt(orgId),
       section_key: sectionKey,
@@ -252,8 +264,8 @@ export async function PUT({ request }) {
     if (existing && existing.length > 0) {
       const recordId = existing[0].id;
       const updateRes = await fetch(
-        `${getSupabaseUrl()}/rest/v1/website_content?id=eq.${recordId}`,
-        { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(recordData) }
+        `${getSupabaseUrl()}/rest/v1/website_content?id=eq.${recordId}&org_id=eq.${orgId}`,
+        { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(recordData) }
       );
       if (!updateRes.ok) throw new Error(`Supabase PATCH HTTP ${updateRes.status}`);
       result = await updateRes.json();
@@ -261,7 +273,7 @@ export async function PUT({ request }) {
     } else {
       const insertRes = await fetch(
         `${getSupabaseUrl()}/rest/v1/website_content`,
-        { method: 'POST', headers: getSupabaseHeaders(), body: JSON.stringify(recordData) }
+        { method: 'POST', headers: getSupabaseHeaders(request), body: JSON.stringify(recordData) }
       );
       if (!insertRes.ok) throw new Error(`Supabase POST HTTP ${insertRes.status}`);
       result = await insertRes.json();

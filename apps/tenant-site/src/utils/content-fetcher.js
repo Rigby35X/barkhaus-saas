@@ -233,7 +233,7 @@ export async function fetchPageContent(pageSlug = 'homepage', orgId = '9', origi
     const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
+      `${supabaseUrl}/rest/v1/public_website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -326,7 +326,7 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
     const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/organizations?select=*&id=eq.${orgId}`,
+      `${supabaseUrl}/rest/v1/public_organizations?select=*&id=eq.${orgId}`,
       {
         headers: {
           'apikey': supabaseKey,
@@ -405,7 +405,7 @@ export async function fetchAnimals(orgId = '9') {
     ].join(',');
 
     const res = await fetch(
-      `${supabaseUrl}/rest/v1/animals?select=${columns}&org_id=eq.${orgId}&status=eq.Available&order=created_at.desc`,
+      `${supabaseUrl}/rest/v1/public_animals?select=${columns}&org_id=eq.${orgId}&status=eq.Available&order=created_at.desc`,
       {
         headers: {
           'apikey': supabaseKey,

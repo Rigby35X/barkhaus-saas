@@ -1,3 +1,4 @@
+import { sessionHeaders } from '../lib/sessionHeaders';
 // REQUIRED: Run the policies table migration in Supabase before using this tab.
 // See apps/dashboard/src/lib/api.ts → ensurePoliciesTable() for the SQL.
 import { useState, useEffect } from 'react';
@@ -71,7 +72,7 @@ export default function PoliciesTab({ orgId }: PoliciesTabProps) {
       console.log(`[generate-policy] POST ${endpoint}`, { orgId, policyType: activePolicy });
       const res = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...await sessionHeaders() },
         body: JSON.stringify({ orgId, policyType: activePolicy }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

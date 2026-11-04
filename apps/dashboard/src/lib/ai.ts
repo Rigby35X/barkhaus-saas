@@ -1,3 +1,4 @@
+import { sessionHeaders } from './sessionHeaders';
 // AI reply drafting for Applications / Communications.
 //
 // IMPORTANT: this deliberately does NOT call api.anthropic.com directly from the
@@ -27,8 +28,8 @@ export async function draftReply(orgId: number, context: DraftReplyContext): Pro
   console.log(`[draftReply] POST ${endpoint}`, context);
   const res = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(context),
+    headers: { 'Content-Type': 'application/json', ...await sessionHeaders() },
+    body: JSON.stringify({...context, orgId}),
   });
 
   if (!res.ok) {

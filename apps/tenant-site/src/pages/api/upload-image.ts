@@ -18,7 +18,7 @@ function getCorsHeaders(request: Request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -31,8 +31,8 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const formData = await request.formData()
     const file = formData.get('image') as File | null
-    const orgId = formData.get('orgId') ?? '9'
-    const section = formData.get('section') ?? 'general'
+    const orgId = String(formData.get('orgId'))
+    const section = String(formData.get('section') ?? 'general').replace(/[^a-zA-Z0-9_-]/g, '_')
 
     if (!file || typeof file === 'string' || !file.name) {
       return new Response(JSON.stringify({ success: false, error: 'No file provided' }), {
