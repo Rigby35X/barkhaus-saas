@@ -376,7 +376,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   // Typography overrides per section (stored as JSONB `typography` column in website_content)
   // Run once in Supabase SQL Editor if not yet added:
   // ALTER TABLE website_content ADD COLUMN IF NOT EXISTS typography jsonb;
-  const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+  const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', topper_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
   const [showTypography, setShowTypography] = useState(false);
   const [typographyDirty, setTypographyDirty] = useState(false);
   const activeEditorRef = useRef('');
@@ -436,12 +436,13 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
       const t = typo as Record<string, string>;
       setTypographyEditing({
         heading_color: t.heading_color ?? '',
+        topper_color: t.topper_color ?? '',
         body_text_color: t.body_text_color ?? '',
         heading_font: t.heading_font ?? '',
         font_size_scale: t.font_size_scale ?? '',
       });
     } else {
-      setTypographyEditing({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+      setTypographyEditing({ heading_color: '', topper_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage, activeSectionKey, sections]);
@@ -782,6 +783,31 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                       <div className="border-t border-silver-gray p-4 space-y-4 bg-cloud">
                         <p className="text-xs text-stone">Leave fields empty to use the global branding settings. Set a value to override just this section.</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {activePage === 'homepage' && activeSectionKey === 'hero' && <>
+                          {/* Topper / eyebrow color */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Topper / eyebrow color</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={typographyEditing.topper_color || '#ff6b35'}
+                                onChange={(e) => updateTypography({ topper_color: e.target.value })}
+                                className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={typographyEditing.topper_color}
+                                onChange={(e) => updateTypography({ topper_color: e.target.value })}
+                                placeholder="Leave empty for global"
+                                maxLength={7}
+                                className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                              />
+                              {typographyEditing.topper_color && (
+                                <button type="button" onClick={() => updateTypography({ topper_color: '' })} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                              )}
+                            </div>
+                          </div>
+                          </>}
                           {/* Heading Color */}
                           <div className="space-y-1">
                             <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Heading Color</label>
