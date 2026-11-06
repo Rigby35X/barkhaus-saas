@@ -76,6 +76,8 @@ const commonFooter = {
 };
 
 function getFallbackContentForPage(pageSlug) {
+  // Let the global footer component retain its own safe defaults on API failure.
+  if (pageSlug === 'global') return {};
   const fallbacks = {
     homepage: {
       hero: { headline: "Every Dog Deserves a Loving Home", subheadline: "Rescue • Love • Adopt", body_text: "At Mission Bay Puppy Rescue, we're dedicated to finding loving homes for dogs in need.", button_text: "Meet Our Dogs", button_link: "/our-animals/" },
@@ -120,18 +122,25 @@ export async function GET({ request, locals }) {
       sections.forEach(section => {
         if (section.page_slug === pageSlug || section.page_slug === 'global') {
           if (section.section_key === 'footer') {
+            // Global footer settings apply to every page, regardless of row order.
+            const globalFooter = sections.find(item =>
+              item.section_key === 'footer' && item.page_slug === 'global'
+            );
+            if (globalFooter && section !== globalFooter) return;
+            const parsedFooter = parseSectionContent(section.content);
+            const footerContent = { ...parsedFooter, ...parseSectionContent(parsedFooter.content) };
             organizedContent['footer'] = {
               content: {
-                footer_organization_name: section.footer_organization_name,
-                footer_address_line_one: section.footer_address_line_one,
-                footer_address_line_two: section.footer_address_line_two,
-                footer_address_city: section.footer_address_city,
-                footer_address_state: section.footer_address_state,
-                footer_address_zip: section.footer_address_zip,
-                footer_phone: section.footer_phone,
-                footer_email: section.footer_email,
-                footer_copyright: section.footer_copyright,
-                footer_ein: section.footer_ein
+                footer_organization_name: footerContent.footer_organization_name ?? footerContent.organization_name ?? section.footer_organization_name,
+                footer_address_line_one: footerContent.footer_address_line_one ?? footerContent.address_line_one ?? section.footer_address_line_one,
+                footer_address_line_two: footerContent.footer_address_line_two ?? footerContent.address_line_two ?? section.footer_address_line_two,
+                footer_address_city: footerContent.footer_address_city ?? footerContent.address_city ?? section.footer_address_city,
+                footer_address_state: footerContent.footer_address_state ?? footerContent.address_state ?? section.footer_address_state,
+                footer_address_zip: footerContent.footer_address_zip ?? footerContent.address_zip ?? section.footer_address_zip,
+                footer_phone: footerContent.footer_phone ?? footerContent.phone ?? section.footer_phone,
+                footer_email: footerContent.footer_email ?? footerContent.email ?? section.footer_email,
+                footer_copyright: footerContent.footer_copyright ?? footerContent.copyright ?? section.footer_copyright,
+                footer_ein: footerContent.footer_ein ?? footerContent.ein ?? section.footer_ein
               }
             };
           } else {

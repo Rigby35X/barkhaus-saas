@@ -130,6 +130,22 @@ const content = {
 }
 
 const showSuccessStories = false;
+const uploadedHeroImage = typeof content.hero?.background_image_url === 'string'
+  ? content.hero.background_image_url.trim() : '';
+const heroTypography = content.hero?.typography ?? {};
+const safeColor = (value: unknown) => typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value) ? value : '';
+const topperStyle = safeColor(heroTypography.topper_color) ? `color: ${safeColor(heroTypography.topper_color)} !important` : '';
+const headingStyle = [
+  safeColor(heroTypography.heading_color) ? `color: ${safeColor(heroTypography.heading_color)} !important` : '',
+  typeof heroTypography.heading_font === 'string' && /^[a-zA-Z0-9 -]+$/.test(heroTypography.heading_font)
+    ? `font-family: '${heroTypography.heading_font}', sans-serif !important` : ''
+].filter(Boolean).join('; ');
+const bodySizes: Record<string,string> = {Small:'0.875rem',Medium:'1rem',Large:'1.125rem','Extra Large':'1.25rem'};
+const bodyStyle = [
+  safeColor(heroTypography.body_text_color) ? `color: ${safeColor(heroTypography.body_text_color)} !important` : '',
+  bodySizes[heroTypography.font_size_scale] ? `font-size: ${bodySizes[heroTypography.font_size_scale]} !important` : ''
+].filter(Boolean).join('; ');
+
 ---
 
 <BaseLayout
@@ -145,9 +161,9 @@ const showSuccessStories = false;
   <section id="hero" style={buildSectionStyle(content.hero?.typography)}>
     <div class="cs-container">
       <div class="cs-flex-group">
-        <span class="cs-topper">{content.hero.subheadline}</span>
-        <h1 class="cs-title">{content.hero.headline}</h1>
-        <p class="cs-text">
+        <span class="cs-topper" style={topperStyle}>{content.hero.subheadline}</span>
+        <h1 class="cs-title" style={headingStyle}>{content.hero.headline}</h1>
+        <p class="cs-text" style={bodyStyle}>
           {content.hero.body_text}
         </p>
         <a href={content.hero.button_link} class="cs-button-solid">{content.hero.button_text}</a>
@@ -173,13 +189,13 @@ const showSuccessStories = false;
     <picture class="cs-picture">
       <source
         media="(max-width: 600px)"
-        srcset="/assets/images/hero-m.webp"
+        srcset={uploadedHeroImage || "/assets/images/hero-m.webp"}
       />
-      <source media="(min-width: 601px)" srcset="/assets/images/hero.jpg" />
+      <source media="(min-width: 601px)" srcset={uploadedHeroImage || "/assets/images/hero.jpg"} />
       <img
         aria-hidden="true"
         decoding="async"
-        src={optimizedImage.src}
+        src={uploadedHeroImage || optimizedImage.src}
         alt="new home"
         width="2500"
         height="1667"
