@@ -378,6 +378,9 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   // ALTER TABLE website_content ADD COLUMN IF NOT EXISTS typography jsonb;
   const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
   const [showTypography, setShowTypography] = useState(false);
+  const [typographyDirty, setTypographyDirty] = useState(false);
+  const activeEditorRef = useRef('');
+  activeEditorRef.current = `${orgId}:${activePage}:${activeSectionKey}`;
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -427,6 +430,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
       (s) => (s.page_slug as string | undefined) === activePage &&
         (s.section_key ?? s.section) === sectionDef?.key
     );
+    setTypographyDirty(false);
     const typo = section?.typography;
     if (typo && typeof typo === 'object' && !Array.isArray(typo)) {
       const t = typo as Record<string, string>;
@@ -464,6 +468,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const updateTypography = (patch: Partial<typeof typographyEditing>) => {
+    setTypographyDirty(true);
     setTypographyEditing((prev) => ({ ...prev, ...patch }));
     setDirty(true);
   };
@@ -481,7 +486,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setSaving(true);
     try {
       // Include typography overrides only when the panel is open (user explicitly set/cleared them)
-      const typographyPayload = showTypography
+      const typographyPayload = typographyDirty
         ? { typography: Object.values(typographyEditing).some(v => v) ? typographyEditing : null }
         : {};
       const fullContent = { ...editing, ...typographyPayload };
@@ -497,6 +502,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
         setSections((prev) => [...prev, created]);
       }
       setEditing({});
+      setTypographyDirty(false);
       setDirty(false);
       setPreviewVersion((value) => value + 1);
       showToast('Saved and verified ✓', 'success');
@@ -532,17 +538,20 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const handleImageUpload = async (file: File, fieldKey: string) => {
+    const uploadScope = activeEditorRef.current;
     setUploadingField(fieldKey);
     setUploadError('');
     try {
       console.log(`[WebsiteContentTab] Uploading image for field ${fieldKey}, page ${activePage}`);
       const url = await uploadImage(file, activePage, orgId);
       console.log(`[WebsiteContentTab] Uploaded image URL:`, url);
+      if (activeEditorRef.current !== uploadScope) return;
       handleEdit(fieldKey, url);
+      showToast('Image uploaded. Click Save Changes to publish it.', 'success');
     } catch (err) {
       console.error('[WebsiteContentTab] Image upload error:', err);
       setUploadError(err instanceof Error ? err.message : 'Upload failed — please try again.');
-      setTimeout(() => setUploadError(''), 4000);
+      // Keep the error visible until the user retries or changes section.
     } finally {
       setUploadingField(null);
     }
@@ -662,7 +671,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => void handleSave()}
-                    disabled={saving || !dirty}
+                    disabled={saving || !!uploadingField || !dirty}
                     className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-40 transition"
                   >
                     {saving ? 'Saving…' : 'Save Changes'}
@@ -850,6 +859,13 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   </div>
                 </fieldset>
               ) : null}
+              {dirty && <div className="sticky bottom-0 z-10 mt-5 flex items-center justify-between gap-4 rounded-xl border border-silver-gray bg-white p-4 shadow-lg">
+                <span className="text-sm text-deep-taupe">Unsaved changes</span>
+                <button type="button" onClick={() => void handleSave()} disabled={saving || !!uploadingField}
+                  className="rounded-xl bg-warm-brown px-5 py-2 text-sm font-semibold text-white disabled:opacity-40">
+                  {saving ? 'Saving…' : uploadingField ? 'Uploading…' : 'Save Changes'}
+                </button>
+              </div>}
             </div>
           </div>
         )}
