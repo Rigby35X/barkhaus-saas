@@ -20,6 +20,7 @@ export default function SupabaseAccess({ children }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -65,6 +66,8 @@ export default function SupabaseAccess({ children }: Props) {
   }, [userId, retry]);
 
   const signOut = () => {
+    if (signingOut) return;
+    setSigningOut(true);
     void supabase.auth.signOut({ scope: 'local' }).then(({ error: signOutError }) => {
       if (signOutError) setError('Could not sign out. Please retry.');
       else {
@@ -73,7 +76,8 @@ export default function SupabaseAccess({ children }: Props) {
         localStorage.removeItem('barkhausAuthToken');
         setSession(null);
       }
-    }).catch(() => setError('Could not sign out. Please retry.'));
+    }).catch(() => setError('Could not sign out. Please retry.'))
+      .finally(() => setSigningOut(false));
   };
 
   const googleLogin = async () => {
@@ -105,7 +109,7 @@ export default function SupabaseAccess({ children }: Props) {
   };
 
   const selected = memberships.find((access) => access.orgId === selectedOrgId);
-  if (!initializing && !accessLoading && session && accessForUser === userId && selected && !error) {
+  if (!signingOut && !initializing && !accessLoading && session && accessForUser === userId && selected && !error) {
     return <>
       {memberships.length > 1 && <div className="bg-white border-b p-3 text-sm text-right">
         <label>Organization <select value={selectedOrgId ?? ''} onChange={(event) => setSelectedOrgId(Number(event.target.value))}>
@@ -120,7 +124,7 @@ export default function SupabaseAccess({ children }: Props) {
     <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
       <h1 className="text-3xl font-serif font-bold text-deep-taupe text-center">BarkHaus</h1>
       <p className="text-stone mt-2 mb-6 text-center">Your rescue, all in one place.</p>
-      {initializing || accessLoading || (session && accessForUser !== userId) ? <p role="status">Loading your account…</p> : session ? <>
+      {signingOut ? <p role="status">Signing out…</p> : initializing || accessLoading || (session && accessForUser !== userId) ? <p role="status">Loading your account…</p> : session ? <>
         {error ? <p role="alert" className="text-red-600 mb-4">{error}</p> : memberships.length > 1 ? <>
           <h2 className="font-semibold mb-3">Choose your organization</h2>
           {memberships.map((access) => <button key={access.orgId} className="block w-full border rounded-xl p-3 mb-2 text-left"
