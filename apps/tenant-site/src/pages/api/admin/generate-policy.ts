@@ -13,7 +13,7 @@ function getCorsHeaders(request: Request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -61,7 +61,8 @@ export const POST: APIRoute = async ({ request }) => {
       try {
         const supabase = createClient(
           import.meta.env.PUBLIC_SUPABASE_URL,
-          import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+          import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+          {global:{headers:{Authorization:request.headers.get('authorization') || ''}},auth:{persistSession:false}}
         )
         const { data } = await supabase
           .from('organizations')

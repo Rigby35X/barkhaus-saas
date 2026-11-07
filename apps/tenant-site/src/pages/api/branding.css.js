@@ -41,7 +41,7 @@ export async function GET({ request }) {
 
   try {
     const res = await fetch(
-      `${getSupabaseUrl()}/rest/v1/organizations?select=*&id=eq.${orgId}`,
+      `${getSupabaseUrl()}/rest/v1/public_organizations?select=*&id=eq.${orgId}`,
       { headers: getSupabaseHeaders() }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);

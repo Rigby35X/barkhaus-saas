@@ -98,23 +98,13 @@ export interface Application {
 
 // ─── Auth helpers ────────────────────────────────────────────────────────────
 
-/** Returns Authorization Bearer header if JWT token is present */
-export function getAuthHeaders(): Record<string, string> {
-  try {
-    const token = localStorage.getItem('barkhausAuthToken');
-    if (token) return { Authorization: `Bearer ${token}` };
-  } catch {
-    // localStorage may not be available in SSR
-  }
-  return {};
-}
 
 // ─── Org configs ─────────────────────────────────────────────────────────────
 
 export const ORGANIZATIONS: Record<number, OrgConfig> = {
   3: {
     name: 'Happy Paws Dog Rescue',
-    accessCode: 'demo123',
+    accessCode: '',
     logo: '/assets/svgs/happy-paws.svg',
     colors: { primary: '#059669', secondary: '#6b7280' },
     contact: { email: 'info@happypaws.org', phone: '(555) 123-4567', address: '123 Rescue Lane, Pet City' },
@@ -122,7 +112,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   4: {
     name: 'Furry Friends Sanctuary',
-    accessCode: 'furry456',
+    accessCode: '',
     logo: '/assets/svgs/furry-friends.svg',
     colors: { primary: '#7c3aed', secondary: '#a855f7' },
     contact: { email: 'hello@furryfriends.org', phone: '(555) 234-5678', address: '456 Animal Ave, Sanctuary City' },
@@ -130,7 +120,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   5: {
     name: 'Paws & Hearts Rescue',
-    accessCode: 'hearts789',
+    accessCode: '',
     logo: '/assets/svgs/paws-hearts.svg',
     colors: { primary: '#dc2626', secondary: '#ef4444' },
     contact: { email: 'contact@pawshearts.org', phone: '(555) 345-6789', address: '789 Heart Street, Love City' },
@@ -138,7 +128,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   6: {
     name: 'Second Chance Animal Rescue',
-    accessCode: 'second123',
+    accessCode: '',
     logo: '/assets/svgs/second-chance.svg',
     colors: { primary: '#0891b2', secondary: '#06b6d4' },
     contact: { email: 'info@secondchance.org', phone: '(555) 456-7890', address: '321 Hope Boulevard, Chance City' },
@@ -146,7 +136,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   7: {
     name: 'Loving Tails Foundation',
-    accessCode: 'tails456',
+    accessCode: '',
     logo: '/assets/svgs/loving-tails.svg',
     colors: { primary: '#ea580c', secondary: '#fb923c' },
     contact: { email: 'support@lovingtails.org', phone: '(555) 567-8901', address: '654 Tail Way, Foundation City' },
@@ -154,7 +144,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   8: {
     name: 'Barkhaus Admin',
-    accessCode: 'barkhaus2024',
+    accessCode: '',
     logo: '/assets/svgs/barkhaus.svg',
     colors: { primary: '#1f2937', secondary: '#374151' },
     contact: { email: 'admin@barkhaus.com', phone: '(555) 678-9012', address: '987 Admin Plaza, Control City' },
@@ -163,7 +153,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   9: {
     name: 'Mission Bay Puppy Rescue',
-    accessCode: 'mbpr2024',
+    accessCode: '',
     logo: '/assets/images/MBPR-Dark.png',
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpr.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
@@ -173,7 +163,7 @@ export const ORGANIZATIONS: Record<number, OrgConfig> = {
   },
   10: {
     name: 'MB Pups',
-    accessCode: 'mbpups2024',
+    accessCode: '',
     logo: '/assets/images/MBPR-Dark.png',
     colors: { primary: '#16a34a', secondary: '#22c55e' },
     contact: { email: 'admin@mbpups.org', phone: '(619) 555-PUPS', address: '456 Mission Bay Drive, San Diego, CA 92109' },
@@ -265,12 +255,98 @@ export async function getWebsiteContent(orgId: number, pageSlug?: string): Promi
   if (pageSlug) query = query.eq('page_slug', pageSlug);
   const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+  return (data ?? []).map(normalizeWebsiteSection);
 }
 
 /** Backwards-compat alias */
 export async function fetchWebsiteContent(orgId: number): Promise<WebsiteSection[]> {
   return getWebsiteContent(orgId);
+}
+
+function parseWebsiteContent(value: unknown): Record<string, unknown> {
+  if (typeof value === 'string') {
+    try { value = JSON.parse(value); } catch { return {}; }
+  }
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown> : {};
+}
+
+function storedWebsiteValues(value: unknown): Record<string, unknown> {
+  const { content: nested, ...fields } = parseWebsiteContent(value);
+  return { ...fields, ...parseWebsiteContent(nested) };
+}
+
+function normalizeWebsiteSection(section: WebsiteSection): WebsiteSection {
+  const values = storedWebsiteValues(section.content);
+  const normalized = { ...section };
+  for (const [key, value] of Object.entries(values)) {
+    if (normalized[key] == null || (section.section_key === 'footer' && key.startsWith('footer_'))) {
+      normalized[key] = value;
+    }
+  }
+  return normalized;
+}
+
+function containsSavedValues(actual: unknown, expected: unknown): boolean {
+  if (expected && typeof expected === 'object') {
+    if (!actual || typeof actual !== 'object') return false;
+    return Object.entries(expected).every(([key, value]) =>
+      containsSavedValues((actual as Record<string, unknown>)[key], value)
+    );
+  }
+  return actual === expected;
+}
+
+async function writeWebsiteSection(
+  orgId: number,
+  pageSlug: string,
+  sectionKey: string,
+  updates: Record<string, unknown>,
+  existing?: WebsiteSection | null,
+): Promise<WebsiteSection> {
+  // Footer is organization-wide; never store a new page-specific footer.
+  const targetPage = sectionKey === 'footer' ? 'global' : pageSlug;
+  const footerValues = Object.fromEntries(Object.entries(updates).filter(([key]) => key.startsWith('footer_')));
+  const payload: Record<string, unknown> = {
+    ...updates, org_id: orgId, page_slug: targetPage, section_key: sectionKey,
+    is_visible: true, updated_at: new Date().toISOString(),
+  };
+  // Keep JSON and column-based storage consistent on installations supporting both.
+  if (sectionKey === 'footer' && existing && Object.prototype.hasOwnProperty.call(existing, 'content')) {
+    payload.content = { ...storedWebsiteValues(existing.content), ...footerValues };
+  }
+
+  async function write(record: Record<string, unknown>) {
+    if (existing) {
+      return supabase.from('website_content').update(record)
+        .eq('id', existing.id).eq('org_id', orgId).select().single();
+    }
+    return supabase.from('website_content').insert(record).select().single();
+  }
+
+  let result = await write(payload);
+  // Some installations store footer fields in JSON rather than dedicated columns.
+  // Retry only this specific schema mismatch; never mask permissions/validation errors.
+  if (sectionKey === 'footer' && result.error &&
+      ['PGRST204', '42703'].includes(result.error.code) &&
+      /footer_/.test(result.error.message)) {
+    const storedFooter = existing ? normalizeWebsiteSection(existing) : {};
+    const allFooterValues = Object.fromEntries(
+      Object.entries(storedFooter).filter(([key]) => key.startsWith('footer_'))
+    );
+    const jsonPayload = Object.fromEntries(Object.entries(payload).filter(([key]) => !key.startsWith('footer_')));
+    jsonPayload.content = { ...storedWebsiteValues(existing?.content), ...allFooterValues, ...footerValues };
+    result = await write(jsonPayload);
+  }
+  if (result.error) throw result.error;
+  const { data, error } = await supabase.from('website_content').select('*')
+    .eq('id', result.data.id).eq('org_id', orgId).single();
+  if (error) throw error;
+  const saved = normalizeWebsiteSection(data);
+  if (!containsSavedValues(saved, updates)) {
+    throw new Error('The saved content could not be verified. Your edits are still here; please retry.');
+  }
+  return saved;
 }
 
 export async function saveWebsiteContentSection(
@@ -279,28 +355,24 @@ export async function saveWebsiteContentSection(
   sectionKey: string,
   content: Record<string, unknown>,
 ): Promise<WebsiteSection> {
-  console.log('[saveWebsiteContentSection] upserting', { orgId, pageSlug, sectionKey, content });
-  const { data, error } = await supabase
-    .from('website_content')
-    .upsert(
-      { org_id: orgId, page_slug: pageSlug, section_key: sectionKey, is_visible: true, ...content, updated_at: new Date().toISOString() },
-      { onConflict: 'org_id,page_slug,section_key' }
-    )
-    .select()
-    .single();
+  const targetPage = sectionKey === 'footer' ? 'global' : pageSlug;
+  const { data, error } = await supabase.from('website_content').select('*')
+    .eq('org_id', orgId).eq('page_slug', targetPage).eq('section_key', sectionKey).maybeSingle();
   if (error) throw error;
-  return data;
+  // Insert new sections directly: do not require an unverified upsert constraint.
+  return writeWebsiteSection(orgId, targetPage, sectionKey, content, data);
 }
 
-export async function updateWebsiteSection(sectionId: number, content: Record<string, unknown>): Promise<WebsiteSection> {
-  const { data, error } = await supabase
-    .from('website_content')
-    .update({ is_visible: true, ...content, updated_at: new Date().toISOString() })
-    .eq('id', sectionId)
-    .select()
-    .single();
+export async function updateWebsiteSection(
+  sectionId: number,
+  content: Record<string, unknown>,
+  orgId?: number,
+): Promise<WebsiteSection> {
+  let query = supabase.from('website_content').select('*').eq('id', sectionId);
+  if (orgId != null) query = query.eq('org_id', orgId);
+  const { data, error } = await query.single();
   if (error) throw error;
-  return data;
+  return writeWebsiteSection(data.org_id, data.page_slug, data.section_key, content, data);
 }
 
 // ─── Organization ─────────────────────────────────────────────────────────────

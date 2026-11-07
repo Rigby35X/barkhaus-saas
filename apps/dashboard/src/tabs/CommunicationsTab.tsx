@@ -1,3 +1,4 @@
+import { sessionHeaders } from '../lib/sessionHeaders';
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../components/Toast';
 import { draftReply } from '../lib/ai';
@@ -30,7 +31,7 @@ async function fetchSubmissionsFromSupabase(orgId: number): Promise<Submission[]
     {
       headers: {
         apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
+        ...await sessionHeaders(),
       },
     }
   );
@@ -155,7 +156,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
           method: 'PATCH',
           headers: {
             apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
+            ...await sessionHeaders(),
             'Content-Type': 'application/json',
             Prefer: 'return=minimal',
           },

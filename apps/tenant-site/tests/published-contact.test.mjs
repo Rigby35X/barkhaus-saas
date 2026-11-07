@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {publishedContact} from '../src/lib/published-contact.js';
+const env={url:'https://example.invalid',key:'test-public-key'};
+let requested='';
+let data=await publishedContact(1,env,async url=>{requested=url;return new Response(JSON.stringify([{footer_email:'published@example.invalid',footer_phone:'',footer_ein:'PUBLIC-TEST'}]));});
+assert.equal(data.email,'published@example.invalid');assert.equal(data.phone,'');assert.equal(data.ein,'PUBLIC-TEST');
+assert.match(requested,/public_website_content/);assert.match(requested,/page_slug=eq.global/);assert.match(requested,/section_key=eq.footer/);
+data=await publishedContact(2,env,async()=>new Response('[]'));assert.equal(data.email,'');assert.equal(data.ein,'');
+await assert.rejects(publishedContact(1,env,async()=>new Response('{}',{status:500})));
+console.log('PASS: public contact details come only from published footer records, including cleared/missing fields; failed reads do not fabricate profile contacts.');

@@ -3,13 +3,13 @@
  * Handles CRUD operations for animals via Supabase
  */
 
-const CACHE_CONTROL_HEADER = 'public, s-maxage=300, stale-while-revalidate=600';
+const CACHE_CONTROL_HEADER = 'private, no-store';
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request.headers.get('authorization'),
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -27,7 +27,7 @@ export async function GET({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/animals?select=*&org_id=eq.${orgId}&order=name.asc`,
-      { headers: getSupabaseHeaders() }
+      { headers: getSupabaseHeaders(request) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const animals = await res.json();
@@ -59,13 +59,13 @@ export async function POST({ request }) {
     const { orgId = '9', ...animalData } = body;
 
     const newRecord = {
-      org_id: parseInt(orgId),
-      ...animalData
+      ...animalData,
+      org_id: parseInt(orgId)
     };
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/animals`,
-      { method: 'POST', headers: getSupabaseHeaders(), body: JSON.stringify(newRecord) }
+      { method: 'POST', headers: getSupabaseHeaders(request), body: JSON.stringify(newRecord) }
     );
     if (!res.ok) {
       const errText = await res.text();
@@ -102,8 +102,8 @@ export async function PUT({ request }) {
     }
 
     const res = await fetch(
-      `${getSupabaseUrl()}/rest/v1/animals?id=eq.${id}`,
-      { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(animalData) }
+      `${getSupabaseUrl()}/rest/v1/animals?id=eq.${id}&org_id=eq.${orgId}`,
+      { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify({ ...animalData, org_id: Number(orgId) }) }
     );
     if (!res.ok) {
       const errText = await res.text();
@@ -142,7 +142,7 @@ export async function DELETE({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/animals?id=eq.${id}&org_id=eq.${orgId}`,
-      { method: 'DELETE', headers: getSupabaseHeaders() }
+      { method: 'DELETE', headers: getSupabaseHeaders(request) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     console.log('✅ Animal deleted from Supabase:', id);
