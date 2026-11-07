@@ -16,7 +16,7 @@ Combines PR #12 (`05543d0`) and PR #13 (`b16727c`). Integration branch: `fix/ten
 
 ## Current staging state
 
-- Production database, memberships, domains and deployments are unchanged.
+- Full production tenant-access rollout is not applied. Separately, the generic public site's hero/footer/topper rendering fixes were published, and an owner/admin tenant-prefix image INSERT policy was added to production Storage. Existing production membership rows were not changed.
 - Both new migrations are applied to Barkhaus Staging (`idybpiomulkebvhqibdp`); all 22 public tables have RLS.
 - Private organization email/phone/address/EIN fields are excluded from the public organization view. Website contact data comes only from visible global footer content; profile fields never become public by default.
 - Live anonymous HTTP: animals, applications and tokens_table return 401; public_animals and public_website_content return 200.
@@ -59,3 +59,25 @@ npm run build --workspace=apps/marketing
 7. Production rollout requires TWO phases: first new migration (public projections), compatible app consumers, then second new migration (private data/storage policies). Review schema drift and back up policies/grants. Vercel rollback alone cannot reverse database permission changes; do not restore anonymous grants as a routine rollback.
 
 Keep PR #14 draft until these checks pass. It incorporates #12/#13; do not merge all three independently.
+
+## November 7 auth release verification
+
+Existing-account pilot uses the production Supabase Auth project and real MBPR membership in the dashboard preview, not staging:
+https://barkhaus-admin-git-test-production-go-84b918-rigby35xs-projects.vercel.app/
+
+- Browser Google PKCE return completed and opened Mission Bay Puppy Rescue, organization 9. Repeated sign-in also passed.
+- Refresh restored the correct organization and dashboard. Logout reached the sign-in page; reloading after logout stayed signed out.
+- Logout after restored sessions was slow. Added an immediate Signing out status that unmounts the private dashboard while the existing local-scope SDK sign-out completes; failures keep retry/sign-out available.
+- Seven repository regression scripts passed, covering membership verification/unlinked users, organization isolation, middleware authorization, SQL policies/public projections, application protected fields and footer saves. These automated unlinked-user assertions are not a real new-account signup browser test.
+- Dashboard TypeScript and production build passed. Preview commit with logout feedback: e67c51ab58fd52e32881c030126a7cd33202d475.
+- Read-only production check reconfirmed RLS is enabled on organization_memberships but disabled on animals, applications, organizations and website_content. Auth success alone does not enforce data isolation there.
+- app.barkhaus.io remains on the earlier production dashboard; no dashboard promotion or production table-policy migration was performed in this verification.
+
+### Remaining concrete release dependencies
+
+1. Validate a real unlinked Google identity shows the no-membership screen and never creates/joins MBPR automatically. Self-service organization provisioning is not implemented by the login gate; decide/review that separately from an existing-member pilot.
+2. Update the currently deployed generic barkhaus-public-site consumers to the public projections and authenticated API contract before enabling private-table RLS. Its deployed baseline differs from site-0/main. Do not publish the redesigned site-0 template over the shared generic site or assume PR14's tenant build replaces both safely.
+3. Verify actual image upload and adoption submission against the compatible endpoint deployment. The staged application endpoint still needs its own server-only staging key if staging is used; never use the production service key there.
+4. Apply the two-phase production rollout only with the corresponding public consumers and protected API deployment ready. Verify owner, unlinked and cross-tenant access after the switch. Vercel rollback does not undo database permissions.
+
+Status: existing-member Google login verified; general signup and combined production release remain blocked on the dependencies above. Keep PR14 draft.
