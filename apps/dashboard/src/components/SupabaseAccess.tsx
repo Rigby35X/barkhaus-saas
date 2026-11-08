@@ -21,6 +21,22 @@ export default function SupabaseAccess({ children }: Props) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [organizationName, setOrganizationName] = useState('');
+  const [creatingAccount, setCreatingAccount] = useState(() => window.location.pathname === '/signup');
+  const [notice, setNotice] = useState('');
+
+  const createRescue = async (event: FormEvent) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    try {
+      const { error: createError } = await supabase.rpc('create_rescue', { registration_name: organizationName.trim() });
+      if (createError) throw createError;
+      setRetry((value) => value + 1);
+    } catch {
+      setError('Could not create your rescue. Verify your email, then retry. If you already belong to a rescue, ask its owner for access.');
+    } finally { setSubmitting(false); }
+  };
 
   useEffect(() => {
     let active = true;
@@ -100,11 +116,22 @@ export default function SupabaseAccess({ children }: Props) {
     setSubmitting(true);
     setError('');
     try {
-      const { error: loginError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (loginError) throw loginError;
+      if (creatingAccount) {
+        const { data, error: signupError } = await supabase.auth.signUp({
+          email: email.trim(), password, options: { emailRedirectTo: window.location.origin },
+        });
+        if (signupError) throw signupError;
+        if (!data.session) {
+          setNotice('Check your email to confirm your account, then sign in here to set up your rescue.');
+          setCreatingAccount(false);
+        }
+      } else {
+        const { error: loginError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (loginError) throw loginError;
+      }
       setPassword('');
     } catch {
-      setError('Sign-in failed. Check your email and password and try again.');
+      setError(creatingAccount ? 'Could not create your account. Try again or sign in if you already have an account.' : 'Sign-in failed. Check your email and password and try again.');
     } finally { setSubmitting(false); }
   };
 
@@ -125,15 +152,29 @@ export default function SupabaseAccess({ children }: Props) {
       <h1 className="text-3xl font-serif font-bold text-deep-taupe text-center">BarkHaus</h1>
       <p className="text-stone mt-2 mb-6 text-center">Your rescue, all in one place.</p>
       {signingOut ? <p role="status">Signing out…</p> : initializing || accessLoading || (session && accessForUser !== userId) ? <p role="status">Loading your account…</p> : session ? <>
-        {error ? <p role="alert" className="text-red-600 mb-4">{error}</p> : memberships.length > 1 ? <>
+        {error && <p role="alert" className="text-red-600 mb-4">{error}</p>}
+        {memberships.length > 1 ? <>
           <h2 className="font-semibold mb-3">Choose your organization</h2>
           {memberships.map((access) => <button key={access.orgId} className="block w-full border rounded-xl p-3 mb-2 text-left"
             onClick={() => setSelectedOrgId(access.orgId)}>{access.orgConfig.name}</button>)}
-        </> : <p className="mb-4">You are signed in as {session.user.email}, but your account has no owner or admin membership. Ask your organization owner to grant access.</p>}
+        </> : <>
+          <p className="mb-4">You are signed in as {session.user.email}. To join an existing rescue, ask its owner to grant access.</p>
+          <form onSubmit={(event) => void createRescue(event)} className="space-y-3 mb-5">
+            <h2 className="font-semibold">Set up a new rescue</h2>
+            <label className="block text-sm">Organization name
+              <input required minLength={2} maxLength={120} value={organizationName} onChange={(event) => setOrganizationName(event.target.value)}
+                className="block w-full border rounded-xl px-4 py-3 mt-1" />
+            </label>
+            <button type="submit" disabled={submitting} className="w-full py-3 bg-warm-brown text-white rounded-xl disabled:opacity-50">
+              {submitting ? 'Creating your rescue…' : 'Create my rescue'}
+            </button>
+          </form>
+        </>}
         <button onClick={() => setRetry((value) => value + 1)} className="mr-4 underline">Retry access check</button>
         <button onClick={signOut} className="underline">Sign out</button>
       </> : <>
-        <h2 className="text-xl font-serif font-semibold mb-4">Welcome back</h2>
+        <h2 className="text-xl font-serif font-semibold mb-4">{creatingAccount ? 'Create your account' : 'Welcome back'}</h2>
+        {notice && <p role="status" className="mb-4">{notice}</p>}
         {error && <p role="alert" className="text-red-600 mb-4">{error}</p>}
         <button type="button" disabled={submitting} onClick={() => void googleLogin()}
           className="w-full border border-warm-brown rounded-xl py-3 mb-5 disabled:opacity-50">Continue with Google</button>
@@ -144,13 +185,16 @@ export default function SupabaseAccess({ children }: Props) {
               className="block w-full border rounded-xl px-4 py-3 mt-1" />
           </label>
           <label className="block text-sm">Password
-            <input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)}
+            <input type="password" autoComplete={creatingAccount ? 'new-password' : 'current-password'} minLength={creatingAccount ? 8 : undefined} required value={password} onChange={(event) => setPassword(event.target.value)}
               className="block w-full border rounded-xl px-4 py-3 mt-1" />
           </label>
           <button type="submit" disabled={submitting} className="w-full py-3 bg-warm-brown text-white rounded-xl disabled:opacity-50">
-            {submitting ? 'Signing in…' : 'Sign in'}
+            {submitting ? 'Please wait…' : creatingAccount ? 'Create account' : 'Sign in'}
           </button>
         </form>
+        <button type="button" onClick={() => { setCreatingAccount(!creatingAccount); setError(''); setNotice(''); setPassword(''); }} className="block mt-4 text-sm underline">
+          {creatingAccount ? 'Already have an account? Sign in' : 'New to BarkHaus? Create an account'}
+        </button>
         <a href="https://barkhaus.io/forgot-password" className="block mt-4 text-sm underline">Forgot password?</a>
       </>}
     </div>
