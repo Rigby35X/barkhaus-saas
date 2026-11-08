@@ -9,12 +9,14 @@ INSERT INTO storage.buckets(id,name,public) VALUES('animal-images','animal-image
 INSERT INTO auth.users(id,email) VALUES
  ('00000000-0000-0000-0000-000000000001','owner-a@example.invalid'),
  ('00000000-0000-0000-0000-000000000002','owner-b@example.invalid'),
- ('00000000-0000-0000-0000-000000000003','member@example.invalid');
+ ('00000000-0000-0000-0000-000000000003','member@example.invalid'),
+ ('00000000-0000-0000-0000-000000000004','inactive-owner@example.invalid');
 INSERT INTO public.organizations(id,org,is_active) VALUES (100001,'Test Rescue A',true),(100002,'Test Rescue B',true),(100003,'Inactive',false);
 INSERT INTO public.organization_memberships(organization_id,user_id,role) VALUES
  (100001,'00000000-0000-0000-0000-000000000001','owner'),
  (100002,'00000000-0000-0000-0000-000000000002','owner'),
- (100001,'00000000-0000-0000-0000-000000000003','member');
+ (100001,'00000000-0000-0000-0000-000000000003','member'),
+ (100003,'00000000-0000-0000-0000-000000000004','owner');
 INSERT INTO public.animals(id,org_id,name,status,internal_notes) VALUES
  (100001,100001,'Test Dog A','Available','PRIVATE A'),(100002,100002,'Test Dog B','Available','PRIVATE B'),
  (100003,100001,'Not Public','Adopted','PRIVATE'),(100004,100003,'Inactive Org','Available','PRIVATE');
@@ -65,5 +67,14 @@ DO $$ DECLARE n integer; BEGIN
 END $$;
 SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000099',true);
 DO $$ BEGIN ASSERT (SELECT count(*) FROM public.animals)=0,'Unlinked user has access'; END $$;
+SELECT set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000004',true);
+DO $$ BEGIN
+ ASSERT (SELECT count(*) FROM public.animals)=0,'Inactive rescue data readable';
+ ASSERT (SELECT count(*) FROM public.organizations)=0,'Inactive rescue profile readable';
+ BEGIN INSERT INTO public.animals(org_id,name) VALUES(100003,'Blocked'); RAISE EXCEPTION 'Inactive rescue insert allowed';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN INSERT INTO storage.objects(bucket_id,name) VALUES('animal-images','100003/blocked.jpg'); RAISE EXCEPTION 'Inactive rescue upload allowed';
+ EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+END $$;
 RESET ROLE;
 ROLLBACK;

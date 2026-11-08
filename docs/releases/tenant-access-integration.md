@@ -1,83 +1,46 @@
-# Tenant access integration — release status
+# BarkHaus authentication and tenant-access release
 
-Combines PR #12 (`05543d0`) and PR #13 (`b16727c`). Integration branch: `fix/tenant-access-integration`.
+## Scope
 
-## Completed
+Only these Vercel projects are in this release:
 
-- Combined Supabase login/membership resolution and footer save/read-back fixes.
-- Added explicit organization and verified Supabase identity checks before admin, upload, integration, and content mutation handlers run. Requires owner/admin; authenticated responses are private/no-store.
-- Dashboard raw REST, image upload, policy generation, social generation, and reply generation now send the current session token. Other dashboard Supabase SDK queries already use that session.
-- Admin REST handlers forward the caller JWT. Animal mutations constrain both record and organization. Website writes reject system-field overrides.
-- Added a migration enabling RLS and least-privilege grants on every existing public table. Organization-owned data uses memberships; legacy identity, credential tables and tables without a proven tenant relation fail closed. Organization creation/deletion remains server-only.
-- Explicit read-only public projections preserve active organization branding, available animals, and visible content. These intentionally use owner-executed views with fixed column lists and row predicates; do not add private columns or grants without review. There is no public base-table policy.
-- Public adoption submissions now use a same-origin, server-only-key endpoint and cannot choose organization/status/internal notes. This fixes the old payload's mismatch with the applications schema.
-- Image writes require tenant owner/admin membership and tenant-prefixed paths; reviewed anonymous storage upload policy is removed. Existing public image URLs remain public.
-- Retired secret-fragment diagnostic response; removed the tenant Vercel configuration that disabled TLS verification.
+- barkhaus-marketing: barkhaus.io.
+- barkhaus-admin: app.barkhaus.io.
+- barkhaus-public-site: shared rescue websites, including mbpr.preview.barkhaus.io.
 
-## Current staging state
+Site-0 is explicitly excluded by the user's November 8 instruction. Do not deploy it, change Cognito/animals-proxy, merge to main in a way that triggers its production deployment, or make this release depend on its separate preview branch. The temporary settings added during inspection were moved to fix/site0-access-compatibility preview scope; its production settings and production deployment were preserved.
 
-- Full production tenant-access rollout is not applied. Separately, the generic public site's hero/footer/topper rendering fixes were published, and an owner/admin tenant-prefix image INSERT policy was added to production Storage. Existing production membership rows were not changed.
-- Both new migrations are applied to Barkhaus Staging (`idybpiomulkebvhqibdp`); all 22 public tables have RLS.
-- Private organization email/phone/address/EIN fields are excluded from the public organization view. Website contact data comes only from visible global footer content; profile fields never become public by default.
-- Live anonymous HTTP: animals, applications and tokens_table return 401; public_animals and public_website_content return 200.
-- Live Supabase transaction tests passed: owner membership isolation, owner insert/read, cross-organization insert rejection, and cleared footer value preservation. Those temporary test users and rows were rolled back. Update/delete and storage-path assertions passed locally; the full live SQL test confirmation expired, so those paths are not claimed as live-verified.
-- One persistent fictional organization (`id=9`, BarkHaus Test Rescue) and a visible test footer are staged for browser testing. No production records were copied, and no real user is linked to the test organization yet.
-- PR branch-specific preview variables now point dashboard, tenant and marketing at staging; production variables are untouched. VITE_TENANT_API_ORIGIN and PUBLIC_APP_URL keep API calls/login on staging. DASHBOARD_ORIGIN is the exact branch dashboard alias.
-- The inherited production service-role key is explicitly disabled on this tenant preview branch. Image uploads now use caller JWT/RLS. The public application-submit endpoint still needs a securely provisioned STAGING service-role key to run; do not copy production's key or put a service key in GitHub, VITE_ or PUBLIC_ variables.
-- Staging Google provider is disabled (confirmed via Auth settings API). Email auth is enabled. Provider credentials and URL allowlist cannot be changed through the connected Supabase tools.
-- Advisors no longer report public tables without RLS. They flag the three deliberate read-only public projections as definer views; review their fixed column lists/predicates. Eight tables without established client access fail closed with RLS and no client policies. Reference: https://supabase.com/docs/guides/database/database-linter?lint=0010_security_definer_view
-- Schema-only staging bootstrap already included organization_memberships. Never rerun the older membership CREATE TABLE migration on top of that baseline.
+## Implemented and verified
 
-## Validation
+- Dashboard Google PKCE login, verified organization memberships, session restoration, local logout and immediate Signing out feedback.
+- Email registration and login now share the dashboard origin; marketing signup/login route to that origin instead of losing browser sessions across domains.
+- A confirmed identity can create its first rescue through create_rescue. The server creates the organization and its owner membership atomically, serializes retries, returns existing management access on retry, and rejects unverified users or existing ordinary members. Callers cannot select the owner, role or existing organization ID.
+- Authenticated dashboard requests use the current session JWT; protected API routes verify identity, membership, active organization and hostname scope. Private responses are no-store.
+- Shared public-site consumers use fixed read-only public projections. Organization profile contacts/EIN do not become public; explicitly published footer content is the public contact source. Missing data never supplies fabricated MBPR contact details.
+- Shared site keeps its existing template. Its header uses the resolved rescue's branding, unknown hosts fail closed, and adoption forms use the resolved organization rather than org 9.
+- Public adoption submissions use a server-only credential, a same-origin endpoint, size/contact validation, protected-field filtering and a durable five-per-15-minute quota keyed by a sender/organization hash. No raw client address is stored in the quota table.
+- Direct SDK policies and storage policies reject inactive organizations, as well as unauthorized tenant IDs and membership escalation.
 
-Run from repository root after `npm ci`:
+Validation: eight regression scripts passed; dashboard TypeScript and dashboard/shared-site/marketing builds passed. Live test-database transactions passed verified onboarding, retry idempotency, denied unverified/member escalation, server-only quotas, and denied inactive-organization reads/writes/uploads. Fixtures were rolled back.
 
-```
-node apps/dashboard/tests/organization-access.test.mjs
-node apps/dashboard/tests/website-content.test.mjs
-node apps/tenant-site/tests/organization-auth.test.mjs
-node apps/tenant-site/tests/middleware-auth.test.mjs
-node apps/tenant-site/tests/application-record.test.mjs
-node apps/tenant-site/tests/published-contact.test.mjs
-node apps/tenant-site/tests/database-access.test.mjs
-npx tsc --noEmit --project apps/dashboard/tsconfig.app.json
-npm run build --workspace=apps/dashboard
-npm run build --workspace=apps/tenant-site
-npm run build --workspace=apps/marketing
-```
+Browser checks using the real account: Google login opened MBPR organization 9, refresh restored it, logout returned to sign-in, and an actual signed-in image upload succeeded. The uploaded test image was not saved to the website; the unsaved editor state was discarded. A brand-new real-account signup/confirmation still requires user interaction and is not claimed as browser-verified.
 
-`supabase/tests/tenant_access.sql` can also run as the owner against an otherwise empty staging database AFTER the migration is applied. It creates fictional fixtures inside a rolled-back transaction, never changes production memberships, and is not a browser credential test.
+## Current production state
 
-## Required before production approval
+- Shared public-site compatibility commit 0e1104140408afa7f72b16dc5fff43bfff5a3342 is READY in production (deployment dpl_6aUNKHmqAy2BQh8Mvc4nGVodobPp); *.preview.barkhaus.io remains on that project.
+- Public projection, verified onboarding and public application quota migrations are applied to production. These are additive; no production membership was changed.
+- Full private-table RLS migration and inactive-organization follow-up are applied in the test database but NOT in production. Production animals, applications, organizations and website_content still lack RLS.
+- The new dashboard and marketing authentication release is NOT published. app.barkhaus.io remains on the prior production deployment.
+- Google preview: https://barkhaus-admin-git-test-production-go-84b918-rigby35xs-projects.vercel.app/ . Its API override is pinned to the immutable shared-site preview, not a branch alias that can move to production.
+- Read-only HTTP checks: shared homepage/listing/footer respond successfully; anonymous protected admin requests return 401.
+- Actual live adoption submission was blocked by automatic approval review. A read-only database check confirmed zero release-test applications were inserted.
 
-1. In Supabase **Barkhaus Staging > Authentication > Sign In / Providers > Google**, configure and enable Google. In Google Cloud, authorize the staging Supabase callback: `https://idybpiomulkebvhqibdp.supabase.co/auth/v1/callback`. Never paste the client secret in chat.
-2. In staging **Authentication > URL Configuration**, set Site URL and allow the exact dashboard branch origin: `https://barkhaus-admin-git-fix-tenant-access-b4649f-rigby35xs-projects.vercel.app`. This implementation returns PKCE login to the origin root. Do not change production auth settings or allow arbitrary preview domains.
-3. Sign into staging with the intended owner account. Verify the resulting staging identity, then link only that identity to the fictional test organization for the browser test. Production membership does not automatically carry across projects.
-4. Browser-test Google/email login, session refresh/logout, footer save/reload/public display and image uploads. Test requests under owner A/B, member and unlinked identities. Do not call a build success end-to-end verification.
-5. Provision the server-only staging service key and the staging animal-images bucket before public application submission testing. Test submission, no public application reads, and rate/abuse controls. Existing Google/Gmail integration callbacks without verified tenant scope intentionally remain blocked pending separate OAuth-state/credential ownership work.
-6. Confirm current domain/project mappings and which projects share tenant-site. Cognito/animals-proxy settings and domain assignments are not changed by this patch.
-7. Production rollout requires TWO phases: first new migration (public projections), compatible app consumers, then second new migration (private data/storage policies). Review schema drift and back up policies/grants. Vercel rollback alone cannot reverse database permission changes; do not restore anonymous grants as a routine rollback.
+## Approval required to finish production rollout
 
-Keep PR #14 draft until these checks pass. It incorporates #12/#13; do not merge all three independently.
+Automatic review rejected publishing the dashboard while private-table policies remain unapplied and without authorization for that exact production rollout. It separately rejected inserting a marked test application into the live-backed database. Do not retry through another tool or silently broaden scope.
 
-## November 7 auth release verification
+Prepare and review only the three BarkHaus projects above. Request explicit approval for the coordinated dashboard/marketing deployment, production private-table policies plus inactive follow-up, and ONE clearly marked temporary test adoption application with cleanup. The broad site-0 deployment rejected earlier is no longer part of the proposal.
 
-Existing-account pilot uses the production Supabase Auth project and real MBPR membership in the dashboard preview, not staging:
-https://barkhaus-admin-git-test-production-go-84b918-rigby35xs-projects.vercel.app/
+After approval, capture current production policies/grants, perform the coordinated deployment/policy switch, then verify: owner login/refresh/logout; anonymous and cross-tenant denial; same-value content save/read-back; signed-in image upload; published animal/footer rendering; adoption submission, correct tenant/status and no public application reads. Remove only the uniquely marked release-test application. A Vercel rollback does not reverse database permissions; do not restore anonymous grants as a routine rollback.
 
-- Browser Google PKCE return completed and opened Mission Bay Puppy Rescue, organization 9. Repeated sign-in also passed.
-- Refresh restored the correct organization and dashboard. Logout reached the sign-in page; reloading after logout stayed signed out.
-- Logout after restored sessions was slow. Added an immediate Signing out status that unmounts the private dashboard while the existing local-scope SDK sign-out completes; failures keep retry/sign-out available.
-- Seven repository regression scripts passed, covering membership verification/unlinked users, organization isolation, middleware authorization, SQL policies/public projections, application protected fields and footer saves. These automated unlinked-user assertions are not a real new-account signup browser test.
-- Dashboard TypeScript and production build passed. Preview commit with logout feedback: e67c51ab58fd52e32881c030126a7cd33202d475.
-- Read-only production check reconfirmed RLS is enabled on organization_memberships but disabled on animals, applications, organizations and website_content. Auth success alone does not enforce data isolation there.
-- app.barkhaus.io remains on the earlier production dashboard; no dashboard promotion or production table-policy migration was performed in this verification.
-
-### Remaining concrete release dependencies
-
-1. Validate a real unlinked Google identity shows the no-membership screen and never creates/joins MBPR automatically. Self-service organization provisioning is not implemented by the login gate; decide/review that separately from an existing-member pilot.
-2. Update the currently deployed generic barkhaus-public-site consumers to the public projections and authenticated API contract before enabling private-table RLS. Its deployed baseline differs from site-0/main. Do not publish the redesigned site-0 template over the shared generic site or assume PR14's tenant build replaces both safely.
-3. Verify actual image upload and adoption submission against the compatible endpoint deployment. The staged application endpoint still needs its own server-only staging key if staging is used; never use the production service key there.
-4. Apply the two-phase production rollout only with the corresponding public consumers and protected API deployment ready. Verify owner, unlinked and cross-tenant access after the switch. Vercel rollback does not undo database permissions.
-
-Status: existing-member Google login verified; general signup and combined production release remain blocked on the dependencies above. Keep PR14 draft.
+Legacy integration callbacks without verified OAuth state/tenant ownership remain fail-closed; this release does not claim Gmail/Google integration onboarding is complete. Keep PR14 draft until the remaining production checks pass. It incorporates PR12/PR13; do not merge all three independently.
