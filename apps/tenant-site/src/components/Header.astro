@@ -12,6 +12,8 @@ interface NavItem {
 
 // Type assertion to ensure proper typing
 const typedNavData = navData as NavItem[];
+const organization = Astro.locals.tenant?.organization;
+const logo = organization?.logo_light_url || organization?.logo_dark_url || (organization?.id === 9 ? '/assets/images/MBPR-White.png' : '');
 ---
 
 <!-- ============================================ --><!--                 Navigation                   --><!-- ============================================ -->
@@ -19,14 +21,7 @@ const typedNavData = navData as NavItem[];
   <div class="cs-container">
     <!--Nav Logo-->
     <a href="/" class="cs-logo" aria-label="back to home">
-      <img
-        src="/assets/images/MBPR-White.png"
-        alt="Mission Bay Puppy Rescue Logo"
-        width="210"
-        height="60"
-        aria-hidden="true"
-        decoding="async"
-      />
+      {logo ? <img src={logo} alt={`${organization?.org || 'Rescue'} logo`} width="210" height="60" decoding="async" /> : <span>{organization?.org || 'Animal Rescue'}</span>}
     </a>
     <!--Navigation List-->
     <div class="cs-nav-wrapper">

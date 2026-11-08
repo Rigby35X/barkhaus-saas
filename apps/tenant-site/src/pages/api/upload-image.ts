@@ -1,10 +1,6 @@
 import type { APIRoute } from 'astro'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.SUPABASE_SERVICE_ROLE_KEY
-)
 
 const ALLOWED_ORIGINS = [
   'https://app.barkhaus.io',
@@ -18,7 +14,7 @@ function getCorsHeaders(request: Request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -28,11 +24,14 @@ export const OPTIONS: APIRoute = async ({ request }) => {
 
 export const POST: APIRoute = async ({ request }) => {
   const corsHeaders = getCorsHeaders(request)
+  const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL,import.meta.env.PUBLIC_SUPABASE_ANON_KEY,{
+    global:{headers:{Authorization:request.headers.get('authorization') || ''}},auth:{persistSession:false}
+  })
   try {
     const formData = await request.formData()
     const file = formData.get('image') as File | null
-    const orgId = formData.get('orgId') ?? '9'
-    const section = formData.get('section') ?? 'general'
+    const orgId = String(formData.get('orgId'))
+    const section = String(formData.get('section') ?? 'general').replace(/[^a-zA-Z0-9_-]/g, '_')
 
     if (!file || typeof file === 'string' || !file.name) {
       return new Response(JSON.stringify({ success: false, error: 'No file provided' }), {

@@ -150,7 +150,7 @@ const bodyStyle = [
 
 <BaseLayout
   title={organization?.org ? `${organization.org} - Every Dog Deserves a Loving Home` : "Mission Bay Puppy Rescue - Every Dog Deserves a Loving Home"}
-  description="Mission Bay Puppy Rescue is dedicated to finding loving homes for dogs in need. Browse our available animals and learn how you can help make a difference."
+  description={`${organization?.org || "Our rescue"} helps animals find loving homes. Meet our animals and learn how to help.`}
   preloadedImage = {optimizedImage}
   organization = {organization}
 >

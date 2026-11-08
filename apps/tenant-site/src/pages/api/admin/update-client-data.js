@@ -3,11 +3,11 @@
  * Updates organization data that affects the frontend website
  */
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request.headers.get('authorization'),
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -42,7 +42,7 @@ export async function POST({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/organizations?id=eq.${orgId}`,
-      { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(clientData) }
+      { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(clientData) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const updatedData = await res.json();

@@ -7,11 +7,11 @@ export const prerender = false;
 
 const CACHE_CONTROL_HEADER = 'public, s-maxage=30, stale-while-revalidate=60';
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request?.headers.get('authorization') || `Bearer ${key}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -61,19 +61,7 @@ function normalizeFaqSectionData(section = {}, parsedContent = {}) {
   return mergedContent;
 }
 
-const commonFooter = {
-  content: {
-    footer_organization_name: "Mission Bay Puppy Rescue",
-    footer_address_line_one: "123 Main Street",
-    footer_address_city: "San Diego",
-    footer_address_state: "CA",
-    footer_address_zip: "92109",
-    footer_phone: "555-555-5555",
-    footer_email: "info@mbpr.org",
-    footer_ein: "87-2984609",
-    footer_copyright: `© ${new Date().getFullYear()} Mission Bay Puppy Rescue. All rights reserved.`
-  }
-};
+const commonFooter = { content: {} };
 
 function getFallbackContentForPage(pageSlug) {
   // Let the global footer component retain its own safe defaults on API failure.
@@ -111,7 +99,7 @@ export async function GET({ request, locals }) {
 
     try {
       const res = await fetch(
-        `${getSupabaseUrl()}/rest/v1/website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
+        `${getSupabaseUrl()}/rest/v1/public_website_content?select=*&org_id=eq.${orgId}&is_visible=eq.true`,
         { headers: getSupabaseHeaders() }
       );
       if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
@@ -244,11 +232,14 @@ export async function PUT({ request }) {
     // Find existing record
     const findRes = await fetch(
       `${getSupabaseUrl()}/rest/v1/website_content?select=id&org_id=eq.${orgId}&section_key=eq.${encodeURIComponent(sectionKey)}&page_slug=eq.${encodeURIComponent(targetPageSlug)}`,
-      { headers: getSupabaseHeaders() }
+      { headers: getSupabaseHeaders(request) }
     );
     if (!findRes.ok) throw new Error(`Supabase HTTP ${findRes.status}`);
     const existing = await findRes.json();
 
+    if (content && ['id','org_id','orgId','page_slug','section_key','created_at'].some(key => Object.hasOwn(content,key))) {
+      return new Response(JSON.stringify({error:'Content contains protected fields.'}), {status:400,headers:{'Content-Type':'application/json'}});
+    }
     const recordData = {
       org_id: parseInt(orgId),
       section_key: sectionKey,
@@ -261,8 +252,8 @@ export async function PUT({ request }) {
     if (existing && existing.length > 0) {
       const recordId = existing[0].id;
       const updateRes = await fetch(
-        `${getSupabaseUrl()}/rest/v1/website_content?id=eq.${recordId}`,
-        { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(recordData) }
+        `${getSupabaseUrl()}/rest/v1/website_content?id=eq.${recordId}&org_id=eq.${orgId}`,
+        { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(recordData) }
       );
       if (!updateRes.ok) throw new Error(`Supabase PATCH HTTP ${updateRes.status}`);
       result = await updateRes.json();
@@ -270,7 +261,7 @@ export async function PUT({ request }) {
     } else {
       const insertRes = await fetch(
         `${getSupabaseUrl()}/rest/v1/website_content`,
-        { method: 'POST', headers: getSupabaseHeaders(), body: JSON.stringify(recordData) }
+        { method: 'POST', headers: getSupabaseHeaders(request), body: JSON.stringify(recordData) }
       );
       if (!insertRes.ok) throw new Error(`Supabase POST HTTP ${insertRes.status}`);
       result = await insertRes.json();
