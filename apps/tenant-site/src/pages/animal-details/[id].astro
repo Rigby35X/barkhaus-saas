@@ -45,7 +45,7 @@ try {
   const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
   const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   const res = await fetch(
-    `${supabaseUrl}/rest/v1/animals?select=*&id=eq.${id}&org_id=eq.${orgId}`,
+    `${supabaseUrl}/rest/v1/public_animals?select=*&id=eq.${id}&org_id=eq.${orgId}`,
     {
       headers: {
         apikey: supabaseKey,

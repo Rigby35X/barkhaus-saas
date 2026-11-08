@@ -50,7 +50,7 @@ const orgTypography = organization ?? await fetchOrganizationData(orgId);
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <meta name="description" content={description}>
             <meta name="keywords" content="mission bay puppy rescue, puppy rescue san diego, dog adoption near me, puppy rescue, puppy adoption, pet adoption, animal rescue, puppy shelter, rescue puppies, adopt a puppy, puppy fostering, volunteer with puppies, San Diego">
-            <meta name="author" content="Mission Bay Puppy Rescue">
+            <meta name="author" content={orgTypography?.org || 'Animal Rescue'}>
             <meta name="robots" content="index, follow">
             <link rel="canonical" href={`https://missionbaypuppyrescue.org${Astro.url.pathname}`}>
 
@@ -65,7 +65,7 @@ const orgTypography = organization ?? await fetchOrganizationData(orgId);
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
             <meta property="og:type" content="website" />
-            <meta property="og:url" content={`https://${client.domain}${Astro.url.pathname}`} />
+            <meta property="og:url" content={`${Astro.url.origin}${Astro.url.pathname}`} />
             {
               preloadedImage && 
                 <meta property="og:image" content={preloadedImage.src} /> 
@@ -87,18 +87,7 @@ const orgTypography = organization ?? await fetchOrganizationData(orgId);
             Home page - House Painting Contractors | Painters and Co. | TestCity, WA
             About Page - About us | Painters and Co.
             -->
-            <title>
-                {Astro.url.pathname === "/" ?  (`${ title }
-                |
-                ${ client.name }
-                |
-                ${ client.address.city },
-                ${ client.address.state }`) :
-                (`${ title }
-                    |
-                    ${ client.name }`)
-            }
-            </title>
+            <title>{`${title || orgTypography?.org || 'Animal Rescue'} | ${orgTypography?.org || 'Animal Rescue'}`}</title>
 
             <!-- Dynamic Organization Branding CSS -->
             <link rel="stylesheet" href={`/api/branding.css?orgId=${orgId}`} />
