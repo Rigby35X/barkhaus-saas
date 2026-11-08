@@ -85,17 +85,17 @@ export async function GET({ request, locals }) {
       });
 
     } catch (fetchError) {
-      console.warn('⚠️ Supabase fetch failed, using static client data:', fetchError.message);
-      return new Response(JSON.stringify({ ...clientData, orgId, socialMedia: { facebook: '', instagram: '', twitter: '' } }), {
-        status: 200,
+      console.warn('⚠️ Supabase fetch failed, returning no private fallback:', fetchError.message);
+      return new Response(JSON.stringify({error:'Website details are temporarily unavailable.'}), {
+        status: 503,
         headers: { 'Content-Type': 'application/json', 'Cache-Control': CACHE_CONTROL_HEADER }
       });
     }
 
   } catch (error) {
     console.error('Error in client-data API:', error);
-    return new Response(JSON.stringify({ ...clientData, orgId: '9', socialMedia: { facebook: '', instagram: '', twitter: '' } }), {
-      status: 200,
+    return new Response(JSON.stringify({error:'Website details are temporarily unavailable.'}), {
+      status: 503,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': CACHE_CONTROL_HEADER }
     });
   }

@@ -26,7 +26,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let organizationData: any = null;
 
   try {
-    if (host.includes('.barkhaus.io') && !host.startsWith('app.')) {
+    const previewOrg = import.meta.env.PUBLIC_PREVIEW_ORG_ID;
+    if (host.endsWith('.vercel.app') && /^[1-9][0-9]*$/.test(previewOrg || '')) {
+      const rows = await supabaseGet(`public_organizations?select=*&id=eq.${previewOrg}`);
+      organizationData = rows[0] || null; orgId = organizationData?.id || null; tenantSlug = organizationData?.slug || null;
+    } else if (host.includes('.barkhaus.io') && !host.startsWith('app.')) {
       const subdomain = host.split('.')[0];
       console.log('📍 Subdomain detected:', subdomain);
 
@@ -72,7 +76,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     organization: organizationData,
   };
 
-  console.log('📦 Tenant context set:', context.locals.tenant);
+  console.log('Tenant resolved:', tenantSlug, orgId);
 
   let path: string;
   try { path = decodeURIComponent(context.url.pathname).replace(/\/+/g, '/').replace(/\/$/, ''); }
@@ -116,5 +120,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       'Vary':'Origin',
     }});
   }
+  if (!orgId && !path.startsWith('/api/') && !path.startsWith('/assets/') && !path.startsWith('/_'))
+    return new Response('Website not found.', { status: 404 });
   return next();
 });

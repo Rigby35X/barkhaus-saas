@@ -61,19 +61,7 @@ function normalizeFaqSectionData(section = {}, parsedContent = {}) {
   return mergedContent;
 }
 
-const commonFooter = {
-  content: {
-    footer_organization_name: "Mission Bay Puppy Rescue",
-    footer_address_line_one: "123 Main Street",
-    footer_address_city: "San Diego",
-    footer_address_state: "CA",
-    footer_address_zip: "92109",
-    footer_phone: "555-555-5555",
-    footer_email: "info@mbpr.org",
-    footer_ein: "87-2984609",
-    footer_copyright: `© ${new Date().getFullYear()} Mission Bay Puppy Rescue. All rights reserved.`
-  }
-};
+const commonFooter = { content: {} };
 
 function getFallbackContentForPage(pageSlug) {
   // Let the global footer component retain its own safe defaults on API failure.

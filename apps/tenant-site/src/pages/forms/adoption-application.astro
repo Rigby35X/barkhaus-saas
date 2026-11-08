@@ -2,7 +2,7 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { fetchAllPageData } from "../../utils/content-fetcher.js";
 
-const { content, organization } = await fetchAllPageData('applications', '9', Astro.url.origin);
+const { content, organization } = await fetchAllPageData('applications', String(Astro.locals.tenant?.orgId || ''), Astro.url.origin);
 const adoptionContent = content.adoption_application || {};
 ---
 
@@ -639,7 +639,6 @@ const adoptionContent = content.adoption_application || {};
 
     // Build Supabase payload
     const payload = {
-      org_id: 9,
       form_type: 'adoption',
       first_name: data['AboutYou2_Name_First'] || '',
       last_name:  data['AboutYou2_Name_Last']  || '',

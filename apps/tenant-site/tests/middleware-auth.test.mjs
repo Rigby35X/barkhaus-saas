@@ -4,6 +4,7 @@ import {stripTypeScriptTypes} from 'node:module';
 let source=fs.readFileSync(new URL('../src/middleware.ts',import.meta.url),'utf8')
  .replace("import { defineMiddleware } from 'astro:middleware';",'const defineMiddleware = fn => fn;')
  .replace("'./lib/organization-auth.js'",JSON.stringify(new URL('../src/lib/organization-auth.js',import.meta.url).href))
+ .replaceAll('import.meta.env.PUBLIC_PREVIEW_ORG_ID',"''")
  .replaceAll('import.meta.env.DASHBOARD_ORIGIN',"'https://dashboard.example.invalid'")
  .replaceAll('import.meta.env.PUBLIC_SUPABASE_URL',"'https://supabase.example.invalid'")
  .replaceAll('import.meta.env.PUBLIC_SUPABASE_ANON_KEY',"'public-test-key'");

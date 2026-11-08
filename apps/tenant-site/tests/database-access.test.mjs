@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const db=new PGlite();
 await db.exec(`create role anon; create role authenticated; create role service_role bypassrls;
-create schema auth; create table auth.users(id uuid primary key,email text);
+create schema auth; create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz);
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
 grant usage on schema auth to anon,authenticated;
 grant execute on function auth.uid() to anon,authenticated;
@@ -19,9 +19,10 @@ await db.exec(fs.readFileSync(root+'/supabase/staging/schema.sql','utf8'));
 await db.exec(`GRANT ALL ON ALL TABLES IN SCHEMA public TO anon,authenticated;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon,authenticated;
 CREATE POLICY "Allow public uploads 1jzq8a1_0" ON storage.objects FOR INSERT TO anon WITH CHECK(bucket_id='animal-images');`);
-for(const name of fs.readdirSync(root+'/supabase/migrations').filter(n=>/tenant_(access_boundaries|private_data_policies)/.test(n)).sort())
+for(const name of fs.readdirSync(root+'/supabase/migrations').filter(n=>/tenant_(access_boundaries|private_data_policies)|verified_organization_onboarding|public_application_quota/.test(n)).sort())
  await db.exec(fs.readFileSync(root+'/supabase/migrations/'+name,'utf8'));
 console.log('Migration executes successfully in isolated PostgreSQL.');
 await db.exec(fs.readFileSync(root+'/supabase/tests/tenant_access.sql','utf8'));
+await db.exec(fs.readFileSync(root+'/supabase/tests/organization_onboarding.sql','utf8'));
 await db.close();
 console.log('PASS: SQL tenant isolation, public projections, write restrictions, membership integrity and image-path access.');

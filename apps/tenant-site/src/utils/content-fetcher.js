@@ -389,7 +389,7 @@ export async function fetchOrganizationData(orgId = '9', origin = '') {
     console.error(`❌ Error fetching organization data:`, error);
   }
 
-  return { ...DEFAULT_ORG, orgId };
+  return { orgId, org: 'Animal Rescue', name: 'Animal Rescue', address: {}, socialMedia: {}, email: '', phone: '', ein: '' };
 }
 
 /**
