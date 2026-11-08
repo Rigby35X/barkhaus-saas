@@ -20,5 +20,8 @@
   },
   "devDependencies": {
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "mdast-util-gfm-table": "2.0.0"
   }
 }

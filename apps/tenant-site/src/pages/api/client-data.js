@@ -1,3 +1,4 @@
+import { publishedContact } from '../../lib/published-contact.js';
 /**
  * API Endpoint for Client Data
  * Serves organization data to frontend components
@@ -7,11 +8,11 @@ import clientData from '@data/client.json';
 
 const CACHE_CONTROL_HEADER = 'public, s-maxage=300, stale-while-revalidate=600';
 
-function getSupabaseHeaders() {
+function getSupabaseHeaders(request) {
   const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   return {
     'apikey': key,
-    'Authorization': `Bearer ${key}`,
+    'Authorization': request?.headers.get('authorization') || `Bearer ${key}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
@@ -31,13 +32,13 @@ export async function GET({ request, locals }) {
 
     try {
       const res = await fetch(
-        `${getSupabaseUrl()}/rest/v1/organizations?select=*&id=eq.${orgId}`,
+        `${getSupabaseUrl()}/rest/v1/public_organizations?select=*&id=eq.${orgId}`,
         { headers: getSupabaseHeaders() }
       );
       if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
       const rows = await res.json();
       if (!rows || rows.length === 0) throw new Error('Organization not found');
-      const data = rows[0];
+      const data = {...rows[0], ...await publishedContact(orgId, {url:import.meta.env.PUBLIC_SUPABASE_URL,key:import.meta.env.PUBLIC_SUPABASE_ANON_KEY})};
       console.log('✅ Organization data fetched from Supabase:', data.org);
 
       const dynamicData = {
@@ -45,21 +46,21 @@ export async function GET({ request, locals }) {
         org: data.org || clientData.name,
         name: data.org || clientData.name,
         slug: data.slug || clientData.slug,
-        email: data.email || clientData.email,
-        phone: data.phone || clientData.phoneFormatted,
-        phoneForTel: data.phone || clientData.phoneForTel,
-        phoneFormatted: data.phone || clientData.phoneFormatted,
+        email: data.email ?? '',
+        phone: data.phone ?? '',
+        phoneForTel: data.phone ?? '',
+        phoneFormatted: data.phone ?? '',
         address: {
-          lineOne: data.address || clientData.address?.lineOne,
+          lineOne: data.address ?? '',
           lineTwo: '',
-          city: data.city || clientData.address?.city,
-          state: data.state || clientData.address?.state,
-          zip: data.zip_code || clientData.address?.zip,
+          city: data.city ?? '',
+          state: data.state ?? '',
+          zip: data.zip_code ?? '',
           mapLink: clientData.address?.mapLink
         },
         domain: data.custom_domain || data.website || clientData.domain,
         website: data.website || clientData.domain,
-        ein: data.ein || clientData.ein,
+        ein: data.ein ?? '',
         orgId: orgId,
         logo_url: data.logo_light_url || clientData.logo_url,
         primary_color: data.primary_color || clientData.primary_color,
@@ -78,23 +79,23 @@ export async function GET({ request, locals }) {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           'Cache-Control': CACHE_CONTROL_HEADER
         }
       });
 
     } catch (fetchError) {
-      console.warn('⚠️ Supabase fetch failed, using static client data:', fetchError.message);
-      return new Response(JSON.stringify({ ...clientData, orgId, socialMedia: { facebook: '', instagram: '', twitter: '' } }), {
-        status: 200,
+      console.warn('⚠️ Supabase fetch failed, returning no private fallback:', fetchError.message);
+      return new Response(JSON.stringify({error:'Website details are temporarily unavailable.'}), {
+        status: 503,
         headers: { 'Content-Type': 'application/json', 'Cache-Control': CACHE_CONTROL_HEADER }
       });
     }
 
   } catch (error) {
     console.error('Error in client-data API:', error);
-    return new Response(JSON.stringify({ ...clientData, orgId: '9', socialMedia: { facebook: '', instagram: '', twitter: '' } }), {
-      status: 200,
+    return new Response(JSON.stringify({error:'Website details are temporarily unavailable.'}), {
+      status: 503,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': CACHE_CONTROL_HEADER }
     });
   }
@@ -121,7 +122,7 @@ export async function PUT({ request }) {
 
     const res = await fetch(
       `${getSupabaseUrl()}/rest/v1/organizations?id=eq.${orgId}`,
-      { method: 'PATCH', headers: getSupabaseHeaders(), body: JSON.stringify(supabaseUpdateData) }
+      { method: 'PATCH', headers: getSupabaseHeaders(request), body: JSON.stringify(supabaseUpdateData) }
     );
     if (!res.ok) throw new Error(`Supabase HTTP ${res.status}`);
     const result = await res.json();
@@ -148,7 +149,7 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     }
   });
 }
