@@ -5,10 +5,11 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-function getSupabase() {
+function getSupabase(request) {
   return createClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+    { global: { headers: { Authorization: request.headers.get('authorization') } }, auth:{persistSession:false} }
   )
 }
 
@@ -24,7 +25,7 @@ function getCorsHeaders(request) {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }
 
@@ -58,10 +59,11 @@ export async function POST({ request }) {
     let photoUrl = ''
     if (animal_id) {
       try {
-        const { data } = await getSupabase()
+        const { data } = await getSupabase(request)
           .from('animals')
           .select('name,breed,age,gender,size,description,species,status,photo_url')
           .eq('id', animal_id)
+          .eq('org_id', body.orgId)
           .single()
         if (data) {
           photoUrl = data.photo_url ?? ''

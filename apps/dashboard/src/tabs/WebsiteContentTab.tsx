@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
+import { fetchWebsiteContent, saveWebsiteContentSection, updateWebsiteSection, getOrganization, ORGANIZATIONS, type WebsiteSection } from '../lib/api';
 import { uploadImage } from '../lib/upload';
 
 const FONT_OPTIONS = ['Inter', 'Poppins', 'Playfair Display', 'Lato', 'Montserrat', 'Raleway', 'Open Sans', 'Noto Serif Display', 'Merriweather'];
@@ -338,18 +338,22 @@ const PAGES: PageDef[] = [
   },
 ];
 
-const PAGE_PREVIEW_URLS: Record<string, string> = {
-  homepage: 'https://mbpr.preview.barkhaus.io/',
-  about: 'https://mbpr.preview.barkhaus.io/about',
-  animals: 'https://mbpr.preview.barkhaus.io/our-animals',
-  contact: 'https://mbpr.preview.barkhaus.io/contact',
-  donate: 'https://mbpr.preview.barkhaus.io/donate',
-  events: 'https://mbpr.preview.barkhaus.io/events',
-  applications: 'https://mbpr.preview.barkhaus.io/applications',
-  global: 'https://mbpr.preview.barkhaus.io/',
+const PAGE_PREVIEW_PATHS: Record<string, string> = {
+  homepage: '/',
+  about: '/about',
+  animals: '/our-animals',
+  contact: '/contact',
+  donate: '/donate',
+  events: '/events',
+  applications: '/applications',
+  global: '/',
 };
 
 export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
+  const activeOrgRef = useRef(orgId);
+  activeOrgRef.current = orgId;
+  const [websiteUrl, setWebsiteUrl] = useState<string | null>(null);
+  const [previewVersion, setPreviewVersion] = useState(0);
   const [sections, setSections] = useState<WebsiteSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [sectionLoading, setSectionLoading] = useState(false);
@@ -372,8 +376,11 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   // Typography overrides per section (stored as JSONB `typography` column in website_content)
   // Run once in Supabase SQL Editor if not yet added:
   // ALTER TABLE website_content ADD COLUMN IF NOT EXISTS typography jsonb;
-  const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+  const [typographyEditing, setTypographyEditing] = useState({ heading_color: '', topper_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
   const [showTypography, setShowTypography] = useState(false);
+  const [typographyDirty, setTypographyDirty] = useState(false);
+  const activeEditorRef = useRef('');
+  activeEditorRef.current = `${orgId}:${activePage}:${activeSectionKey}`;
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -381,20 +388,38 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    setSections([]);
+    setSaving(false);
+    setEditing({});
+    setDirty(false);
+    setWebsiteUrl(null);
     const load = async () => {
       setLoading(true);
       setError('');
       try {
-        const data = await fetchWebsiteContent(orgId);
+        const [data, org] = await Promise.all([fetchWebsiteContent(orgId), getOrganization(orgId)]);
+        if (cancelled) return;
         setSections(data);
+        const config = ORGANIZATIONS[orgId];
+        const customDomain = typeof org?.custom_domain === 'string' ? org.custom_domain : '';
+        const subdomain = typeof org?.subdomain === 'string' ? org.subdomain : config?.subdomain;
+        const candidate = customDomain
+          ? (customDomain.startsWith('https://') ? customDomain : `https://${customDomain}`)
+          : subdomain ? `https://${subdomain}.preview.barkhaus.io` : config?.siteUrl;
+        if (candidate) {
+          const url = new URL(candidate);
+          if (url.protocol === 'https:') setWebsiteUrl(url.origin);
+        }
       } catch {
-        setError('Could not load website content.');
+        if (!cancelled) setError('Could not load website content.');
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     if (orgId) void load();
     else setLoading(false);
+    return () => { cancelled = true; };
   }, [orgId]);
 
   // Hydrate typography overrides when the active section changes
@@ -405,17 +430,19 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
       (s) => (s.page_slug as string | undefined) === activePage &&
         (s.section_key ?? s.section) === sectionDef?.key
     );
+    setTypographyDirty(false);
     const typo = section?.typography;
     if (typo && typeof typo === 'object' && !Array.isArray(typo)) {
       const t = typo as Record<string, string>;
       setTypographyEditing({
         heading_color: t.heading_color ?? '',
+        topper_color: t.topper_color ?? '',
         body_text_color: t.body_text_color ?? '',
         heading_font: t.heading_font ?? '',
         font_size_scale: t.font_size_scale ?? '',
       });
     } else {
-      setTypographyEditing({ heading_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
+      setTypographyEditing({ heading_color: '', topper_color: '', body_text_color: '', heading_font: '', font_size_scale: '' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage, activeSectionKey, sections]);
@@ -442,6 +469,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const updateTypography = (patch: Partial<typeof typographyEditing>) => {
+    setTypographyDirty(true);
     setTypographyEditing((prev) => ({ ...prev, ...patch }));
     setDirty(true);
   };
@@ -459,27 +487,33 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
     setSaving(true);
     try {
       // Include typography overrides only when the panel is open (user explicitly set/cleared them)
-      const typographyPayload = showTypography
+      const typographyPayload = typographyDirty
         ? { typography: Object.values(typographyEditing).some(v => v) ? typographyEditing : null }
         : {};
       const fullContent = { ...editing, ...typographyPayload };
       if (liveSection) {
         console.log('[WebsiteContentTab] updating existing section id:', liveSection.id, fullContent);
-        const updated = await updateWebsiteSection(liveSection.id, fullContent);
+        const updated = await updateWebsiteSection(liveSection.id, fullContent, orgId);
+        if (activeOrgRef.current !== orgId) return;
         setSections((prev) => prev.map((s) => (s.id === liveSection.id ? { ...s, ...updated } : s)));
       } else {
         console.log('[WebsiteContentTab] creating new section:', activePage, currentSectionDef?.key, fullContent);
         const created = await saveWebsiteContentSection(orgId, activePage, currentSectionDef?.key ?? '', fullContent);
+        if (activeOrgRef.current !== orgId) return;
         setSections((prev) => [...prev, created]);
       }
       setEditing({});
+      setTypographyDirty(false);
       setDirty(false);
-      showToast('Saved ✓', 'success');
+      setPreviewVersion((value) => value + 1);
+      showToast('Saved and verified ✓', 'success');
     } catch (err) {
+      if (activeOrgRef.current !== orgId) return;
       console.error('[WebsiteContentTab] save error:', err);
-      showToast(err instanceof Error ? `Save failed: ${err.message}` : 'Save failed — please try again', 'error');
+      const message = err && typeof err === 'object' && 'message' in err ? String(err.message) : 'Please try again';
+      showToast(`Save failed: ${message}`, 'error');
     } finally {
-      setSaving(false);
+      if (activeOrgRef.current === orgId) setSaving(false);
     }
   };
 
@@ -505,17 +539,20 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   };
 
   const handleImageUpload = async (file: File, fieldKey: string) => {
+    const uploadScope = activeEditorRef.current;
     setUploadingField(fieldKey);
     setUploadError('');
     try {
       console.log(`[WebsiteContentTab] Uploading image for field ${fieldKey}, page ${activePage}`);
       const url = await uploadImage(file, activePage, orgId);
       console.log(`[WebsiteContentTab] Uploaded image URL:`, url);
+      if (activeEditorRef.current !== uploadScope) return;
       handleEdit(fieldKey, url);
+      showToast('Image uploaded. Click Save Changes to publish it.', 'success');
     } catch (err) {
       console.error('[WebsiteContentTab] Image upload error:', err);
       setUploadError(err instanceof Error ? err.message : 'Upload failed — please try again.');
-      setTimeout(() => setUploadError(''), 4000);
+      // Keep the error visible until the user retries or changes section.
     } finally {
       setUploadingField(null);
     }
@@ -531,7 +568,8 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
   // Device preview dimensions
   const deviceWidth = previewDevice === 'desktop' ? '100%' : previewDevice === 'tablet' ? '768px' : '375px';
   const deviceHeight = previewDevice === 'mobile' ? '600px' : '500px';
-  const previewUrl = PAGE_PREVIEW_URLS[activePage] ?? 'https://mbpr.preview.barkhaus.io/';
+  const previewPath = PAGE_PREVIEW_PATHS[activePage] ?? '/';
+  const previewUrl = websiteUrl ? new URL(previewPath, websiteUrl).href : '';
 
   // Best-effort detection: if the iframe hasn't fired onLoad shortly after the URL
   // changes, assume it's blocked (e.g. by X-Frame-Options) rather than just slow.
@@ -563,22 +601,12 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
             <h2 className="text-2xl font-serif font-semibold text-deep-taupe">Website Content</h2>
             <p className="text-sm text-stone mt-1">Edit each section of your public-facing website.</p>
           </div>
-          {(() => {
-            const org = ORGANIZATIONS[orgId];
-            const viewUrl = org?.subdomain
-              ? `https://${org.subdomain}.preview.barkhaus.io`
-              : org?.siteUrl ?? null;
-            return viewUrl ? (
-              <a
-                href={viewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition"
-              >
-                View Website ↗
-              </a>
-            ) : null;
-          })()}
+          {websiteUrl && (
+            <a href={websiteUrl} target="_blank" rel="noopener noreferrer"
+              className="px-4 py-2 text-sm font-semibold border border-warm-brown text-warm-brown rounded-xl hover:bg-dove transition">
+              View Website ↗
+            </a>
+          )}
         </div>
 
         {loading && <p className="p-6 text-stone text-center">Loading content…</p>}
@@ -598,6 +626,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <p className="text-xs font-semibold text-stone uppercase tracking-wider px-2 py-1">Pages</p>
                 {PAGES.map((page) => (
                   <button
+                    disabled={saving}
                     key={page.key}
                     onClick={() => handlePageChange(page.key)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
@@ -617,6 +646,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   <p className="text-xs font-semibold text-stone uppercase tracking-wider px-2 py-1">Sections</p>
                   {currentPage.sections.map((sec) => (
                     <button
+                      disabled={saving}
                       key={sec.key}
                       onClick={() => handleSectionChange(sec.key)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition ${
@@ -642,7 +672,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => void handleSave()}
-                    disabled={saving || !dirty}
+                    disabled={saving || !!uploadingField || !dirty}
                     className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-40 transition"
                   >
                     {saving ? 'Saving…' : 'Save Changes'}
@@ -660,7 +690,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                   ))}
                 </div>
               ) : currentSectionDef ? (
-                <div className="space-y-4">
+                <fieldset disabled={saving} className="space-y-4">
                   {/* Hidden file input for image uploads */}
                   <input
                     ref={imageInputRef}
@@ -753,6 +783,31 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                       <div className="border-t border-silver-gray p-4 space-y-4 bg-cloud">
                         <p className="text-xs text-stone">Leave fields empty to use the global branding settings. Set a value to override just this section.</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {activePage === 'homepage' && activeSectionKey === 'hero' && <>
+                          {/* Topper / eyebrow color */}
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Topper / eyebrow color</label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="color"
+                                value={typographyEditing.topper_color || '#ff6b35'}
+                                onChange={(e) => updateTypography({ topper_color: e.target.value })}
+                                className="w-10 h-9 rounded-lg border border-silver-gray cursor-pointer p-0.5 bg-white"
+                              />
+                              <input
+                                type="text"
+                                value={typographyEditing.topper_color}
+                                onChange={(e) => updateTypography({ topper_color: e.target.value })}
+                                placeholder="Leave empty for global"
+                                maxLength={7}
+                                className="flex-1 border border-silver-gray rounded-lg px-2 py-1.5 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-warm-brown bg-white"
+                              />
+                              {typographyEditing.topper_color && (
+                                <button type="button" onClick={() => updateTypography({ topper_color: '' })} className="text-xs text-stone hover:text-deep-taupe">✕</button>
+                              )}
+                            </div>
+                          </div>
+                          </>}
                           {/* Heading Color */}
                           <div className="space-y-1">
                             <label className="block text-xs font-semibold text-stone uppercase tracking-wider">Heading Color</label>
@@ -828,15 +883,22 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
                       </div>
                     )}
                   </div>
-                </div>
+                </fieldset>
               ) : null}
+              {dirty && <div className="sticky bottom-0 z-10 mt-5 flex items-center justify-between gap-4 rounded-xl border border-silver-gray bg-white p-4 shadow-lg">
+                <span className="text-sm text-deep-taupe">Unsaved changes</span>
+                <button type="button" onClick={() => void handleSave()} disabled={saving || !!uploadingField}
+                  className="rounded-xl bg-warm-brown px-5 py-2 text-sm font-semibold text-white disabled:opacity-40">
+                  {saving ? 'Saving…' : uploadingField ? 'Uploading…' : 'Save Changes'}
+                </button>
+              </div>}
             </div>
           </div>
         )}
       </div>
 
       {/* ── Device Preview ── */}
-      {!loading && (
+      {!loading && websiteUrl && (
         <div className="bg-white rounded-2xl border border-silver-gray shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-silver-gray flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
@@ -886,6 +948,7 @@ export default function WebsiteContentTab({ orgId }: WebsiteContentTabProps) {
           <div className="p-4">
             <div style={{ overflowX: 'auto' }}>
               <iframe
+                key={`${orgId}-${previewVersion}`}
                 src={previewUrl}
                 width={deviceWidth}
                 height={deviceHeight}

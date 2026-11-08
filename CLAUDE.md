@@ -59,8 +59,8 @@ Barkhaus is a multi-tenant SaaS platform for animal rescue organizations. Each r
 - **Framework:** React 18 + Vite + TypeScript
 - **Purpose:** Rescue org management — animals, applications, website content, settings, social media, policies, forms
 - **Styling:** Tailwind CSS v3
-- **Auth:** Simple org-based login (org_id + password) stored in Supabase
-- **Current org:** MBPR, org_id = 9, password = `rangers789`
+- **Auth:** Supabase Auth with server-managed organization memberships (integration branch).
+- **Current org:** Resolve through verified Supabase organization memberships; never store login credentials in project documentation.
 - **API calls:** All in `src/lib/api.ts` using Supabase client
 - **Supabase client:** `src/lib/supabase.ts` — uses `VITE_` env vars
 - **REFERENCE:** `_archived/barkhaus-admin.html` — original working dashboard. Check this first when fixing or rebuilding any tab.
@@ -82,7 +82,7 @@ Barkhaus is a multi-tenant SaaS platform for animal rescue organizations. Each r
 
 - **Project:** Barkhaus Xano (legacy name — ignore it)
 - **URL:** `https://vycwqnsjhwviryfrdwfr.supabase.co`
-- **RLS:** DISABLED on all tables (intentional — re-enable later with proper policies)
+- **RLS:** Tenant policies and public projections are in the tenant-access integration branch; applied to staging only until production rollout is verified. Never disable RLS to fix a failed request.
 - **MBPR org_id = 9** — hardcoded in many places, this is correct
 - **Original schemas:** See `_archived/.xano-backup/tables/` for original Xano field names and types
 
@@ -177,7 +177,7 @@ export const OPTIONS: APIRoute = async () =>
   new Response(null, { status: 204, headers: corsHeaders })
 ```
 
-`apps/tenant-site/vercel.json` must always contain:
+Historical configuration (superseded in tenant-access integration by middleware-owned CORS using the exact server-only DASHBOARD_ORIGIN; do not restore conflicting CDN API headers):
 ```json
 {
   "headers": [
