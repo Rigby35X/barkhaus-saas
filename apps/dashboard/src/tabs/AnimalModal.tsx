@@ -11,6 +11,7 @@ interface AnimalModalProps {
   onSave: (data: Partial<Animal>) => Promise<void>;
   animal: Animal | null;
   orgId: number;
+  canEdit?: boolean;
   isMBPR?: boolean;
 }
 
@@ -21,7 +22,7 @@ const STATUS_OPTIONS = [
 
 type ImageField = 'image_url' | 'additional_image_1' | 'additional_image_2' | 'additional_image_3' | 'additional_image_4';
 
-export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, isMBPR = false }: AnimalModalProps) {
+export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, isMBPR = false, canEdit = false }: AnimalModalProps) {
   const isEditing = !!animal;
 
   const defaultForm: Partial<Animal> = {
@@ -63,6 +64,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
   };
 
   const handleSubmit = async () => {
+    if (!canEdit) return;
     setError('');
     setSuccess('');
     if (!form.name?.trim()) {
@@ -92,7 +94,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
           // ALTER TABLE animals ADD COLUMN IF NOT EXISTS photo_url text;
           if (field === 'image_url' && animalId) {
             console.log('Saving photo_url to animals table:', url);
-            supabase.from('animals').update({ photo_url: url }).eq('id', animalId).select().then(
+            supabase.from('animals').update({ photo_url: url }).eq('id', animalId).eq('org_id', orgId).select().then(
               ({ data, error }) => {
                 console.log('Photo save data:', data);
                 console.log('Photo save error:', JSON.stringify(error));
@@ -141,7 +143,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? `Edit – ${animal?.name}` : 'Add New Animal'}
+      title={isEditing ? `${canEdit ? 'Edit' : 'View'} – ${animal?.name}` : 'Add New Animal'}
       size="xl"
       footer={
         <>
@@ -153,7 +155,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
           </button>
           <button
             onClick={() => void handleSubmit()}
-            disabled={saving}
+            disabled={saving || !canEdit}
             className="px-6 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 transition disabled:opacity-50"
           >
             {saving ? 'Saving…' : isEditing ? 'Update' : 'Add Animal'}
@@ -161,7 +163,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
         </>
       }
     >
-      <div className="space-y-6">
+      <fieldset disabled={!canEdit} className="space-y-6 min-w-0">
         {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{error}</p>}
         {success && <p className="text-sm text-green-700 bg-green-50 rounded-lg p-3">{success}</p>}
 
@@ -404,7 +406,7 @@ export default function AnimalModal({ isOpen, onClose, onSave, animal, orgId, is
             </div>
           </section>
         )}
-      </div>
+      </fieldset>
     </Modal>
   );
 }

@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '../components/Toast';
 import { draftReply } from '../lib/ai';
-import { ORGANIZATIONS } from '../lib/api';
+import { ORGANIZATIONS, getFormSubmissions, updateFormSubmission } from '../lib/api';
 
 interface CommunicationsTabProps {
   orgId?: number;
+  canEdit?: boolean;
 }
 
 interface Submission {
@@ -19,23 +20,6 @@ interface Submission {
   form_data?: Record<string, unknown>;
   created_at?: string;
   [key: string]: unknown;
-}
-
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-async function fetchSubmissionsFromSupabase(orgId: number): Promise<Submission[]> {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/form_submissions?org_id=eq.${orgId}&order=created_at.desc`,
-    {
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${SUPABASE_KEY}`,
-      },
-    }
-  );
-  if (!res.ok) throw new Error(`Supabase error ${res.status}`);
-  return res.json() as Promise<Submission[]>;
 }
 
 function formatDate(dateStr?: string): string {
@@ -87,7 +71,7 @@ const REPLY_TEMPLATES: Record<string, (name: string) => string> = {
     `Hi ${name},\n\nThank you so much for reaching out and for your interest. After careful review, we don't think this is quite the right fit at this time — but we truly appreciate your support of our mission.\n\nWarmly,`,
 };
 
-export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps) {
+export default function CommunicationsTab({ orgId = 9, canEdit = false }: CommunicationsTabProps) {
   const { showToast } = useToast();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,7 +90,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
     setError('');
     try {
       console.log('[CommunicationsTab] Fetching submissions for org_id:', orgId);
-      const data = await fetchSubmissionsFromSupabase(orgId);
+      const data = await getFormSubmissions(orgId);
       console.log('[CommunicationsTab] Loaded submissions:', data.length);
       setSubmissions(data);
     } catch (err) {
@@ -146,23 +130,10 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
   };
 
   const handleSaveStatus = async () => {
-    if (!selected) return;
+    if (!selected || !canEdit) return;
     setSaving(true);
     try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/form_submissions?id=eq.${selected.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal',
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-      if (!res.ok) throw new Error(`Supabase PATCH error ${res.status}`);
+      await updateFormSubmission(selected.id, { status: newStatus }, orgId);
       setSubmissions((prev) =>
         prev.map((s) => (s.id === selected.id ? { ...s, status: newStatus } : s))
       );
@@ -177,7 +148,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
   };
 
   const handleDraftReply = async () => {
-    if (!selected) return;
+    if (!selected || !canEdit) return;
     setDrafting(true);
     try {
       const applicantName = `${selected.first_name ?? ''} ${selected.last_name ?? ''}`.trim() || 'the sender';
@@ -198,7 +169,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
   };
 
   const applyTemplate = (label: string) => {
-    if (!selected) return;
+    if (!selected || !canEdit) return;
     const name = selected.first_name || 'there';
     setReply(REPLY_TEMPLATES[label](name));
   };
@@ -410,7 +381,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
                   <button
                     type="button"
                     onClick={() => void handleDraftReply()}
-                    disabled={drafting}
+                    disabled={drafting || !canEdit}
                     className="flex items-center gap-1.5 text-xs font-semibold text-warm-brown hover:opacity-80 transition disabled:opacity-50"
                   >
                     {drafting && (
@@ -460,7 +431,7 @@ export default function CommunicationsTab({ orgId = 9 }: CommunicationsTabProps)
                 </button>
                 <button
                   onClick={() => void handleSaveStatus()}
-                  disabled={saving}
+                  disabled={saving || !canEdit}
                   className="px-5 py-2 text-sm font-semibold bg-warm-brown text-white rounded-xl hover:opacity-90 disabled:opacity-50 transition"
                 >
                   {saving ? 'Saving…' : 'Save Status'}
